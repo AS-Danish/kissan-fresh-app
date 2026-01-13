@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kissanfresh/model/promotional_card_model.dart';
+import 'package:kissanfresh/model/trending_item_model.dart';
+import 'package:kissanfresh/model/product_card_model.dart';
 import 'package:kissanfresh/themes/app_theme.dart';
 import 'package:kissanfresh/views/widgets/category_card_widget.dart';
 import 'package:kissanfresh/views/widgets/promotional_card_widget.dart';
+import 'package:kissanfresh/views/widgets/trending_item_widget.dart';
+import 'package:kissanfresh/views/widgets/product_card_widget.dart';
 import '../../model/category_card_model.dart';
 
 class HomepageScreen extends StatelessWidget {
@@ -63,12 +67,120 @@ class HomepageScreen extends StatelessWidget {
       ),
     ];
 
+    // Deals of the Day Products
+    final List<ProductCardModel> dealsOfTheDay = [
+      ProductCardModel(
+        productName: "Raw A2 Milk",
+        subtitle: "1L • Freshly Bottled",
+        price: "\$2.40",
+        originalPrice: "\$3.00",
+        imageUrl:
+        'https://static.vecteezy.com/system/resources/thumbnails/049/855/471/small_2x/nature-background-high-resolution-wallpaper-for-a-serene-and-stunning-view-free-photo.jpg',
+        discountText: "20% OFF",
+        isDeal: true,
+        onTap: () {
+          print("Added Raw A2 Milk to cart");
+        },
+      ),
+      ProductCardModel(
+        productName: "Organic Honey",
+        subtitle: "500g • Pure & Natural",
+        price: "\$8.99",
+        originalPrice: "\$12.99",
+        imageUrl:
+        'https://static.vecteezy.com/system/resources/thumbnails/049/855/471/small_2x/nature-background-high-resolution-wallpaper-for-a-serene-and-stunning-view-free-photo.jpg',
+        discountText: "30% OFF",
+        isDeal: true,
+        onTap: () {
+          print("Added Organic Honey to cart");
+        },
+      ),
+      ProductCardModel(
+        productName: "Fresh Coconut Oil",
+        subtitle: "250ml • Cold Pressed",
+        price: "\$5.49",
+        originalPrice: "\$7.99",
+        imageUrl:
+        'https://static.vecteezy.com/system/resources/thumbnails/049/855/471/small_2x/nature-background-high-resolution-wallpaper-for-a-serene-and-stunning-view-free-photo.jpg',
+        discountText: "31% OFF",
+        isDeal: true,
+        onTap: () {
+          print("Added Fresh Coconut Oil to cart");
+        },
+      ),
+      ProductCardModel(
+        productName: "Almond Butter",
+        subtitle: "200g • Creamy",
+        price: "\$6.99",
+        originalPrice: "\$9.99",
+        imageUrl:
+        'https://static.vecteezy.com/system/resources/thumbnails/049/855/471/small_2x/nature-background-high-resolution-wallpaper-for-a-serene-and-stunning-view-free-photo.jpg',
+        discountText: "30% OFF",
+        isDeal: true,
+        onTap: () {
+          print("Added Almond Butter to cart");
+        },
+      ),
+      ProductCardModel(
+        productName: "Organic Ghee",
+        subtitle: "500ml • Traditional",
+        price: "\$11.99",
+        originalPrice: "\$15.99",
+        imageUrl:
+        'https://static.vecteezy.com/system/resources/thumbnails/049/855/471/small_2x/nature-background-high-resolution-wallpaper-for-a-serene-and-stunning-view-free-photo.jpg',
+        discountText: "25% OFF",
+        isDeal: true,
+        onTap: () {
+          print("Added Organic Ghee to cart");
+        },
+      ),
+    ];
+
+    final List<TrendingItemModel> trendingItems = [
+      TrendingItemModel(
+        productName: "Cold Pressed Aloe",
+        subtitle: "500ml Natural",
+        price: "Rs 400",
+        imageUrl: null,
+        onTap: () {
+          print("Added Cold Pressed Aloe to cart");
+        },
+      ),
+      TrendingItemModel(
+        productName: "Organic Honey",
+        subtitle: "250g Pure",
+        price: "Rs 350",
+        imageUrl: null,
+        onTap: () {
+          print("Added Organic Honey to cart");
+        },
+      ),
+      TrendingItemModel(
+        productName: "Fresh Coconut Water",
+        subtitle: "300ml Refreshing",
+        price: "Rs 80",
+        imageUrl: null,
+        onTap: () {
+          print("Added Fresh Coconut Water to cart");
+        },
+      ),
+      TrendingItemModel(
+        productName: "Green Tea Extract",
+        subtitle: "200g Premium",
+        price: "Rs 550",
+        imageUrl: null,
+        onTap: () {
+          print("Added Green Tea Extract to cart");
+        },
+      ),
+    ];
+
     return Scaffold(
       backgroundColor: AppTheme().backgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -183,6 +295,7 @@ class HomepageScreen extends StatelessWidget {
                 SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
                       "Deals of the Day",
@@ -192,7 +305,7 @@ class HomepageScreen extends StatelessWidget {
                         color: AppTheme().primaryColor,
                       ),
                     ),
-                    DecoratedBox(
+                    Container(
                       decoration: BoxDecoration(
                         color: AppTheme().primaryColor,
                         borderRadius: BorderRadius.circular(20),
@@ -212,100 +325,21 @@ class HomepageScreen extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: 10),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(
-                      width: 0.5,
-                      color: AppTheme().secondaryTextColor,
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  height: 250,
-                  width: 150,
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.all(10),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: AppTheme().backgroundColor,
-                          ),
-                          height: 150,
+
+                // Horizontal ListView for Deals of the Day
+                SizedBox(
+                  height: 280,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: dealsOfTheDay.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 12.0),
+                        child: ProductCardWidget(
+                          product: dealsOfTheDay[index],
                         ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Raw A2 Milk",
-                                  style: GoogleFonts.poppins(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                Text(
-                                  "1L•Freshly Bottled",
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 8,
-                                    color: AppTheme().primaryColor,
-                                  ),
-                                ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "₹2.40",
-                                          style: GoogleFonts.poppins(
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                        Text(
-                                          "₹3.6",
-                                          style: GoogleFonts.poppins(
-                                            decoration:
-                                                TextDecoration.lineThrough,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: MaterialButton(
-                                        onPressed: () {},
-                                        color: AppTheme().primaryColor,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadiusGeometry.circular(10),
-                                        ),
-                                        child: Text(
-                                          "ADD",
-                                          style: GoogleFonts.poppins(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
 
@@ -320,88 +354,21 @@ class HomepageScreen extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 10),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  height: 100,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Row(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8.0,
-                            ),
-                             child: Container(
-                              width: 80,
-                              height: 80,
-                              decoration: BoxDecoration(
-                                color: AppTheme().secondaryColor,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Cold Pressed Aloe",
-                                    style: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                  Text(
-                                    "500ml Natural",
-                                    style: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.w400,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
 
-                              Text(
-                                "Rs 400",
-                                style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                // Trending Items ListView
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: trendingItems.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12.0),
+                      child: TrendingItemWidget(
+                        trendingItem: trendingItems[index],
                       ),
-
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                        child: MaterialButton(
-                          onPressed: () {},
-                          color: AppTheme().primaryColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadiusGeometry.circular(12),
-                          ),
-                          child: Text(
-                            "ADD",
-                            style: GoogleFonts.poppins(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
-
-                SizedBox(height: 30),
               ],
             ),
           ),
