@@ -15,6 +15,7 @@ class HomepageScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     final List<CategoryCardModel> categories = [
       CategoryCardModel(
         icon: Icons.energy_savings_leaf_sharp,
@@ -75,7 +76,7 @@ class HomepageScreen extends StatelessWidget {
         price: "\$2.40",
         originalPrice: "\$3.00",
         imageUrl:
-        'https://static.vecteezy.com/system/resources/thumbnails/049/855/471/small_2x/nature-background-high-resolution-wallpaper-for-a-serene-and-stunning-view-free-photo.jpg',
+            'https://static.vecteezy.com/system/resources/thumbnails/049/855/471/small_2x/nature-background-high-resolution-wallpaper-for-a-serene-and-stunning-view-free-photo.jpg',
         discountText: "20% OFF",
         isDeal: true,
         onTap: () {
@@ -88,7 +89,7 @@ class HomepageScreen extends StatelessWidget {
         price: "\$8.99",
         originalPrice: "\$12.99",
         imageUrl:
-        'https://static.vecteezy.com/system/resources/thumbnails/049/855/471/small_2x/nature-background-high-resolution-wallpaper-for-a-serene-and-stunning-view-free-photo.jpg',
+            'https://static.vecteezy.com/system/resources/thumbnails/049/855/471/small_2x/nature-background-high-resolution-wallpaper-for-a-serene-and-stunning-view-free-photo.jpg',
         discountText: "30% OFF",
         isDeal: true,
         onTap: () {
@@ -101,7 +102,7 @@ class HomepageScreen extends StatelessWidget {
         price: "\$5.49",
         originalPrice: "\$7.99",
         imageUrl:
-        'https://static.vecteezy.com/system/resources/thumbnails/049/855/471/small_2x/nature-background-high-resolution-wallpaper-for-a-serene-and-stunning-view-free-photo.jpg',
+            'https://static.vecteezy.com/system/resources/thumbnails/049/855/471/small_2x/nature-background-high-resolution-wallpaper-for-a-serene-and-stunning-view-free-photo.jpg',
         discountText: "31% OFF",
         isDeal: true,
         onTap: () {
@@ -114,7 +115,7 @@ class HomepageScreen extends StatelessWidget {
         price: "\$6.99",
         originalPrice: "\$9.99",
         imageUrl:
-        'https://static.vecteezy.com/system/resources/thumbnails/049/855/471/small_2x/nature-background-high-resolution-wallpaper-for-a-serene-and-stunning-view-free-photo.jpg',
+            'https://static.vecteezy.com/system/resources/thumbnails/049/855/471/small_2x/nature-background-high-resolution-wallpaper-for-a-serene-and-stunning-view-free-photo.jpg',
         discountText: "30% OFF",
         isDeal: true,
         onTap: () {
@@ -127,7 +128,7 @@ class HomepageScreen extends StatelessWidget {
         price: "\$11.99",
         originalPrice: "\$15.99",
         imageUrl:
-        'https://static.vecteezy.com/system/resources/thumbnails/049/855/471/small_2x/nature-background-high-resolution-wallpaper-for-a-serene-and-stunning-view-free-photo.jpg',
+            'https://static.vecteezy.com/system/resources/thumbnails/049/855/471/small_2x/nature-background-high-resolution-wallpaper-for-a-serene-and-stunning-view-free-photo.jpg',
         discountText: "25% OFF",
         isDeal: true,
         onTap: () {
@@ -335,9 +336,7 @@ class HomepageScreen extends StatelessWidget {
                     itemBuilder: (context, index) {
                       return Padding(
                         padding: const EdgeInsets.only(right: 12.0),
-                        child: ProductCardWidget(
-                          product: dealsOfTheDay[index],
-                        ),
+                        child: ProductCardWidget(product: dealsOfTheDay[index]),
                       );
                     },
                   ),
