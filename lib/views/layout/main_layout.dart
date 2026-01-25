@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kissanfresh/controllers/bottom_bar_controller.dart';
+import 'package:kissanfresh/views/screens/home_screen.dart';
 import 'package:kissanfresh/views/screens/homepage_screen.dart';
+import 'package:kissanfresh/views/screens/improved_home_screen.dart';
 
 import '../../themes/app_theme.dart';
 class MainLayout extends StatelessWidget {
@@ -12,8 +14,9 @@ class MainLayout extends StatelessWidget {
     BottomBarController barController = Get.find<BottomBarController>();
 
     List<Widget> _pages = [
-      HomepageScreen(),
-      Scaffold()
+      ImprovedHomeScreen(),
+      HomeScreen(),
+      HomepageScreen()
     ];
     return Scaffold(
       backgroundColor: AppTheme().backgroundColor,
