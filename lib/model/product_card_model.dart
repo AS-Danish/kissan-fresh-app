@@ -1,21 +1,21 @@
+import 'package:flutter/material.dart';
+
 class ProductCardModel {
-  final String productName;
-  final String subtitle;
-  final String price;
-  final String? originalPrice;
-  final String? imageUrl;
-  final String? discountText;
-  final bool isDeal;
-  final Function() onTap;
+  final String image;
+  final String title;
+  final String description;
+  final double price;
+  final String unit; // e.g., "kg", "piece", "liter"
+  final VoidCallback onTap;
+  final VoidCallback onAddToCart;
 
   ProductCardModel({
-    required this.productName,
-    required this.subtitle,
+    required this.image,
+    required this.title,
+    required this.description,
     required this.price,
-    this.originalPrice,
-    this.imageUrl,
-    this.discountText,
-    this.isDeal = false,
+    required this.unit,
     required this.onTap,
+    required this.onAddToCart,
   });
 }

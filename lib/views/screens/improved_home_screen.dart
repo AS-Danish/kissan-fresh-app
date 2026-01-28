@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kissanfresh/controllers/homepage_controller.dart';
+import '../components/all_products_section.dart';
 import '../components/bestseller_section.dart';
 import '../components/categories_section.dart';
 import '../components/offer_section.dart';
@@ -32,6 +33,8 @@ class ImprovedHomeScreen extends StatelessWidget {
             const OffersSection(),
             const SizedBox(height: 32),
             BestsellersSection(),
+            const SizedBox(height: 32),
+            AllProductsSection(),
             const SizedBox(height: 32),
           ],
         ),
