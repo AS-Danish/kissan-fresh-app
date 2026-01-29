@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kissanfresh/controllers/bottom_bar_controller.dart';
 import 'package:kissanfresh/views/screens/improved_home_screen.dart';
+import 'package:kissanfresh/views/screens/settings_screen.dart';
 import '../../themes/app_theme.dart';
 
 class MainLayout extends StatelessWidget {
@@ -11,12 +12,18 @@ class MainLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     BottomBarController barController = Get.find<BottomBarController>();
 
-    List<Widget> _pages = [ImprovedHomeScreen()];
+    List<Widget> _pages = [
+      ImprovedHomeScreen(),
+      Scaffold(),
+      Scaffold(),
+      Scaffold(),
+      SettingsScreen(),
+    ];
 
     return Scaffold(
       backgroundColor: AppTheme().backgroundColor,
       bottomNavigationBar: Obx(
-            () => Stack(
+        () => Stack(
           clipBehavior: Clip.none,
           alignment: Alignment.bottomCenter,
           children: [
@@ -38,7 +45,10 @@ class MainLayout extends StatelessWidget {
               ),
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8.0,
+                    vertical: 8.0,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -112,14 +122,18 @@ class MainLayout extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? AppTheme().primaryColor : Colors.grey.shade600,
+              color: isSelected
+                  ? AppTheme().primaryColor
+                  : Colors.grey.shade600,
               size: 26,
             ),
             SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppTheme().primaryColor : Colors.grey.shade600,
+                color: isSelected
+                    ? AppTheme().primaryColor
+                    : Colors.grey.shade600,
                 fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
@@ -169,10 +183,7 @@ class MainLayout extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
               ),
-              constraints: BoxConstraints(
-                minWidth: 24,
-                minHeight: 24,
-              ),
+              constraints: BoxConstraints(minWidth: 24, minHeight: 24),
               child: Center(
                 child: Text(
                   '3',
