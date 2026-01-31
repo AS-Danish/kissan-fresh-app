@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kissanfresh/controllers/homepage_controller.dart';
+import '../../controllers/products_controller.dart';
 import '../components/all_products_section.dart';
 import '../components/bestseller_section.dart';
 import '../components/categories_section.dart';
@@ -9,7 +10,9 @@ import '../components/welcome_section.dart';
 import '../widgets/home_header.dart';
 
 class ImprovedHomeScreen extends StatelessWidget {
-  ImprovedHomeScreen({super.key});
+  ImprovedHomeScreen({super.key}) {
+    Get.put(ProductsController());
+  }
 
   final HomepageController controller = Get.put(
     HomepageController(),

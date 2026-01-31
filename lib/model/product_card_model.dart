@@ -5,7 +5,8 @@ class ProductCardModel {
   final String title;
   final String description;
   final double price;
-  final String unit; // e.g., "kg", "piece", "liter"
+  final String unit;
+  final String? category; // Added category field
   final VoidCallback onTap;
   final VoidCallback onAddToCart;
 
@@ -15,6 +16,7 @@ class ProductCardModel {
     required this.description,
     required this.price,
     required this.unit,
+    this.category,
     required this.onTap,
     required this.onAddToCart,
   });

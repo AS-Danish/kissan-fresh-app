@@ -4,6 +4,7 @@ import 'package:kissanfresh/controllers/bottom_bar_controller.dart';
 import 'package:kissanfresh/views/screens/cart_screen.dart';
 import 'package:kissanfresh/views/screens/improved_home_screen.dart';
 import 'package:kissanfresh/views/screens/my_orders_screen.dart';
+import 'package:kissanfresh/views/screens/search_screen.dart';
 import 'package:kissanfresh/views/screens/settings_screen.dart';
 import '../../themes/app_theme.dart';
 
@@ -16,7 +17,7 @@ class MainLayout extends StatelessWidget {
 
     List<Widget> _pages = [
       ImprovedHomeScreen(),
-      Scaffold(),
+      SearchScreen(),
       CartScreen(),
       MyOrdersScreen(),
       SettingsScreen(),
@@ -64,8 +65,8 @@ class MainLayout extends StatelessWidget {
                       ),
                       // Rewards
                       _buildNavItem(
-                        icon: Icons.star_border,
-                        label: "REWARDS",
+                        icon: Icons.search,
+                        label: "Search",
                         index: 1,
                         barController: barController,
                         onTap: () => barController.currentIndex.value = 1,
@@ -74,8 +75,8 @@ class MainLayout extends StatelessWidget {
                       SizedBox(width: 80),
                       // Menu
                       _buildNavItem(
-                        icon: Icons.grid_view_outlined,
-                        label: "MENU",
+                        icon: Icons.receipt_long,
+                        label: "My Orders",
                         index: 3,
                         barController: barController,
                         onTap: () => barController.currentIndex.value = 3,
