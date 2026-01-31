@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:kissanfresh/controllers/bottom_bar_controller.dart';
 import 'package:kissanfresh/views/screens/cart_screen.dart';
 import 'package:kissanfresh/views/screens/improved_home_screen.dart';
+import 'package:kissanfresh/views/screens/my_orders_screen.dart';
 import 'package:kissanfresh/views/screens/settings_screen.dart';
 import '../../themes/app_theme.dart';
 
@@ -17,7 +18,7 @@ class MainLayout extends StatelessWidget {
       ImprovedHomeScreen(),
       Scaffold(),
       CartScreen(),
-      Scaffold(),
+      MyOrdersScreen(),
       SettingsScreen(),
     ];
 
