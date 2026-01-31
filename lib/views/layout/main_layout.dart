@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kissanfresh/controllers/bottom_bar_controller.dart';
+import 'package:kissanfresh/views/screens/cart_screen.dart';
 import 'package:kissanfresh/views/screens/improved_home_screen.dart';
 import 'package:kissanfresh/views/screens/settings_screen.dart';
 import '../../themes/app_theme.dart';
@@ -15,7 +16,7 @@ class MainLayout extends StatelessWidget {
     List<Widget> _pages = [
       ImprovedHomeScreen(),
       Scaffold(),
-      Scaffold(),
+      CartScreen(),
       Scaffold(),
       SettingsScreen(),
     ];
@@ -80,8 +81,8 @@ class MainLayout extends StatelessWidget {
                       ),
                       // Profile
                       _buildNavItem(
-                        icon: Icons.person_outline,
-                        label: "PROFILE",
+                        icon: Icons.settings,
+                        label: "SETTINGS",
                         index: 4,
                         barController: barController,
                         onTap: () => barController.currentIndex.value = 4,
