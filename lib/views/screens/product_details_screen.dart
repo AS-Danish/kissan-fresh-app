@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import '../../model/product_card_model.dart';
-import '../../controllers/cart_controller.dart';
+import '../../controllers/product_details_controller.dart';
 
-class ProductDetailsScreen extends StatefulWidget {
+class ProductDetailsScreen extends StatelessWidget {
   final ProductCardModel product;
 
   const ProductDetailsScreen({
@@ -13,15 +13,11 @@ class ProductDetailsScreen extends StatefulWidget {
   });
 
   @override
-  State<ProductDetailsScreen> createState() => _ProductDetailsScreenState();
-}
-
-class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
-  int quantity = 1;
-  final CartController cartController = Get.find<CartController>();
-
-  @override
   Widget build(BuildContext context) {
+    // Initialize controller and product
+    final controller = Get.put(ProductDetailsController());
+    controller.initializeProduct(product);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5FFFE),
       body: CustomScrollView(
@@ -54,7 +50,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               onPressed: () => Get.back(),
             ),
             actions: [
-              IconButton(
+              Obx(() => IconButton(
                 icon: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -68,23 +64,23 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.favorite_border,
-                    color: Color(0xFF0d9488),
+                  child: Icon(
+                    controller.isFavorite.value
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    color: const Color(0xFF0d9488),
                     size: 20,
                   ),
                 ),
-                onPressed: () {
-                  // Add to wishlist
-                },
-              ),
+                onPressed: controller.toggleFavorite,
+              )),
               const SizedBox(width: 8),
             ],
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 color: Colors.grey.shade100,
                 child: Image.network(
-                  widget.product.image,
+                  product.image,
                   fit: BoxFit.cover,
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress == null) return child;
@@ -136,7 +132,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.product.title,
+                          product.title,
                           style: GoogleFonts.montserrat(
                             fontSize: 26,
                             fontWeight: FontWeight.w900,
@@ -148,7 +144,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         Row(
                           children: [
                             Text(
-                              '₹${widget.product.price.toStringAsFixed(0)}',
+                              '₹${product.price.toStringAsFixed(0)}',
                               style: GoogleFonts.montserrat(
                                 fontSize: 32,
                                 fontWeight: FontWeight.w900,
@@ -157,7 +153,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               ),
                             ),
                             Text(
-                              ' /${widget.product.unit}',
+                              ' /${product.unit}',
                               style: GoogleFonts.montserrat(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -202,7 +198,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          widget.product.description,
+                          product.description,
                           style: GoogleFonts.montserrat(
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
@@ -247,7 +243,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           _buildDetailRow(
                             icon: Icons.local_offer_outlined,
                             label: 'Category',
-                            value: 'Fresh Vegetables',
+                            value: product.category ?? 'Fresh Vegetables',
                             valueColor: Colors.grey.shade700,
                           ),
                         ],
@@ -290,7 +286,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       ),
 
       // Bottom Add to Cart Bar
-      bottomNavigationBar: _buildBottomBar(),
+      bottomNavigationBar: _buildBottomBar(controller),
     );
   }
 
@@ -407,7 +403,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
   }
 
-  Widget _buildBottomBar() {
+  Widget _buildBottomBar(ProductDetailsController controller) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -440,34 +436,26 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _buildQuantityButton(
+                  Obx(() => _buildQuantityButton(
                     icon: Icons.remove,
-                    onPressed: quantity > 1
-                        ? () {
-                      setState(() {
-                        quantity--;
-                      });
-                    }
+                    onPressed: controller.quantity.value > 1
+                        ? controller.decreaseQuantity
                         : null,
-                  ),
-                  Padding(
+                  )),
+                  Obx(() => Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
-                      '$quantity',
+                      '${controller.quantity.value}',
                       style: GoogleFonts.montserrat(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
                         color: const Color(0xFF0d9488),
                       ),
                     ),
-                  ),
+                  )),
                   _buildQuantityButton(
                     icon: Icons.add,
-                    onPressed: () {
-                      setState(() {
-                        quantity++;
-                      });
-                    },
+                    onPressed: controller.increaseQuantity,
                   ),
                 ],
               ),
@@ -477,7 +465,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
             // Add to Cart Button
             Expanded(
-              child: Container(
+              child: Obx(() => Container(
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     begin: Alignment.centerLeft,
@@ -496,19 +484,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    onTap: () {
-                      // Add to cart
-                      Get.snackbar(
-                        'Added to Cart',
-                        '${widget.product.title} (x$quantity) added to cart',
-                        snackPosition: SnackPosition.BOTTOM,
-                        backgroundColor: const Color(0xFF10B981),
-                        colorText: Colors.white,
-                        duration: const Duration(seconds: 2),
-                        margin: const EdgeInsets.all(16),
-                        borderRadius: 12,
-                      );
-                    },
+                    onTap: controller.addToCart,
                     borderRadius: BorderRadius.circular(16),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -532,7 +508,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            '₹${(widget.product.price * quantity).toStringAsFixed(0)}',
+                            '₹${controller.totalPrice.toStringAsFixed(0)}',
                             style: GoogleFonts.montserrat(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
@@ -545,7 +521,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     ),
                   ),
                 ),
-              ),
+              )),
             ),
           ],
         ),

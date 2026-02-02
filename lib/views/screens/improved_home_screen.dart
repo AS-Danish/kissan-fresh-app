@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:kissanfresh/controllers/homepage_controller.dart';
-import '../../controllers/products_controller.dart';
 import '../components/all_products_section.dart';
 import '../components/bestseller_section.dart';
 import '../components/categories_section.dart';
@@ -10,14 +7,7 @@ import '../components/welcome_section.dart';
 import '../widgets/home_header.dart';
 
 class ImprovedHomeScreen extends StatelessWidget {
-  ImprovedHomeScreen({super.key}) {
-    Get.put(ProductsController());
-  }
-
-  final HomepageController controller = Get.put(
-    HomepageController(),
-    permanent: true,
-  );
+  const ImprovedHomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +19,7 @@ class ImprovedHomeScreen extends StatelessWidget {
           children: [
             HomeHeader(),
             const SizedBox(height: 24),
-            CategoriesSection(controller: controller),
+            CategoriesSection(),
             const SizedBox(height: 32),
             const WelcomeSection(),
             const SizedBox(height: 24),

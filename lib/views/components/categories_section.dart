@@ -6,12 +6,12 @@ import 'package:kissanfresh/controllers/homepage_controller.dart';
 import '../../model/category_item_model.dart';
 
 class CategoriesSection extends StatelessWidget {
-  final HomepageController controller;
 
   const CategoriesSection({
     super.key,
-    required this.controller,
   });
+
+  static HomepageController controller = Get.find<HomepageController>();
 
   @override
   Widget build(BuildContext context) {

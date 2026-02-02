@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import '../model/product_card_model.dart';
 
 class CartController extends GetxController {
   // Observable list of cart items
@@ -28,6 +29,32 @@ class CartController extends GetxController {
 
   int get totalItemCount {
     return cartItems.fold(0, (sum, item) => sum + item.count);
+  }
+
+  // Add product to cart from ProductCardModel
+  void addToCart(ProductCardModel product, int quantity) {
+    // Use product ID if available, otherwise use title
+    final productId = product.id ?? product.title;
+
+    final cartItem = CartItem(
+      id: productId,
+      name: product.title,
+      quantity: product.unit,
+      price: product.price,
+      image: product.image,
+      count: quantity,
+    );
+
+    final existingIndex = cartItems.indexWhere((i) => i.id == productId);
+
+    if (existingIndex >= 0) {
+      // Item already exists, increase count
+      cartItems[existingIndex].count += quantity;
+      cartItems.refresh();
+    } else {
+      // New item, add to cart
+      cartItems.add(cartItem);
+    }
   }
 
   // Methods
@@ -67,6 +94,17 @@ class CartController extends GetxController {
 
   void clearCart() {
     cartItems.clear();
+  }
+
+  // Check if a product is in cart
+  bool isInCart(String productId) {
+    return cartItems.any((item) => item.id == productId);
+  }
+
+  // Get quantity of a specific product in cart
+  int getProductQuantity(String productId) {
+    final index = cartItems.indexWhere((item) => item.id == productId);
+    return index >= 0 ? cartItems[index].count : 0;
   }
 
   @override
@@ -122,4 +160,28 @@ class CartItem {
     required this.image,
     this.count = 1,
   });
+
+  // Convert CartItem to Map for storage/serialization
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'quantity': quantity,
+      'price': price,
+      'image': image,
+      'count': count,
+    };
+  }
+
+  // Create CartItem from Map
+  factory CartItem.fromJson(Map<String, dynamic> json) {
+    return CartItem(
+      id: json['id'],
+      name: json['name'],
+      quantity: json['quantity'],
+      price: json['price'].toDouble(),
+      image: json['image'],
+      count: json['count'],
+    );
+  }
 }

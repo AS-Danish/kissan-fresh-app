@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ProductCardModel {
+  final String? id; // Optional ID field for better tracking
   final String image;
   final String title;
   final String description;
@@ -11,6 +12,7 @@ class ProductCardModel {
   final VoidCallback onAddToCart;
 
   ProductCardModel({
+    this.id,
     required this.image,
     required this.title,
     required this.description,

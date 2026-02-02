@@ -7,7 +7,7 @@ import '../../model/order_model.dart';
 class MyOrdersScreen extends StatelessWidget {
   MyOrdersScreen({super.key});
 
-  final OrdersController controller = Get.put(OrdersController());
+  final OrdersController controller = Get.find<OrdersController>();
 
   @override
   Widget build(BuildContext context) {

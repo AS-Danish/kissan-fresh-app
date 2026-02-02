@@ -7,7 +7,7 @@ import '../widgets/product_card_widget.dart';
 class SearchScreen extends StatelessWidget {
   SearchScreen({super.key});
 
-  final ProductSearchController controller = Get.put(ProductSearchController());
+  final ProductSearchController controller = Get.find<ProductSearchController>();
   final TextEditingController searchTextController = TextEditingController();
 
   @override

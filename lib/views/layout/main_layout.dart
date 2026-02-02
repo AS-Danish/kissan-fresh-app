@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kissanfresh/controllers/bottom_bar_controller.dart';
-import 'package:kissanfresh/views/screens/cart_screen.dart';
-import 'package:kissanfresh/views/screens/improved_home_screen.dart';
-import 'package:kissanfresh/views/screens/my_orders_screen.dart';
-import 'package:kissanfresh/views/screens/search_screen.dart';
-import 'package:kissanfresh/views/screens/settings_screen.dart';
+import '../../routes/AppRoutes.dart';
 import '../../themes/app_theme.dart';
 
 class MainLayout extends StatelessWidget {
@@ -13,20 +9,21 @@ class MainLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    BottomBarController barController = Get.find<BottomBarController>();
+    final BottomBarController barController = Get.find<BottomBarController>();
 
-    List<Widget> _pages = [
-      ImprovedHomeScreen(),
-      SearchScreen(),
-      CartScreen(),
-      MyOrdersScreen(),
-      SettingsScreen(),
+    // Route names for each tab
+    final List<String> routes = [
+      AppRoutes.homepageRoute,
+      AppRoutes.searchRoute,
+      AppRoutes.cartRoute,
+      AppRoutes.myOrdersRoute,
+      AppRoutes.settingsRoute,
     ];
 
     return Scaffold(
       backgroundColor: AppTheme().backgroundColor,
       bottomNavigationBar: Obx(
-        () => Stack(
+            () => Stack(
           clipBehavior: Clip.none,
           alignment: Alignment.bottomCenter,
           children: [
@@ -34,7 +31,7 @@ class MainLayout extends StatelessWidget {
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(24),
                   topRight: Radius.circular(24),
                 ),
@@ -42,7 +39,7 @@ class MainLayout extends StatelessWidget {
                   BoxShadow(
                     color: Colors.black.withOpacity(0.08),
                     blurRadius: 10,
-                    offset: Offset(0, -2),
+                    offset: const Offset(0, -2),
                   ),
                 ],
               ),
@@ -55,46 +52,37 @@ class MainLayout extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      // Home
                       _buildNavItem(
                         icon: Icons.home_outlined,
                         label: "HOME",
                         index: 0,
                         barController: barController,
-                        onTap: () => barController.currentIndex.value = 0,
                       ),
-                      // Rewards
                       _buildNavItem(
                         icon: Icons.search,
                         label: "Search",
                         index: 1,
                         barController: barController,
-                        onTap: () => barController.currentIndex.value = 1,
                       ),
-                      // Spacer for center button
-                      SizedBox(width: 80),
-                      // Menu
+                      const SizedBox(width: 80),
                       _buildNavItem(
                         icon: Icons.receipt_long,
                         label: "My Orders",
                         index: 3,
                         barController: barController,
-                        onTap: () => barController.currentIndex.value = 3,
                       ),
-                      // Profile
                       _buildNavItem(
                         icon: Icons.settings,
                         label: "SETTINGS",
                         index: 4,
                         barController: barController,
-                        onTap: () => barController.currentIndex.value = 4,
                       ),
                     ],
                   ),
                 ),
               ),
             ),
-            // Floating Cart Button - Positioned ABOVE the bar
+            // Floating Cart Button
             Positioned(
               bottom: 25,
               child: _buildCenterCartButton(barController),
@@ -102,8 +90,36 @@ class MainLayout extends StatelessWidget {
           ],
         ),
       ),
-      body: Obx(() => _pages[barController.currentIndex.value]),
+      // Use IndexedStack to preserve state and lazy load with GetX routes
+      body: Obx(() {
+        return IndexedStack(
+          index: barController.currentIndex.value,
+          children: routes.map((route) {
+            // Use GetBuilder to build each page with its binding
+            return _buildPage(route);
+          }).toList(),
+        );
+      }),
     );
+  }
+
+  /// Build a page with its proper binding
+  Widget _buildPage(String routeName) {
+    // Find the page in GetX routes
+    final routeDecoded = Get.routeTree.matchRoute(routeName);
+    final page = routeDecoded.route;
+
+    if (page == null) {
+      return Center(child: Text('Route not found: $routeName'));
+    }
+
+    // Initialize binding if it exists and hasn't been initialized yet
+    if (page.binding != null) {
+      page.binding!.dependencies();
+    }
+
+    // Return the page widget
+    return page.page?.call() ?? Container();
   }
 
   Widget _buildNavItem({
@@ -111,12 +127,11 @@ class MainLayout extends StatelessWidget {
     required String label,
     required int index,
     required BottomBarController barController,
-    required VoidCallback onTap,
   }) {
     bool isSelected = barController.currentIndex.value == index;
 
     return InkWell(
-      onTap: onTap,
+      onTap: () => barController.changePage(index),
       borderRadius: BorderRadius.circular(12),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
@@ -130,7 +145,7 @@ class MainLayout extends StatelessWidget {
                   : Colors.grey.shade600,
               size: 26,
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
@@ -149,7 +164,7 @@ class MainLayout extends StatelessWidget {
 
   Widget _buildCenterCartButton(BottomBarController barController) {
     return InkWell(
-      onTap: () => barController.currentIndex.value = 2,
+      onTap: () => barController.changePage(2),
       borderRadius: BorderRadius.circular(35),
       child: Stack(
         clipBehavior: Clip.none,
@@ -158,18 +173,18 @@ class MainLayout extends StatelessWidget {
             width: 70,
             height: 70,
             decoration: BoxDecoration(
-              color: Color(0xFF14b8a6),
+              color: const Color(0xFF14b8a6),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
                   color: AppTheme().primaryColor.withOpacity(0.5),
                   blurRadius: 15,
                   spreadRadius: 2,
-                  offset: Offset(0, 5),
+                  offset: const Offset(0, 5),
                 ),
               ],
             ),
-            child: Icon(
+            child: const Icon(
               Icons.shopping_cart_outlined,
               color: Colors.white,
               size: 32,
@@ -180,14 +195,14 @@ class MainLayout extends StatelessWidget {
             right: 0,
             top: 0,
             child: Container(
-              padding: EdgeInsets.all(6),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: Colors.red,
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
               ),
-              constraints: BoxConstraints(minWidth: 24, minHeight: 24),
-              child: Center(
+              constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+              child: const Center(
                 child: Text(
                   '3',
                   style: TextStyle(
