@@ -192,7 +192,7 @@ class SettingsScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'John Doe',
+                  'Abdul Salaam Danish',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -201,7 +201,7 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 const Text(
-                  'john.doe@example.com',
+                  'asdanish123@gmail.com',
                   style: TextStyle(
                     fontSize: 14,
                     color: Color(0xFF718096),

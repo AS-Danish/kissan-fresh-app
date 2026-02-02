@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import '../../controllers/product_search_controller.dart';
-import '../../model/product_card_model.dart';
 import '../widgets/product_card_widget.dart';
 
 class SearchScreen extends StatelessWidget {
@@ -18,10 +17,6 @@ class SearchScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFFF5FFFE),
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF0d9488)),
-          onPressed: () => Get.back(),
-        ),
         title: Text(
           'Search Products',
           style: GoogleFonts.montserrat(
