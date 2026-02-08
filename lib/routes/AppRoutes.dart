@@ -7,6 +7,7 @@ import 'package:kissanfresh/bindings/search_binding.dart';
 import 'package:kissanfresh/views/layout/main_layout.dart';
 import 'package:kissanfresh/views/screens/cart_screen.dart';
 import 'package:kissanfresh/views/screens/improved_home_screen.dart';
+import 'package:kissanfresh/views/screens/login_screen.dart';
 import 'package:kissanfresh/views/screens/my_orders_screen.dart';
 import 'package:kissanfresh/views/screens/product_details_screen.dart';
 import 'package:kissanfresh/views/screens/search_screen.dart';
@@ -21,12 +22,10 @@ abstract class AppRoutes {
   static const myOrdersRoute = '/my-orders-page';
   static const settingsRoute = '/settings';
   static const productDetailsRoute = '/product-details';
+  static const loginScreen = '/login-screen';
 
   static final pages = [
-    GetPage(
-      name: mainLayout,
-      page: () => MainLayout(),
-    ),
+    GetPage(name: mainLayout, page: () => MainLayout()),
     GetPage(
       name: homepageRoute,
       page: () => ImprovedHomeScreen(),
@@ -37,20 +36,13 @@ abstract class AppRoutes {
       page: () => SearchScreen(),
       binding: SearchBinding(),
     ),
-    GetPage(
-      name: cartRoute,
-      page: () => CartScreen(),
-      binding: CartBinding(),
-    ),
+    GetPage(name: cartRoute, page: () => CartScreen(), binding: CartBinding()),
     GetPage(
       name: myOrdersRoute,
       page: () => MyOrdersScreen(),
       binding: MyOrdersBinding(),
     ),
-    GetPage(
-      name: settingsRoute,
-      page: () => SettingsScreen(),
-    ),
+    GetPage(name: settingsRoute, page: () => SettingsScreen()),
     GetPage(
       name: productDetailsRoute,
       page: () {
@@ -59,5 +51,6 @@ abstract class AppRoutes {
       },
       binding: ProductDetailsBinding(),
     ),
+    GetPage(name: loginScreen, page: () => LoginScreen()),
   ];
 }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../components/all_products_section.dart';
-import '../components/bestseller_section.dart';
-import '../components/categories_section.dart';
-import '../components/offer_section.dart';
-import '../components/welcome_section.dart';
+import '../widgets/all_products_section.dart';
+import '../widgets/bestseller_section.dart';
+import '../widgets/categories_section.dart';
+import '../widgets/offer_section.dart';
+import '../widgets/welcome_section.dart';
 import '../widgets/home_header.dart';
 
 class ImprovedHomeScreen extends StatelessWidget {
