@@ -3,6 +3,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/homepage_controller.dart';
+import '../../routes/AppRoutes.dart';
+import '../screens/search_screen.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
@@ -129,7 +131,8 @@ class HomeHeader extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 24),
-            Container(
+
+              Container(
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
@@ -141,37 +144,45 @@ class HomeHeader extends StatelessWidget {
                   ),
                 ],
               ),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search "fresh organic avocados"',
-                  hintStyle: GoogleFonts.montserrat(
-                    fontSize: 14,
-                    color: const Color(0xFF8E9AA0),
-                    fontWeight: FontWeight.w500,
-                  ),
-                  border: InputBorder.none,
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 16,
-                    horizontal: 16,
-                  ),
-                  prefixIcon: const Padding(
-                    padding: EdgeInsets.only(left: 4),
-                    child: Icon(
-                      Icons.search,
-                      size: 24,
-                      color: Color(0xFF11968a),
+              child: GestureDetector(
+                onTap: () {
+                   Get.toNamed(AppRoutes.searchRoute);
+                },
+                behavior: HitTestBehavior.opaque,
+                child: IgnorePointer(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search "fresh organic avocados"',
+                      hintStyle: GoogleFonts.montserrat(
+                        fontSize: 14,
+                        color: const Color(0xFF8E9AA0),
+                        fontWeight: FontWeight.w500,
+                      ),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 16,
+                      ),
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.only(left: 4),
+                        child: Icon(
+                          Icons.search,
+                          size: 24,
+                          color: Color(0xFF11968a),
+                        ),
+                      ),
+                      suffixIcon: const Padding(
+                        padding: EdgeInsets.only(right: 4),
+                        child: Icon(Icons.mic, size: 22, color: Color(0xFF9AA7AC)),
+                      ),
+                    ),
+                    style: GoogleFonts.montserrat(
+                      fontSize: 14,
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  suffixIcon: const Padding(
-                    padding: EdgeInsets.only(right: 4),
-                    child: Icon(Icons.mic, size: 22, color: Color(0xFF9AA7AC)),
-                  ),
-                ),
-                style: GoogleFonts.montserrat(
-                  fontSize: 14,
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),

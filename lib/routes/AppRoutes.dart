@@ -12,11 +12,13 @@ import 'package:kissanfresh/views/screens/my_orders_screen.dart';
 import 'package:kissanfresh/views/screens/product_details_screen.dart';
 import 'package:kissanfresh/views/screens/search_screen.dart';
 import 'package:kissanfresh/views/screens/settings_screen.dart';
+import 'package:kissanfresh/views/screens/wishlist_screen.dart';
 
 abstract class AppRoutes {
   static const auth = '/';
   static const mainLayout = '/main-layout';
   static const homepageRoute = '/home';
+  static const wishlistRoute = '/wishlist';
   static const searchRoute = '/search-product';
   static const cartRoute = '/my-cart';
   static const myOrdersRoute = '/my-orders-page';
@@ -30,6 +32,10 @@ abstract class AppRoutes {
       name: homepageRoute,
       page: () => ImprovedHomeScreen(),
       binding: HomepageBinding(),
+    ),
+    GetPage(
+      name: wishlistRoute,
+      page: () => const WishlistScreen(),
     ),
     GetPage(
       name: searchRoute,

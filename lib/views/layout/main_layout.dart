@@ -14,7 +14,7 @@ class MainLayout extends StatelessWidget {
     // Route names for each tab
     final List<String> routes = [
       AppRoutes.homepageRoute,
-      AppRoutes.searchRoute,
+      AppRoutes.wishlistRoute,
       AppRoutes.cartRoute,
       AppRoutes.myOrdersRoute,
       AppRoutes.settingsRoute,
@@ -59,8 +59,8 @@ class MainLayout extends StatelessWidget {
                         barController: barController,
                       ),
                       _buildNavItem(
-                        icon: Icons.search,
-                        label: "Search",
+                        icon: Icons.favorite_border,
+                        label: "Wishlist",
                         index: 1,
                         barController: barController,
                       ),

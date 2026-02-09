@@ -48,6 +48,7 @@ class SearchScreen extends StatelessWidget {
                 ),
                 child: TextField(
                   controller: searchTextController,
+                  autofocus: true,
                   onChanged: (value) {
                     controller.searchQuery.value = value;
                   },

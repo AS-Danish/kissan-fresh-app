@@ -15,7 +15,10 @@ class ProductDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Initialize controller and product
-    final controller = Get.put(ProductDetailsController());
+    final controller = Get.put(
+      ProductDetailsController(),
+      tag: product.id ?? product.title,
+    );
     controller.initializeProduct(product);
 
     return Scaffold(

@@ -38,44 +38,86 @@ class ProductCardWidget extends StatelessWidget {
             // Product Image
             Expanded(
               flex: 3,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
+              child: Stack(
+                children: [
+                  ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                  child: ColorFiltered(
+                    colorFilter: product.inStock
+                        ? const ColorFilter.mode(
+                            Colors.transparent, BlendMode.multiply)
+                        : const ColorFilter.mode(
+                            Colors.grey, BlendMode.saturation),
+                    child: _isNetworkImage(product.image)
+                        ? Image.network(
+                            product.image,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Container(
+                                color: Colors.grey.shade50,
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes !=
+                                            null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                    color: const Color(0xFF0d9488),
+                                    strokeWidth: 2.5,
+                                  ),
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return _buildErrorPlaceholder();
+                            },
+                          )
+                        : Image.asset(
+                            product.image,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            errorBuilder: (context, error, stackTrace) {
+                              return _buildErrorPlaceholder();
+                            },
+                          ),
+                  ),
                 ),
-                child: _isNetworkImage(product.image)
-                    ? Image.network(
-                  product.image,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      color: Colors.grey.shade50,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                              : null,
-                          color: const Color(0xFF0d9488),
-                          strokeWidth: 2.5,
+                 if (!product.inStock)
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.3),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(16),
+                            topRight: Radius.circular(16),
+                          ),
+                        ),
+                        child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.9),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(color: Colors.red.shade200),
+                            ),
+                            child: Text(
+                              "Not in Stock",
+                              style: GoogleFonts.montserrat(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return _buildErrorPlaceholder();
-                  },
-                )
-                    : Image.asset(
-                  product.image,
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  errorBuilder: (context, error, stackTrace) {
-                    return _buildErrorPlaceholder();
-                  },
-                ),
+                    ),
+                ],
               ),
             ),
 
@@ -92,7 +134,7 @@ class ProductCardWidget extends StatelessWidget {
                     style: GoogleFonts.montserrat(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: Colors.black87,
+                      color: product.inStock ? Colors.black87 : Colors.grey,
                       letterSpacing: 0.2,
                       height: 1.2,
                     ),
@@ -132,7 +174,7 @@ class ProductCardWidget extends StatelessWidget {
                               style: GoogleFonts.montserrat(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w800,
-                                color: const Color(0xFF0d9488),
+                                color: product.inStock ? const Color(0xFF0d9488) : Colors.grey,
                                 letterSpacing: 0.3,
                                 height: 1.1,
                               ),
@@ -155,30 +197,30 @@ class ProductCardWidget extends StatelessWidget {
 
                       // Add to Cart Button
                       GestureDetector(
-                        onTap: product.onAddToCart,
+                        onTap: product.inStock ? product.onAddToCart : null,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF0d9488),
+                            color: product.inStock ? const Color(0xFF0d9488) : Colors.grey.shade300,
                             borderRadius: BorderRadius.circular(10),
-                            boxShadow: [
+                            boxShadow: product.inStock ? [
                               BoxShadow(
                                 color: const Color(0xFF0d9488).withOpacity(0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 3),
                               ),
-                            ],
+                            ] : [],
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.shopping_cart_outlined,
                                 size: 14,
-                                color: Colors.white,
+                                color: product.inStock ? Colors.white : Colors.grey.shade500,
                               ),
                               const SizedBox(width: 4),
                               Text(
@@ -186,7 +228,7 @@ class ProductCardWidget extends StatelessWidget {
                                 style: GoogleFonts.montserrat(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
-                                  color: Colors.white,
+                                  color: product.inStock ? Colors.white : Colors.grey.shade500,
                                   letterSpacing: 0.3,
                                 ),
                               ),

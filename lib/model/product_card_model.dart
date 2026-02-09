@@ -11,6 +11,8 @@ class ProductCardModel {
   final VoidCallback onTap;
   final VoidCallback onAddToCart;
 
+  final bool inStock; // Stock status
+
   ProductCardModel({
     this.id,
     required this.image,
@@ -19,6 +21,7 @@ class ProductCardModel {
     required this.price,
     required this.unit,
     this.category,
+    this.inStock = true, // Default to true
     required this.onTap,
     required this.onAddToCart,
   });

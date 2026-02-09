@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../model/product_card_model.dart';
 import 'cart_controller.dart';
+import 'wishlist_controller.dart';
 
 class ProductDetailsController extends GetxController {
   // Observable quantity
@@ -10,12 +11,19 @@ class ProductDetailsController extends GetxController {
   // Observable for favorite status
   var isFavorite = false.obs;
 
+
   late ProductCardModel product;
   late CartController cartController;
+  late WishlistController wishlistController;
 
   // Initialize with product passed as parameter
   void initializeProduct(ProductCardModel productData) {
     product = productData;
+    // Check if product is already in wishlist
+    if (Get.isRegistered<WishlistController>()) {
+      wishlistController = Get.find<WishlistController>();
+      isFavorite.value = wishlistController.isInWishlist(product);
+    }
   }
 
   @override
@@ -26,8 +34,17 @@ class ProductDetailsController extends GetxController {
     try {
       cartController = Get.find<CartController>();
     } catch (e) {
-      // If CartController is not found, you may need to initialize it
       debugPrint('CartController not found: $e');
+    }
+    
+    // Get WishlistController instance
+    try {
+       if (!Get.isRegistered<WishlistController>()) {
+          Get.put(WishlistController());
+       }
+      wishlistController = Get.find<WishlistController>();
+    } catch (e) {
+      debugPrint('WishlistController not found: $e');
     }
   }
 
@@ -45,9 +62,8 @@ class ProductDetailsController extends GetxController {
 
   /// Toggle favorite status
   void toggleFavorite() {
-    isFavorite.value = !isFavorite.value;
-    // Save to favorites
-    // saveFavoriteStatus(product.id, isFavorite.value);
+    wishlistController.toggleWishlist(product);
+    isFavorite.value = wishlistController.isInWishlist(product);
 
     Get.snackbar(
       isFavorite.value ? 'Added to Favorites' : 'Removed from Favorites',
@@ -55,7 +71,7 @@ class ProductDetailsController extends GetxController {
           ? '${product.title} added to your favorites'
           : '${product.title} removed from favorites',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFF10B981),
+      backgroundColor: isFavorite.value ? const Color(0xFF10B981) : Colors.grey,
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
       margin: const EdgeInsets.all(16),

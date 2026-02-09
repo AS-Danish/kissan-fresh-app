@@ -5,6 +5,7 @@ import '../model/product_card_model.dart';
 import '../routes/AppRoutes.dart';
 import '../views/screens/product_details_screen.dart';
 import 'products_controller.dart';
+import 'cart_controller.dart';
 
 class ProductSearchController extends GetxController {
   final ProductsController productsController = Get.find<ProductsController>();
@@ -74,7 +75,36 @@ class ProductSearchController extends GetxController {
           product.price,
           product.unit,
         ),
-        onAddToCart: () {},
+        onAddToCart: () {
+          try {
+            Get.find<CartController>().addToCart(
+              ProductCardModel(
+                id: product.id,
+                image: product.image,
+                title: product.title,
+                description: product.description,
+                price: product.price,
+                unit: product.unit,
+                category: product.category,
+                onTap: () {},
+                onAddToCart: () {},
+              ),
+              1, // quantity
+            );
+             Get.snackbar(
+                'Added to Cart',
+                '${product.title} added to cart',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: const Color(0xFF10B981),
+                colorText: Colors.white,
+                duration: const Duration(seconds: 2),
+                margin: const EdgeInsets.all(16),
+                borderRadius: 12,
+              );
+          } catch (e) {
+            debugPrint("CartController not found: $e");
+          }
+        },
       );
     }).toList();
   }
@@ -123,8 +153,37 @@ class ProductSearchController extends GetxController {
         description: description,
         price: price,
         unit: unit,
-        onTap: () {},
-        onAddToCart: () {},
+        onTap: () {}, // Recursive navigation not needed here as we are already navigating
+        onAddToCart: () {
+           // We need to find the cart controller dynamically as this closure might be called later
+           try {
+             final cartController = Get.find<CartController>();
+              cartController.addToCart(
+                ProductCardModel(
+                  image: image,
+                  title: title,
+                  description: description,
+                  price: price,
+                  unit: unit,
+                  onTap: () {},
+                  onAddToCart: () {},
+                ),
+                1
+              );
+              Get.snackbar(
+                'Added to Cart',
+                '$title added to cart',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: const Color(0xFF10B981),
+                colorText: Colors.white,
+                duration: const Duration(seconds: 2),
+                margin: const EdgeInsets.all(16),
+                borderRadius: 12,
+              );
+           } catch (e) {
+             debugPrint("CartController not found: $e");
+           }
+        },
       ),
     );
   }
