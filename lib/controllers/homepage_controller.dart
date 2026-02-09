@@ -9,9 +9,14 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 class HomepageController extends GetxController {
   RxInt selectedIndex = 0.obs;
   RxString currentTab = 'Grocery'.obs; // 'Grocery' or 'HomeFood'
+  RxString currentAddress = 'Azam Colony, Roshan Gate'.obs;
 
   void switchTab(String tab) {
     currentTab.value = tab;
+  }
+
+  void updateAddress(String newAddress) {
+    currentAddress.value = newAddress;
   }
 
   final categories = [

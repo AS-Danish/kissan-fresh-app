@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import '../../controllers/product_search_controller.dart';
 import '../widgets/product_card_widget.dart';
+import '../widgets/selectable_category_card.dart';
+import '../widgets/empty_state_widget.dart';
 
 class SearchScreen extends StatelessWidget {
   SearchScreen({super.key});
@@ -123,10 +125,11 @@ class SearchScreen extends StatelessWidget {
                     separatorBuilder: (_, __) => const SizedBox(width: 12),
                     itemBuilder: (context, index) {
                       final category = controller.categories[index];
-                      return Obx(() => _buildCategoryCard(
-                        category: category,
-                        isSelected: controller.selectedCategory.value ==
-                            category['name'],
+                      return Obx(() => SelectableCategoryCard(
+                        icon: category['icon'] as IconData,
+                        label: category['name'] as String,
+                        isSelected: controller.selectedCategory.value == category['name'],
+                        iconColor: category['color'] as Color,
                         onTap: () {
                           if (controller.selectedCategory.value ==
                               category['name']) {
@@ -151,51 +154,17 @@ class SearchScreen extends StatelessWidget {
 
               if (controller.searchQuery.value.isNotEmpty &&
                   products.isEmpty) {
-                return _buildEmptyState();
+                return const EmptyStateWidget(
+                  title: 'No products found',
+                  message: 'Try searching with different keywords or browse categories',
+                );
               }
 
               if (products.isEmpty) {
-                return SizedBox(
-                  height: MediaQuery.of(context).size.height - 300,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFF0FDFA),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.search_off,
-                            size: 60,
-                            color: Color(0xFF0d9488),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          'Start searching',
-                          style: GoogleFonts.montserrat(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black87,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Search for your favorite products',
-                          style: GoogleFonts.montserrat(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                return const EmptyStateWidget(
+                  title: 'Start searching',
+                  message: 'Search for your favorite products',
+                  icon: Icons.search_off,
                 );
               }
 
@@ -255,127 +224,6 @@ class SearchScreen extends StatelessWidget {
                 ],
               );
             }),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCategoryCard({
-    required Map<String, dynamic> category,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 100,
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF0d9488), Color(0xFF14b8a6)],
-          )
-              : null,
-          color: isSelected ? null : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected
-                ? Colors.transparent
-                : Colors.grey.shade200,
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: isSelected
-                  ? const Color(0xFF0d9488).withOpacity(0.3)
-                  : Colors.black.withOpacity(0.05),
-              blurRadius: isSelected ? 12 : 8,
-              offset: Offset(0, isSelected ? 4 : 2),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? Colors.white.withOpacity(0.2)
-                    : (category['color'] as Color).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                category['icon'] as IconData,
-                size: 28,
-                color: isSelected ? Colors.white : category['color'] as Color,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              category['name'] as String,
-              style: GoogleFonts.montserrat(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: isSelected ? Colors.white : Colors.black87,
-                letterSpacing: 0.2,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return SizedBox(
-      height: 400,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF0FDFA),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.search_off,
-                size: 60,
-                color: Color(0xFF0d9488),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'No products found',
-              style: GoogleFonts.montserrat(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: Colors.black87,
-                letterSpacing: 0.3,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: Text(
-                'Try searching with different keywords or browse categories',
-                style: GoogleFonts.montserrat(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey.shade600,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
           ],
         ),
       ),
