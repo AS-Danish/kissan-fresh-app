@@ -115,7 +115,9 @@ class HomeHeader extends StatelessWidget {
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Get.toNamed(AppRoutes.profileRoute);
+                    },
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.white.withOpacity(0.15),
                       shape: const CircleBorder(),

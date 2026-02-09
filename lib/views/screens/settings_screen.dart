@@ -226,7 +226,9 @@ class SettingsScreen extends StatelessWidget {
               Icons.edit_outlined,
               color: Color(0xFF0d9488),
             ),
-            onPressed: () {},
+            onPressed: () {
+              Get.toNamed(AppRoutes.profileRoute);
+            },
           ),
         ],
       ),
