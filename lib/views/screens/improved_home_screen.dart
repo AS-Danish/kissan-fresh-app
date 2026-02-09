@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../../controllers/homepage_controller.dart';
 import '../widgets/all_products_section.dart';
 import '../widgets/bestseller_section.dart';
 import '../widgets/categories_section.dart';
+import '../widgets/home_food_section.dart';
 import '../widgets/offer_section.dart';
 import '../widgets/welcome_section.dart';
 import '../widgets/home_header.dart';
@@ -11,24 +14,40 @@ class ImprovedHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<HomepageController>();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5FFFE),
       body: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            HomeHeader(),
+            const HomeHeader(),
             const SizedBox(height: 24),
-            CategoriesSection(),
-            const SizedBox(height: 32),
-            const WelcomeSection(),
-            const SizedBox(height: 24),
-            const OffersSection(),
-            const SizedBox(height: 32),
-            BestsellersSection(),
-            const SizedBox(height: 32),
-            AllProductsSection(),
-            const SizedBox(height: 32),
+            Obx(() {
+              if (controller.currentTab.value == 'Grocery') {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CategoriesSection(
+                      categories: controller.categories,
+                      selectedIndex: controller.selectedIndex.value,
+                      onCategorySelected: controller.selectCategory,
+                    ),
+                    const SizedBox(height: 32),
+                    const WelcomeSection(),
+                    const SizedBox(height: 24),
+                    const OffersSection(),
+                    const SizedBox(height: 32),
+                    BestsellersSection(),
+                    const SizedBox(height: 32),
+                    AllProductsSection(),
+                    const SizedBox(height: 32),
+                  ],
+                );
+              } else {
+                return const HomeFoodSection();
+              }
+            }),
           ],
         ),
       ),

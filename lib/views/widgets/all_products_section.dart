@@ -91,23 +91,23 @@ class AllProductsSection extends StatelessWidget {
         // Products Grid - 2 columns
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: GridView.builder(
-            padding: EdgeInsets.zero,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 0.68, // Adjusted for better proportions
-            ),
-            itemCount: controller.products.length > 6
-                ? 6
-                : controller.products.length,
-            itemBuilder: (context, index) {
-              return ProductCardWidget(product: controller.products[index]);
-            },
-          ),
+          child: Obx(() {
+            return GridView.builder(
+              padding: EdgeInsets.zero,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 0.68, // Adjusted for better proportions
+              ),
+              itemCount: controller.products.length,
+              itemBuilder: (context, index) {
+                return ProductCardWidget(product: controller.products[index]);
+              },
+            );
+          }),
         ),
       ],
     );

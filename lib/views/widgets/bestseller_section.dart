@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/best_seller_controller.dart';
+import '../../controllers/homepage_controller.dart';
 import '../../model/bestseller_card_model.dart';
 
 class BestsellersSection extends StatelessWidget {
@@ -24,15 +25,17 @@ class BestsellersSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                "Bestsellers",
-                style: GoogleFonts.montserrat(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.black87,
-                  letterSpacing: 0.3,
-                ),
-              ),
+              Obx(() => Text(
+                    Get.find<HomepageController>().currentTab.value == 'Grocery'
+                        ? "Bestsellers"
+                        : "Popular Dishes",
+                    style: GoogleFonts.montserrat(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.black87,
+                      letterSpacing: 0.3,
+                    ),
+                  )),
               TextButton(
                 onPressed: () {
                   debugPrint('See all bestsellers');
@@ -64,23 +67,23 @@ class BestsellersSection extends StatelessWidget {
         // Bestseller Cards - GridView (2x2)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: GridView.builder(
-            padding: EdgeInsets.zero,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 0.85,
-            ),
-            itemCount: controller.bestsellers.length > 4
-                ? 4
-                : controller.bestsellers.length,
-            itemBuilder: (context, index) {
-              return _buildBestsellerCard(controller.bestsellers[index]);
-            },
-          ),
+          child: Obx(() {
+            return GridView.builder(
+              padding: EdgeInsets.zero,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 0.85,
+              ),
+              itemCount: controller.bestsellers.length,
+              itemBuilder: (context, index) {
+                return _buildBestsellerCard(controller.bestsellers[index]);
+              },
+            );
+          }),
         ),
       ],
     );

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../controllers/homepage_controller.dart';
 
 class OffersSection extends StatelessWidget {
   const OffersSection({super.key});
@@ -8,45 +10,55 @@ class OffersSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: 120,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: 3,
-        separatorBuilder: (_, __) => const SizedBox(width: 16),
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return _buildOfferCard(
-              icon: Icons.percent,
-              iconBgColor: const Color(0xFFD5F5F2),
-              iconColor: const Color(0xFF11968a),
-              badge: 'EXCLUSIVE DEAL',
-              badgeColor: const Color(0xFF11968a),
-              title: 'FLAT ₹100 OFF',
-              subtitle: 'On orders above ₹499',
-            );
-          } else if (index == 1) {
-            return _buildOfferCard(
-              icon: Icons.local_shipping_outlined,
-              iconBgColor: const Color(0xFFFFF4E6),
-              iconColor: const Color(0xFFFF9800),
-              badge: 'FREE DELIVERY',
-              badgeColor: const Color(0xFFFF9800),
-              title: 'FREE Shipping',
-              subtitle: 'On orders above ₹299',
-            );
-          } else {
-            return _buildOfferCard(
-              icon: Icons.card_giftcard,
-              iconBgColor: const Color(0xFFFCE4EC),
-              iconColor: const Color(0xFFE91E63),
-              badge: 'NEW USER',
-              badgeColor: const Color(0xFFE91E63),
-              title: 'Get FLAT ₹50 OFF',
-              subtitle: 'On first order above ₹199',
-            );
-          }
-        },
-      ),
+      child: Obx(() {
+        final isGrocery =
+            Get.find<HomepageController>().currentTab.value == 'Grocery';
+        return ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          itemCount: 3,
+          separatorBuilder: (_, __) => const SizedBox(width: 16),
+          itemBuilder: (context, index) {
+            if (index == 0) {
+              return _buildOfferCard(
+                icon: Icons.percent,
+                iconBgColor: const Color(0xFFD5F5F2),
+                iconColor: const Color(0xFF11968a),
+                badge: 'EXCLUSIVE DEAL',
+                badgeColor: const Color(0xFF11968a),
+                title: isGrocery ? 'FLAT ₹100 OFF' : 'FLAT ₹50 OFF',
+                subtitle: isGrocery
+                    ? 'On orders above ₹499'
+                    : 'On orders above ₹299',
+              );
+            } else if (index == 1) {
+              return _buildOfferCard(
+                icon: Icons.local_shipping_outlined,
+                iconBgColor: const Color(0xFFFFF4E6),
+                iconColor: const Color(0xFFFF9800),
+                badge: 'FREE DELIVERY',
+                badgeColor: const Color(0xFFFF9800),
+                title: 'FREE Shipping',
+                subtitle: isGrocery
+                    ? 'On orders above ₹299'
+                    : 'On orders above ₹199',
+              );
+            } else {
+              return _buildOfferCard(
+                icon: Icons.card_giftcard,
+                iconBgColor: const Color(0xFFFCE4EC),
+                iconColor: const Color(0xFFE91E63),
+                badge: 'NEW USER',
+                badgeColor: const Color(0xFFE91E63),
+                title: isGrocery ? 'Get FLAT ₹50 OFF' : 'FREE DESSERT',
+                subtitle: isGrocery
+                    ? 'On first order above ₹199'
+                    : 'On first order above ₹249',
+              );
+            }
+          },
+        );
+      }),
     );
   }
 

@@ -6,36 +6,36 @@ import 'package:kissanfresh/controllers/homepage_controller.dart';
 import '../../model/category_item_model.dart';
 
 class CategoriesSection extends StatelessWidget {
+  final List<CategoryItemModel> categories;
+  final int selectedIndex;
+  final Function(int) onCategorySelected;
 
   const CategoriesSection({
     super.key,
+    required this.categories,
+    required this.selectedIndex,
+    required this.onCategorySelected,
   });
-
-  static HomepageController controller = Get.find<HomepageController>();
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 110,
-      child: Obx(() {
-        final selected = controller.selectedIndex.value;
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: categories.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 16),
+        itemBuilder: (context, index) {
+          final item = categories[index];
+          final bool isSelected = selectedIndex == index;
 
-        return ListView.separated(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          itemCount: controller.categories.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 16),
-          itemBuilder: (context, index) {
-            final item = controller.categories[index];
-            final bool isSelected = selected == index;
-
-            return GestureDetector(
-              onTap: () => controller.selectCategory(index),
-              child: _buildCategoryCard(item, isSelected),
-            );
-          },
-        );
-      }),
+          return GestureDetector(
+            onTap: () => onCategorySelected(index),
+            child: _buildCategoryCard(item, isSelected),
+          );
+        },
+      ),
     );
   }
 
