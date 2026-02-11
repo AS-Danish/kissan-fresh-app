@@ -3,46 +3,28 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:kissanfresh/controllers/auth_controller.dart';
 
-class LoginController extends GetxController {
-  final TextEditingController phoneController = TextEditingController();
-  final RxBool isButtonEnabled = false.obs;
-
-  @override
-  void onInit() {
-    super.onInit();
-    phoneController.addListener(_updateButtonState);
-  }
-
-  void _updateButtonState() {
-    isButtonEnabled.value = phoneController.text.length == 10;
-  }
-
-  void sendOTP() {
-    if (isButtonEnabled.value) {
-      debugPrint('Sending OTP to: +91${phoneController.text}');
-      // Add your OTP sending logic here
-    }
-  }
-
-  void navigateToSignUp() {
-    debugPrint('Sign up tapped');
-    // Add your navigation logic here
-  }
-
-  @override
-  void onClose() {
-    phoneController.dispose();
-    super.onClose();
-  }
-}
+// LoginController removed in favor of AuthController
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final LoginController controller = Get.put(LoginController());
+    final AuthController controller = Get.put(AuthController());
+    // Ensure we are listening to text changes to enable/disable button
+    // This part can be improved by adding a reactive variable in AuthController 
+    // or just using a ValueNotifier or Obx. 
+    // For now, let's keep it simple and add a listener here or in the controller.
+    // Ideally, AuthController should handle isButtonEnabled logic.
+    
+    // We will use a local RxBool for button state or rely on controller if we move logic there.
+    // Let's add a listener to the controller's text controller.
+    final RxBool isButtonEnabled = false.obs;
+    controller.phoneController.addListener(() {
+      isButtonEnabled.value = controller.phoneController.text.length == 10;
+    });
 
     return Scaffold(
       backgroundColor: const Color(0xFF0d9488),
@@ -58,7 +40,7 @@ class LoginScreen extends StatelessWidget {
             // Bottom Section with Login Form
             Expanded(
               flex: 7,
-              child: _buildLoginForm(controller),
+              child: _buildLoginForm(controller, isButtonEnabled),
             ),
           ],
         ),
@@ -163,7 +145,7 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLoginForm(LoginController controller) {
+  Widget _buildLoginForm(AuthController controller, RxBool isButtonEnabled) {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -301,8 +283,8 @@ class LoginScreen extends StatelessWidget {
                   width: double.infinity,
                   height: 54,
                   child: ElevatedButton(
-                    onPressed: controller.isButtonEnabled.value
-                        ? controller.sendOTP
+                    onPressed: isButtonEnabled.value
+                        ? controller.sendOtp
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF0d9488),
@@ -310,8 +292,8 @@ class LoginScreen extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      elevation: controller.isButtonEnabled.value ? 4 : 0,
-                      shadowColor: controller.isButtonEnabled.value
+                      elevation: isButtonEnabled.value ? 4 : 0,
+                      shadowColor: isButtonEnabled.value
                           ? const Color(0xFF0d9488).withOpacity(0.4)
                           : Colors.transparent,
                     ),
@@ -323,7 +305,7 @@ class LoginScreen extends StatelessWidget {
                           style: GoogleFonts.montserrat(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: controller.isButtonEnabled.value
+                            color: isButtonEnabled.value
                                 ? Colors.white
                                 : Colors.grey.shade500,
                             letterSpacing: 0.5,
@@ -332,7 +314,7 @@ class LoginScreen extends StatelessWidget {
                         const SizedBox(width: 8),
                         Icon(
                           Icons.arrow_forward,
-                          color: controller.isButtonEnabled.value
+                          color: isButtonEnabled.value
                               ? Colors.white
                               : Colors.grey.shade500,
                           size: 20,
@@ -362,7 +344,7 @@ class LoginScreen extends StatelessWidget {
                         ),
                       ),
                       GestureDetector(
-                        onTap: controller.navigateToSignUp,
+                        onTap: () {}, // Removed navigation logic for now or add it to controller
                         child: Text(
                           'Sign Up',
                           style: GoogleFonts.montserrat(

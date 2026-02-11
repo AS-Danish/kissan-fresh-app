@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:kissanfresh/controllers/auth_controller.dart';
+import 'package:kissanfresh/routes/AppRoutes.dart';
+import 'package:kissanfresh/controllers/address_controller.dart';
 import '../../controllers/cart_controller.dart';
 
 class CartScreen extends StatelessWidget {
   CartScreen({super.key});
 
   final CartController controller = Get.find<CartController>();
+  final AddressController addressController = Get.put(AddressController());
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5FFFE),
       appBar: AppBar(
@@ -129,62 +134,87 @@ class CartScreen extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF0d9488), Color(0xFF14b8a6)],
-        ),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0d9488).withOpacity(0.15),
-            blurRadius: 8,
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
             offset: const Offset(0, 2),
           ),
         ],
+        border: Border.all(color: Colors.grey.shade100),
       ),
       child: Row(
         children: [
           Container(
-            width: 36,
-            height: 36,
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: const Color(0xFF0d9488).withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(
-              Icons.local_shipping_outlined,
-              color: Colors.white,
-              size: 18,
+              Icons.location_on_outlined,
+              color: Color(0xFF0d9488),
+              size: 20,
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "Delivering in ",
+                Row(
+                  children: [
+                    Text(
+                      "Delivering in ",
+                      style: GoogleFonts.montserrat(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    Text(
+                      "12 mins",
+                      style: GoogleFonts.montserrat(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF0d9488),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Obx(() => Text(
+                  addressController.currentAddress.value,
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.black87,
                   ),
-                ),
-                Text(
-                  "12 mins",
-                  style: GoogleFonts.montserrat(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
-                ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                )),
               ],
             ),
           ),
-          Icon(
-            Icons.edit_outlined,
-            color: Colors.white.withOpacity(0.7),
-            size: 16,
+          InkWell(
+            onTap: () async {
+              // Navigate to address selection
+              final result = await Get.toNamed(AppRoutes.addressSelectionRoute);
+              if (result != null) {
+                // Address updated automatically via controller but we can handle result if needed
+              }
+            },
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              child: const Icon(
+                Icons.edit_outlined,
+                color: Color(0xFF0d9488),
+                size: 20,
+              ),
+            ),
           ),
         ],
       ),
@@ -570,16 +600,31 @@ class CartScreen extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            Get.snackbar(
-              'Success',
-              'Proceeding to checkout',
-              snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: const Color(0xFF10B981),
-              colorText: Colors.white,
-              duration: const Duration(seconds: 2),
-              margin: const EdgeInsets.all(16),
-              borderRadius: 12,
-            );
+            // Check if user is logged in
+            if (AuthController.instance.firebaseUser.value == null) {
+              Get.toNamed(AppRoutes.loginScreen);
+              Get.snackbar(
+                'Login Required',
+                'Please login to proceed with checkout',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: Colors.orange,
+                colorText: Colors.white,
+                duration: const Duration(seconds: 2),
+                margin: const EdgeInsets.all(16),
+                borderRadius: 12,
+              );
+            } else {
+              Get.snackbar(
+                'Success',
+                'Proceeding to checkout',
+                snackPosition: SnackPosition.BOTTOM,
+                backgroundColor: const Color(0xFF10B981),
+                colorText: Colors.white,
+                duration: const Duration(seconds: 2),
+                margin: const EdgeInsets.all(16),
+                borderRadius: 12,
+              );
+            }
           },
           borderRadius: BorderRadius.circular(28),
           child: Padding(

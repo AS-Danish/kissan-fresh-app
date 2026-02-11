@@ -15,6 +15,7 @@ import 'package:kissanfresh/views/screens/settings_screen.dart';
 import 'package:kissanfresh/views/screens/wishlist_screen.dart';
 import 'package:kissanfresh/views/screens/profile_screen.dart';
 import 'package:kissanfresh/views/screens/address_selection_screen.dart';
+import 'package:kissanfresh/views/screens/otp_verification_screen.dart';
 
 abstract class AppRoutes {
   static const auth = '/';
@@ -29,6 +30,7 @@ abstract class AppRoutes {
   static const loginScreen = '/login-screen';
   static const profileRoute = '/profile';
   static const addressSelectionRoute = '/select-address';
+  static const otpVerificationRoute = '/otp-verification';
 
   static final pages = [
     GetPage(name: mainLayout, page: () => MainLayout()),
@@ -64,5 +66,6 @@ abstract class AppRoutes {
     GetPage(name: loginScreen, page: () => LoginScreen()),
     GetPage(name: profileRoute, page: () => const ProfileScreen()),
     GetPage(name: addressSelectionRoute, page: () => const AddressSelectionScreen()),
+    GetPage(name: otpVerificationRoute, page: () => OtpVerificationScreen()),
   ];
 }

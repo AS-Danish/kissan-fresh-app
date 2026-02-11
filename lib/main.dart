@@ -7,11 +7,14 @@ import 'package:kissanfresh/views/layout/main_layout.dart';
 
 import 'firebase_options.dart';
 
+import 'package:kissanfresh/controllers/auth_controller.dart';
+
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  Get.put(AuthController(), permanent: true);
   runApp(const MyApp());
 }
 

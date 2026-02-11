@@ -67,7 +67,14 @@ class AddressController extends GetxController {
       selectedLocation.value = latLng;
       
       // Move map to location
-      mapController.move(latLng, 15.0);
+      
+      // Move map to location if map is ready
+      try {
+        mapController.move(latLng, 15.0);
+      } catch (e) {
+        // Map controller not attached yet, which is fine
+        debugPrint("Map controller not ready: $e");
+      }
       
       // Get address for this location
       await getAddressFromLatLng(latLng);
@@ -104,7 +111,12 @@ class AddressController extends GetxController {
           currentAddress.value = displayName; // Use the address from search result directly
           
           // Move map
-          mapController.move(latLng, 15.0);
+          // Move map if ready
+          try {
+            mapController.move(latLng, 15.0);
+          } catch (e) {
+            debugPrint("Map controller not ready: $e");
+          }
         } else {
           Get.snackbar('Not Found', 'Address not found');
         }
