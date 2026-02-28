@@ -31,10 +31,22 @@ class AddressSelectionScreen extends StatelessWidget {
       ),
       body: Stack(
         children: [
-          // Modular Map Widget
+          // Google Map
           MapPickerWidget(controller: controller),
 
-          // Modular Search Bar
+          // Fixed center pin — stays still while map moves beneath it
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: 40), // offset so tip = center
+              child: Icon(
+                Icons.location_pin,
+                size: 52,
+                color: Color(0xFF0d9488),
+              ),
+            ),
+          ),
+
+          // Search Bar
           Positioned(
             top: 16,
             left: 16,
@@ -42,19 +54,20 @@ class AddressSelectionScreen extends StatelessWidget {
             child: LocationSearchBar(controller: controller),
           ),
 
-          // "My Location" FAB
+          // My Location FAB
           Positioned(
             right: 16,
-            bottom: 220, // Position above the bottom sheet
+            bottom: 220,
             child: FloatingActionButton(
               heroTag: 'my_location_btn',
               backgroundColor: Colors.white,
+              elevation: 4,
               onPressed: controller.getCurrentLocation,
               child: const Icon(Icons.my_location, color: Color(0xFF0d9488)),
             ),
           ),
 
-          // Modular Bottom Sheet
+          // Bottom Confirm Sheet
           Positioned(
             bottom: 0,
             left: 0,

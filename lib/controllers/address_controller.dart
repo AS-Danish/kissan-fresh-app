@@ -1,21 +1,28 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_map/flutter_map.dart';
 
 class AddressController extends GetxController {
   // Observables
-  var currentAddress = 'Select Location'.obs;
-  var selectedLocation = const LatLng(20.5937, 78.9629).obs; // Default to India center
+  var currentAddress = 'Move the map to select location'.obs;
+  var selectedLocation = const LatLng(20.5937, 78.9629).obs;
   var isLoading = false.obs;
   var isLocationEnabled = false.obs;
 
-  // Map Controller
-  final MapController mapController = MapController();
+  // Google Maps Controller
+  final Completer<GoogleMapController> mapCompleter = Completer();
+  GoogleMapController? _mapController;
+
   final TextEditingController searchController = TextEditingController();
+
+  // Replace with your actual API key
+  static const String _apiKey = 'AIzaSyAyPFAuYno1I1CnoofDehSOHAeD7g3Sb2c';
+
+  Timer? _geocodeDebounce;
 
   @override
   void onInit() {
@@ -23,17 +30,34 @@ class AddressController extends GetxController {
     _checkPermission();
   }
 
-  Future<void> _checkPermission() async {
-    bool serviceEnabled;
-    LocationPermission permission;
+  @override
+  void onClose() {
+    searchController.dispose();
+    _geocodeDebounce?.cancel();
+    _mapController?.dispose();
+    super.onClose();
+  }
 
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  void onMapCreated(GoogleMapController controller) {
+    _mapController = controller;
+    if (!mapCompleter.isCompleted) {
+      mapCompleter.complete(controller);
+    }
+  }
+
+  Future<void> _moveMap(LatLng latLng, {double zoom = 15.0}) async {
+    final controller = await mapCompleter.future;
+    controller.animateCamera(CameraUpdate.newLatLngZoom(latLng, zoom));
+  }
+
+  Future<void> _checkPermission() async {
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       Get.snackbar('Location Disabled', 'Please enable location services.');
       return;
     }
 
-    permission = await Geolocator.checkPermission();
+    LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
@@ -43,12 +67,19 @@ class AddressController extends GetxController {
     }
 
     if (permission == LocationPermission.deniedForever) {
-      Get.snackbar('Permission Denied', 'Location permissions are permanently denied.');
+      Get.snackbar(
+        'Permission Denied',
+        'Enable location in app settings.',
+        mainButton: TextButton(
+          onPressed: () => Geolocator.openAppSettings(),
+          child: const Text('Settings', style: TextStyle(color: Colors.white)),
+        ),
+      );
       return;
     }
 
     isLocationEnabled.value = true;
-    getCurrentLocation();
+    await getCurrentLocation();
   }
 
   Future<void> getCurrentLocation() async {
@@ -59,115 +90,114 @@ class AddressController extends GetxController {
 
     isLoading.value = true;
     try {
-      Position position = await Geolocator.getCurrentPosition(
+      final position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
 
       final latLng = LatLng(position.latitude, position.longitude);
       selectedLocation.value = latLng;
-      
-      // Move map to location
-      
-      // Move map to location if map is ready
-      try {
-        mapController.move(latLng, 15.0);
-      } catch (e) {
-        // Map controller not attached yet, which is fine
-        debugPrint("Map controller not ready: $e");
-      }
-      
-      // Get address for this location
-      await getAddressFromLatLng(latLng);
+      await _moveMap(latLng, zoom: 16.0);
+      await _reverseGeocode(latLng);
     } catch (e) {
-      debugPrint("Error getting location: $e");
+      debugPrint('Error getting location: $e');
       Get.snackbar('Error', 'Failed to get current location');
     } finally {
       isLoading.value = false;
     }
   }
 
-  Future<void> searchAddress(String query) async {
-    if (query.isEmpty) return;
+  // Called when user stops dragging the map
+  void onCameraIdle() {
+    _geocodeDebounce?.cancel();
+    _geocodeDebounce = Timer(const Duration(milliseconds: 500), () {
+      _reverseGeocode(selectedLocation.value);
+    });
+  }
 
+  // Called while user is dragging the map
+  void onCameraMove(CameraPosition position) {
+    selectedLocation.value = position.target;
+    currentAddress.value = 'Fetching address...';
+  }
+
+  Future<void> _reverseGeocode(LatLng point) async {
     isLoading.value = true;
-    // Using Nominatim OpenStreetMap API
     final url = Uri.parse(
-        'https://nominatim.openstreetmap.org/search?q=$query&format=json&limit=1');
+      'https://maps.googleapis.com/maps/api/geocode/json'
+          '?latlng=${point.latitude},${point.longitude}&key=$_apiKey',
+    );
 
     try {
-      final response = await http.get(url, headers: {
-        'User-Agent': 'KissanFreshApp/1.0', // Required by Nominatim
-      });
-
+      final response = await http.get(url);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        if (data is List && data.isNotEmpty) {
-          final lat = double.parse(data[0]['lat']);
-          final lon = double.parse(data[0]['lon']);
-          final displayName = data[0]['display_name'];
-
-          final latLng = LatLng(lat, lon);
-          selectedLocation.value = latLng;
-          currentAddress.value = displayName; // Use the address from search result directly
-          
-          // Move map
-          // Move map if ready
-          try {
-            mapController.move(latLng, 15.0);
-          } catch (e) {
-            debugPrint("Map controller not ready: $e");
-          }
+        if (data['status'] == 'OK' && data['results'].isNotEmpty) {
+          currentAddress.value = data['results'][0]['formatted_address'];
         } else {
-          Get.snackbar('Not Found', 'Address not found');
+          currentAddress.value = 'Address not found';
         }
       }
     } catch (e) {
-      debugPrint("Search Error: $e");
+      debugPrint('Reverse Geocoding Error: $e');
+      currentAddress.value = 'Unable to fetch address';
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> searchAddress(String query) async {
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) return;
+
+    isLoading.value = true;
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    final url = Uri.parse(
+      'https://maps.googleapis.com/maps/api/geocode/json'
+          '?address=${Uri.encodeComponent(trimmed)}&key=$_apiKey',
+    );
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'OK' && data['results'].isNotEmpty) {
+          final loc = data['results'][0]['geometry']['location'];
+          final latLng = LatLng(loc['lat'], loc['lng']);
+          final address = data['results'][0]['formatted_address'];
+
+          selectedLocation.value = latLng;
+          currentAddress.value = address;
+          await _moveMap(latLng);
+        } else {
+          Get.snackbar('Not Found', 'No results for "$trimmed"');
+        }
+      }
+    } catch (e) {
+      debugPrint('Search Error: $e');
       Get.snackbar('Error', 'Failed to search address');
     } finally {
       isLoading.value = false;
     }
   }
 
-  Future<void> getAddressFromLatLng(LatLng point) async {
-    // Reverse Geocoding via Nominatim
-    final url = Uri.parse(
-        'https://nominatim.openstreetmap.org/reverse?format=json&lat=${point.latitude}&lon=${point.longitude}&zoom=18&addressdetails=1');
-
-    try {
-      final response = await http.get(url, headers: {
-        'User-Agent': 'KissanFreshApp/1.0',
-      });
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['display_name'] != null) {
-          currentAddress.value = data['display_name'];
-        }
-      }
-    } catch (e) {
-      debugPrint("Reverse Geocoding Error: $e");
-    }
-  }
-
-  void onMapTap(TapPosition tapPosition, LatLng point) {
-    selectedLocation.value = point;
-    getAddressFromLatLng(point);
-  }
-
   void confirmLocation() {
-    // Here you would save the address to user profile or global state
-    // For now, we update the HomeHeader via a global state or callback
-    // Assuming HomepageController or User Controller manages the home address
-    // Let's assume we pass it back or update a global store
-    
-    Get.back(result: currentAddress.value); // Return the address
-    Get.snackbar(
-      'Location Updated',
-      'Delivery location set to: ${currentAddress.value}',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFF0d9488),
-      colorText: Colors.white,
-    );
+    final address = currentAddress.value;
+    Get.back(result: {
+      'address': address,
+      'lat': selectedLocation.value.latitude,
+      'lng': selectedLocation.value.longitude,
+    });
+    Future.delayed(const Duration(milliseconds: 300), () {
+      Get.snackbar(
+        'Location Updated',
+        address,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF0d9488),
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(12),
+        borderRadius: 12,
+      );
+    });
   }
 }

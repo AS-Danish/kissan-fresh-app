@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../controllers/address_controller.dart';
 
 class MapPickerWidget extends StatelessWidget {
@@ -11,33 +10,20 @@ class MapPickerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => FlutterMap(
-      mapController: controller.mapController,
-      options: MapOptions(
-        initialCenter: controller.selectedLocation.value,
-        initialZoom: 15.0,
-        onTap: controller.onMapTap,
+    return Obx(() => GoogleMap(
+      onMapCreated: controller.onMapCreated,
+      initialCameraPosition: CameraPosition(
+        target: controller.selectedLocation.value,
+        zoom: 15.0,
       ),
-      children: [
-        TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.example.kissanfresh',
-        ),
-        MarkerLayer(
-          markers: [
-            Marker(
-              point: controller.selectedLocation.value,
-              width: 80,
-              height: 80,
-              child: const Icon(
-                Icons.location_on,
-                color: Colors.red,
-                size: 40,
-              ),
-            ),
-          ],
-        ),
-      ],
+      onCameraMove: controller.onCameraMove,
+      onCameraIdle: controller.onCameraIdle,
+      myLocationEnabled: true,
+      myLocationButtonEnabled: false, // We use our own FAB
+      zoomControlsEnabled: false,
+      compassEnabled: true,
+      mapToolbarEnabled: false,
+      mapType: MapType.normal,
     ));
   }
 }
