@@ -16,8 +16,14 @@ class MapPickerWidget extends StatelessWidget {
         target: controller.selectedLocation.value,
         zoom: 15.0,
       ),
-      onCameraMove: controller.onCameraMove,
-      onCameraIdle: controller.onCameraIdle,
+      onTap: controller.onMapTap,
+      markers: {
+        Marker(
+          markerId: const MarkerId('selected-location'),
+          position: controller.selectedLocation.value,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        ),
+      },
       myLocationEnabled: true,
       myLocationButtonEnabled: false, // We use our own FAB
       zoomControlsEnabled: false,

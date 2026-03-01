@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart' as http;
+import 'package:kissanfresh/services/maps_cache_service.dart';
 
 class AddressController extends GetxController {
   // Observables
@@ -12,6 +12,8 @@ class AddressController extends GetxController {
   var selectedLocation = const LatLng(20.5937, 78.9629).obs;
   var isLoading = false.obs;
   var isLocationEnabled = false.obs;
+  var predictions = <Map<String, dynamic>>[].obs;
+  var isSearching = false.obs;
 
   // Google Maps Controller
   final Completer<GoogleMapController> mapCompleter = Completer();
@@ -19,8 +21,7 @@ class AddressController extends GetxController {
 
   final TextEditingController searchController = TextEditingController();
 
-  // Replace with your actual API key
-  static const String _apiKey = 'AIzaSyAyPFAuYno1I1CnoofDehSOHAeD7g3Sb2c';
+  final MapsCacheService _mapsCacheService = MapsCacheService();
 
   Timer? _geocodeDebounce;
 
@@ -34,6 +35,7 @@ class AddressController extends GetxController {
   void onClose() {
     searchController.dispose();
     _geocodeDebounce?.cancel();
+    _autocompleteDebounce?.cancel();
     _mapController?.dispose();
     super.onClose();
   }
@@ -106,36 +108,21 @@ class AddressController extends GetxController {
     }
   }
 
-  // Called when user stops dragging the map
-  void onCameraIdle() {
-    _geocodeDebounce?.cancel();
-    _geocodeDebounce = Timer(const Duration(milliseconds: 500), () {
-      _reverseGeocode(selectedLocation.value);
-    });
-  }
-
-  // Called while user is dragging the map
-  void onCameraMove(CameraPosition position) {
-    selectedLocation.value = position.target;
+  // Called when user explicitly taps map
+  void onMapTap(LatLng position) {
+    selectedLocation.value = position;
     currentAddress.value = 'Fetching address...';
+    _reverseGeocode(position);
   }
 
   Future<void> _reverseGeocode(LatLng point) async {
     isLoading.value = true;
-    final url = Uri.parse(
-      'https://maps.googleapis.com/maps/api/geocode/json'
-          '?latlng=${point.latitude},${point.longitude}&key=$_apiKey',
-    );
-
     try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['status'] == 'OK' && data['results'].isNotEmpty) {
-          currentAddress.value = data['results'][0]['formatted_address'];
-        } else {
-          currentAddress.value = 'Address not found';
-        }
+      final address = await _mapsCacheService.reverseGeocode(point);
+      if (address != null) {
+        currentAddress.value = address;
+      } else {
+        currentAddress.value = 'Address not found';
       }
     } catch (e) {
       debugPrint('Reverse Geocoding Error: $e');
@@ -145,6 +132,25 @@ class AddressController extends GetxController {
     }
   }
 
+  Timer? _autocompleteDebounce;
+
+  void onSearchChanged(String query) {
+    if (query.trim().isEmpty) {
+      predictions.clear();
+      isSearching.value = false;
+      return;
+    }
+    
+    // Set searching to true and refresh the observers
+    isSearching.value = true;
+    
+    _autocompleteDebounce?.cancel();
+    _autocompleteDebounce = Timer(const Duration(milliseconds: 300), () async {
+       final results = await _mapsCacheService.getAutocompletePredictions(query);
+       predictions.value = results;
+    });
+  }
+
   Future<void> searchAddress(String query) async {
     final trimmed = query.trim();
     if (trimmed.isEmpty) return;
@@ -152,26 +158,21 @@ class AddressController extends GetxController {
     isLoading.value = true;
     FocusManager.instance.primaryFocus?.unfocus();
 
-    final url = Uri.parse(
-      'https://maps.googleapis.com/maps/api/geocode/json'
-          '?address=${Uri.encodeComponent(trimmed)}&key=$_apiKey',
-    );
-
     try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['status'] == 'OK' && data['results'].isNotEmpty) {
-          final loc = data['results'][0]['geometry']['location'];
-          final latLng = LatLng(loc['lat'], loc['lng']);
-          final address = data['results'][0]['formatted_address'];
+      final resultData = await _mapsCacheService.searchAddress(trimmed);
+      if (resultData != null) {
+        final latLng = LatLng(resultData['lat'], resultData['lng']);
+        final address = resultData['address'];
 
-          selectedLocation.value = latLng;
-          currentAddress.value = address;
-          await _moveMap(latLng);
-        } else {
-          Get.snackbar('Not Found', 'No results for "$trimmed"');
-        }
+        selectedLocation.value = latLng;
+        currentAddress.value = address;
+        searchController.text = address; // Update text field
+        predictions.clear();
+        isSearching.value = false;
+        
+        await _moveMap(latLng);
+      } else {
+        Get.snackbar('Not Found', 'No results for "$trimmed"');
       }
     } catch (e) {
       debugPrint('Search Error: $e');

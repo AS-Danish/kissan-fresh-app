@@ -34,18 +34,6 @@ class AddressSelectionScreen extends StatelessWidget {
           // Google Map
           MapPickerWidget(controller: controller),
 
-          // Fixed center pin — stays still while map moves beneath it
-          const Center(
-            child: Padding(
-              padding: EdgeInsets.only(bottom: 40), // offset so tip = center
-              child: Icon(
-                Icons.location_pin,
-                size: 52,
-                color: Color(0xFF0d9488),
-              ),
-            ),
-          ),
-
           // Search Bar
           Positioned(
             top: 16,

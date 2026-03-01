@@ -1,4 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kissanfresh/bindings/bottom_bar_binding.dart';
@@ -11,9 +13,12 @@ import 'package:kissanfresh/controllers/auth_controller.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await Hive.initFlutter();
+  await Hive.openBox('maps_cache');
   Get.put(AuthController(), permanent: true);
   runApp(const MyApp());
 }
