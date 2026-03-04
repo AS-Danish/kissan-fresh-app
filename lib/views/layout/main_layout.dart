@@ -90,36 +90,14 @@ class MainLayout extends StatelessWidget {
           ],
         ),
       ),
-      // Use IndexedStack to preserve state and lazy load with GetX routes
+      // Use custom LazyTabBuilder to preserve state and lazy load with GetX routes
       body: Obx(() {
-        return IndexedStack(
-          index: barController.currentIndex.value,
-          children: routes.map((route) {
-            // Use GetBuilder to build each page with its binding
-            return _buildPage(route);
-          }).toList(),
+        return _LazyTabBuilder(
+          currentIndex: barController.currentIndex.value,
+          routes: routes,
         );
       }),
     );
-  }
-
-  /// Build a page with its proper binding
-  Widget _buildPage(String routeName) {
-    // Find the page in GetX routes
-    final routeDecoded = Get.routeTree.matchRoute(routeName);
-    final page = routeDecoded.route;
-
-    if (page == null) {
-      return Center(child: Text('Route not found: $routeName'));
-    }
-
-    // Initialize binding if it exists and hasn't been initialized yet
-    if (page.binding != null) {
-      page.binding!.dependencies();
-    }
-
-    // Return the page widget
-    return page.page?.call() ?? Container();
   }
 
   Widget _buildNavItem({
@@ -217,5 +195,69 @@ class MainLayout extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _LazyTabBuilder extends StatefulWidget {
+  final int currentIndex;
+  final List<String> routes;
+
+  const _LazyTabBuilder({
+    Key? key,
+    required this.currentIndex,
+    required this.routes,
+  }) : super(key: key);
+
+  @override
+  State<_LazyTabBuilder> createState() => _LazyTabBuilderState();
+}
+
+class _LazyTabBuilderState extends State<_LazyTabBuilder> {
+  late final List<bool> _activatedPages;
+
+  @override
+  void initState() {
+    super.initState();
+    _activatedPages = List.generate(
+      widget.routes.length,
+      (index) => index == widget.currentIndex,
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant _LazyTabBuilder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentIndex != widget.currentIndex) {
+      _activatedPages[widget.currentIndex] = true;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IndexedStack(
+      index: widget.currentIndex,
+      children: List.generate(widget.routes.length, (index) {
+        if (_activatedPages[index]) {
+          return _buildPage(widget.routes[index]);
+        }
+        return const SizedBox.shrink();
+      }),
+    );
+  }
+
+  Widget _buildPage(String routeName) {
+    final routeDecoded = Get.routeTree.matchRoute(routeName);
+    final page = routeDecoded.route;
+
+    if (page == null) {
+      return Center(child: Text('Route not found: $routeName'));
+    }
+
+    // Initialize binding if it exists and hasn't been initialized yet
+    if (page.binding != null) {
+      page.binding!.dependencies();
+    }
+
+    return page.page?.call() ?? const SizedBox.shrink();
   }
 }
