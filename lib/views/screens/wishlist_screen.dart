@@ -89,6 +89,7 @@ class WishlistScreen extends StatelessWidget {
             final functionalProduct = ProductCardModel(
               id: product.id,
               image: product.image,
+              images: product.images,
               title: product.title,
               description: product.description,
               price: product.price,

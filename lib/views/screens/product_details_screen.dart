@@ -82,33 +82,42 @@ class ProductDetailsScreen extends StatelessWidget {
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 color: Colors.grey.shade100,
-                child: Image.network(
-                  product.image,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Center(
-                      child: CircularProgressIndicator(
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded /
-                            loadingProgress.expectedTotalBytes!
-                            : null,
-                        strokeWidth: 2,
-                        color: const Color(0xFF0d9488),
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.grey.shade200,
-                      child: const Icon(
-                        Icons.image_not_supported_outlined,
-                        color: Colors.grey,
-                        size: 80,
-                      ),
-                    );
-                  },
-                ),
+                child: (product.images != null && product.images!.isNotEmpty)
+                    ? Stack(
+                        children: [
+                          PageView.builder(
+                            itemCount: product.images!.length,
+                            onPageChanged: controller.onImageChanged,
+                            itemBuilder: (context, index) {
+                              return _buildNetworkImage(product.images![index]);
+                            },
+                          ),
+                          Positioned(
+                            bottom: 20,
+                            left: 0,
+                            right: 0,
+                            child: Obx(() => Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: List.generate(
+                                    product.images!.length,
+                                    (index) => AnimatedContainer(
+                                      duration: const Duration(milliseconds: 300),
+                                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                                      width: controller.currentImageIndex.value == index ? 24 : 8,
+                                      height: 8,
+                                      decoration: BoxDecoration(
+                                        color: controller.currentImageIndex.value == index
+                                            ? const Color(0xFF0d9488)
+                                            : Colors.grey.shade400,
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                    ),
+                                  ),
+                                )),
+                          ),
+                        ],
+                      )
+                    : _buildNetworkImage(product.image),
               ),
             ),
           ),
@@ -554,6 +563,36 @@ class ProductDetailsScreen extends StatelessWidget {
               : const Color(0xFF0d9488).withOpacity(0.3),
         ),
       ),
+    );
+  }
+
+  Widget _buildNetworkImage(String imageUrl) {
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Center(
+          child: CircularProgressIndicator(
+            value: loadingProgress.expectedTotalBytes != null
+                ? loadingProgress.cumulativeBytesLoaded /
+                loadingProgress.expectedTotalBytes!
+                : null,
+            strokeWidth: 2,
+            color: const Color(0xFF0d9488),
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          color: Colors.grey.shade200,
+          child: const Icon(
+            Icons.image_not_supported_outlined,
+            color: Colors.grey,
+            size: 80,
+          ),
+        );
+      },
     );
   }
 }

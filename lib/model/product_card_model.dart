@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class ProductCardModel {
   final String? id; // Optional ID field for better tracking
   final String image;
+  final List<String>? images;
   final String title;
   final String description;
   final double price;
@@ -16,6 +17,7 @@ class ProductCardModel {
   ProductCardModel({
     this.id,
     required this.image,
+    this.images,
     required this.title,
     required this.description,
     required this.price,

@@ -6,6 +6,7 @@ class Product {
   final double price;
   final String unit;
   final String category;
+  final List<String>? images;
 
   const Product({
     required this.id,
@@ -15,5 +16,6 @@ class Product {
     required this.price,
     required this.unit,
     required this.category,
+    this.images,
   });
 }

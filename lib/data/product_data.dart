@@ -5,6 +5,11 @@ class ProductData {
     Product(
       id: '1',
       image: 'https://images.unsplash.com/photo-1546470427-227e333b90d3?w=500&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1546470427-227e333b90d3?w=500&q=80',
+        'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=500&q=80',
+        'https://images.unsplash.com/photo-1558818498-28c1e002b655?w=500&q=80',
+      ],
       title: 'Fresh Tomatoes',
       description: 'Farm fresh red tomatoes, rich in vitamins and perfect for salads. These tomatoes are sourced directly from local organic farms, ensuring the highest quality and freshness. Perfect for cooking, salads, or juices.',
       price: 45.00,
@@ -14,6 +19,10 @@ class ProductData {
     Product(
       id: '2',
       image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=500&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=500&q=80',
+        'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=500&q=80',
+      ],
       title: 'Amul Milk',
       description: 'Pure and fresh full cream milk, homogenized for quality. Amul milk is known for its richness and purity, perfect for your daily nutrition needs. Delivered fresh every morning.',
       price: 28.00,

@@ -11,6 +11,12 @@ class ProductDetailsController extends GetxController {
   // Observable for favorite status
   var isFavorite = false.obs;
 
+  // Observable for current image index
+  var currentImageIndex = 0.obs;
+
+  void onImageChanged(int index) {
+    currentImageIndex.value = index;
+  }
 
   late ProductCardModel product;
   late CartController cartController;

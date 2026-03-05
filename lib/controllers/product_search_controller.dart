@@ -63,6 +63,7 @@ class ProductSearchController extends GetxController {
       return ProductCardModel(
         id: product.id,
         image: product.image,
+        images: product.images,
         title: product.title,
         description: product.description,
         price: product.price,
@@ -71,6 +72,7 @@ class ProductSearchController extends GetxController {
         onTap: () => _navigateToDetails(
           product.title,
           product.image,
+          product.images,
           product.description,
           product.price,
           product.unit,
@@ -81,6 +83,7 @@ class ProductSearchController extends GetxController {
               ProductCardModel(
                 id: product.id,
                 image: product.image,
+                images: product.images,
                 title: product.title,
                 description: product.description,
                 price: product.price,
@@ -141,6 +144,7 @@ class ProductSearchController extends GetxController {
   void _navigateToDetails(
     String title,
     String image,
+    List<String>? images,
     String description,
     double price,
     String unit,
@@ -149,6 +153,7 @@ class ProductSearchController extends GetxController {
       AppRoutes.productDetailsRoute,
       arguments: ProductCardModel(
         image: image,
+        images: images,
         title: title,
         description: description,
         price: price,
@@ -161,6 +166,7 @@ class ProductSearchController extends GetxController {
               cartController.addToCart(
                 ProductCardModel(
                   image: image,
+                  images: images,
                   title: title,
                   description: description,
                   price: price,

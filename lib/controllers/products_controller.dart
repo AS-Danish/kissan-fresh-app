@@ -28,6 +28,7 @@ class ProductsController extends GetxController {
       return ProductCardModel(
         id: product.id,
         image: product.image,
+        images: product.images,
         title: product.title,
         description: product.description,
         price: product.price,
@@ -35,6 +36,7 @@ class ProductsController extends GetxController {
         category: product.category,
         onTap: () => _navigateToProductDetails(
           image: product.image,
+          images: product.images,
           title: product.title,
           description: product.description,
           price: product.price,
@@ -50,6 +52,7 @@ class ProductsController extends GetxController {
   // Helper method for navigation using named routes
   static void _navigateToProductDetails({
     required String image,
+    List<String>? images,
     required String title,
     required String description,
     required double price,
@@ -59,6 +62,7 @@ class ProductsController extends GetxController {
       AppRoutes.productDetailsRoute,
       arguments: ProductCardModel(
         image: image,
+        images: images,
         title: title,
         description: description,
         price: price,
