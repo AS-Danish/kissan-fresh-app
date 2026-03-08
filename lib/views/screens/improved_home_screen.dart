@@ -8,6 +8,7 @@ import '../widgets/home_food_section.dart';
 import '../widgets/offer_section.dart';
 import '../widgets/welcome_section.dart';
 import '../widgets/home_header.dart';
+import '../widgets/categorized_products_section.dart';
 
 class ImprovedHomeScreen extends StatelessWidget {
   const ImprovedHomeScreen({super.key});
@@ -42,10 +43,18 @@ class ImprovedHomeScreen extends StatelessWidget {
                     const SizedBox(height: 32),
                     AllProductsSection(),
                     const SizedBox(height: 32),
+                    CategorizedProductsSection(),
+                    const SizedBox(height: 32),
                   ],
                 );
               } else {
-                return const HomeFoodSection();
+                return Column(
+                  children: [
+                    const HomeFoodSection(),
+                    const SizedBox(height: 32),
+                    CategorizedProductsSection(),
+                  ],
+                );
               }
             }),
           ],

@@ -1,9 +1,13 @@
 import 'package:get/get.dart';
+import 'package:hive/hive.dart';
+import 'dart:convert';
 import '../model/product_card_model.dart';
 
 class CartController extends GetxController {
   // Observable list of cart items
   RxList<CartItem> cartItems = <CartItem>[].obs;
+  
+  final Box _cartBox = Hive.box('cart_box');
 
   // Computed values
   double get subtotal {
@@ -55,6 +59,7 @@ class CartController extends GetxController {
       // New item, add to cart
       cartItems.add(cartItem);
     }
+    _saveToHive();
   }
 
   // Methods
@@ -67,10 +72,12 @@ class CartController extends GetxController {
     } else {
       cartItems.add(item);
     }
+    _saveToHive();
   }
 
   void removeItem(String itemId) {
     cartItems.removeWhere((item) => item.id == itemId);
+    _saveToHive();
   }
 
   void incrementItem(String itemId) {
@@ -78,6 +85,7 @@ class CartController extends GetxController {
     if (index >= 0) {
       cartItems[index].count++;
       cartItems.refresh();
+      _saveToHive();
     }
   }
 
@@ -87,6 +95,7 @@ class CartController extends GetxController {
       if (cartItems[index].count > 1) {
         cartItems[index].count--;
         cartItems.refresh();
+        _saveToHive();
       }
       // If count is 1, do nothing (don't remove the item)
     }
@@ -94,6 +103,7 @@ class CartController extends GetxController {
 
   void clearCart() {
     cartItems.clear();
+    _saveToHive();
   }
 
   // Check if a product is in cart
@@ -110,37 +120,28 @@ class CartController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Load sample data
-    _loadSampleData();
+    _loadFromHive();
   }
 
-  void _loadSampleData() {
-    cartItems.addAll([
-      CartItem(
-        id: '1',
-        name: 'Fresh Organic Tomatoes',
-        quantity: '1 kg',
-        price: 90.0,
-        image: 'https://images.unsplash.com/photo-1546094096-0df4bcaaa337?w=400',
-        count: 2,
-      ),
-      CartItem(
-        id: '2',
-        name: 'Farm Fresh Spinach',
-        quantity: '500 g',
-        price: 90.0,
-        image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400',
-        count: 3,
-      ),
-      CartItem(
-        id: '3',
-        name: 'Organic Carrots',
-        quantity: '1 kg',
-        price: 100.0,
-        image: 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=400',
-        count: 2,
-      ),
-    ]);
+  void _loadFromHive() {
+    try {
+      final savedData = _cartBox.get('cart_items_list');
+      if (savedData != null) {
+        List<dynamic> itemsList = jsonDecode(savedData);
+        cartItems.value = itemsList.map((item) => CartItem.fromJson(item)).toList();
+      }
+    } catch (e) {
+      Get.snackbar('Cart Error', 'Failed to load local cart items.');
+    }
+  }
+
+  void _saveToHive() {
+    try {
+       List<Map<String, dynamic>> jsonData = cartItems.map((item) => item.toJson()).toList();
+       _cartBox.put('cart_items_list', jsonEncode(jsonData));
+    } catch (e) {
+      print("Error saving cart to Hive: $e");
+    }
   }
 }
 

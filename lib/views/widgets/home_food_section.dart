@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/homepage_controller.dart';
 import '../../views/widgets/product_card_widget.dart';
+import 'all_products_section.dart';
 import 'categories_section.dart';
 
 class HomeFoodSection extends StatelessWidget {
@@ -142,23 +143,7 @@ class HomeFoodSection extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               // Grid of products
-              GridView.builder(
-                padding: EdgeInsets.zero,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.75,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                ),
-                itemCount: controller.homeFoodProducts.length,
-                itemBuilder: (context, index) {
-                  return ProductCardWidget(
-                    product: controller.homeFoodProducts[index],
-                  );
-                },
-              ),
+              AllProductsSection(),
             ],
           ),
         ),

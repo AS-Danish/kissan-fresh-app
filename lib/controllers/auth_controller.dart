@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kissanfresh/routes/AppRoutes.dart';
 import 'package:kissanfresh/services/auth_service.dart';
+import 'package:kissanfresh/services/user_service.dart';
 
 class AuthController extends GetxController {
   static AuthController get instance => Get.find();
 
   final AuthService _authService = AuthService();
+  final UserService _userService = UserService();
   late Rx<User?> firebaseUser;
   
   // Observables for UI
@@ -132,15 +134,32 @@ class AuthController extends GetxController {
     }
   }
 
-  void _handleSuccess() {
-    Get.offAllNamed(AppRoutes.mainLayout); // Clear stack and go home
-    Get.snackbar(
-      "Success",
-      "Logged in successfully!",
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-    );
+  void _handleSuccess() async {
+    final user = _authService.currentUser;
+    if (user != null) {
+      bool exists = await _userService.checkUserExists(user.uid);
+      if (exists) {
+        Get.offAllNamed(AppRoutes.mainLayout); // Clear stack and go home
+        Get.snackbar(
+          "Success",
+          "Logged in successfully!",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      } else {
+        Get.offAllNamed(AppRoutes.onboardingRoute);
+        Get.snackbar(
+          "Welcome!",
+          "Please complete your profile to continue.",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.blueAccent,
+          colorText: Colors.white,
+        );
+      }
+    } else {
+      Get.offAllNamed(AppRoutes.mainLayout);
+    }
   }
 
   void logout() async {

@@ -70,6 +70,7 @@ class ProductSearchController extends GetxController {
         unit: product.unit,
         category: product.category,
         onTap: () => _navigateToDetails(
+          product.id,
           product.title,
           product.image,
           product.images,
@@ -142,6 +143,7 @@ class ProductSearchController extends GetxController {
   }
 
   void _navigateToDetails(
+    String? id,
     String title,
     String image,
     List<String>? images,
@@ -152,6 +154,7 @@ class ProductSearchController extends GetxController {
     Get.toNamed(
       AppRoutes.productDetailsRoute,
       arguments: ProductCardModel(
+        id: id,
         image: image,
         images: images,
         title: title,

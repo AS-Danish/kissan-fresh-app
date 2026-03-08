@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "191097124850",
+    "project_id": "kissanfresh-a72c1",
+    "storage_bucket": "kissanfresh-a72c1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:191097124850:android:857ee154b07aec080f9d6b",
+        "android_client_info": {
+          "package_name": "com.example.kissanfresh"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALlrytQESENsGehcPoUqmIhepHgLGw4qI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

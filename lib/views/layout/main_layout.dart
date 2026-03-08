@@ -64,7 +64,7 @@ class MainLayout extends StatelessWidget {
                         index: 1,
                         barController: barController,
                       ),
-                      const SizedBox(width: 80),
+                      const SizedBox(width: 72),
                       _buildNavItem(
                         icon: Icons.receipt_long,
                         label: "My Orders",
@@ -108,33 +108,38 @@ class MainLayout extends StatelessWidget {
   }) {
     bool isSelected = barController.currentIndex.value == index;
 
-    return InkWell(
-      onTap: () => barController.changePage(index),
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isSelected
-                  ? AppTheme().primaryColor
-                  : Colors.grey.shade600,
-              size: 26,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
+    return Expanded(
+      child: InkWell(
+        onTap: () => barController.changePage(index),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2.0, vertical: 8.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
                 color: isSelected
                     ? AppTheme().primaryColor
                     : Colors.grey.shade600,
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                size: 26,
               ),
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: isSelected
+                      ? AppTheme().primaryColor
+                      : Colors.grey.shade600,
+                  fontSize: 10,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -92,21 +92,81 @@ class AllProductsSection extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Obx(() {
-            return GridView.builder(
-              padding: EdgeInsets.zero,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 0.68, // Adjusted for better proportions
-              ),
-              itemCount: controller.products.length,
-              itemBuilder: (context, index) {
-                return ProductCardWidget(product: controller.products[index]);
-              },
-            );
+              if (controller.isLoadingProducts.value && controller.products.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.all(32.0),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xFF0d9488),
+                    ),
+                  ),
+                );
+              }
+
+              if (!controller.isLoadingProducts.value && controller.products.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: Center(
+                    child: Text(
+                      "No products available.",
+                      style: GoogleFonts.montserrat(
+                        fontSize: 16,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              return Column(
+                children: [
+                  GridView.builder(
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 0.68,
+                    ),
+                    itemCount: controller.products.length,
+                    itemBuilder: (context, index) {
+                      return ProductCardWidget(product: controller.products[index]);
+                    },
+                  ),
+                  if (controller.isFetchingMore.value)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24.0),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF0d9488),
+                        ),
+                      ),
+                    )
+                  else if (controller.hasMoreProducts.value)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24.0),
+                      child: OutlinedButton(
+                        onPressed: () => controller.fetchNextPage(),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF0d9488),
+                          side: const BorderSide(color: Color(0xFF0d9488)),
+                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text(
+                          "Load More",
+                          style: GoogleFonts.montserrat(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
           }),
         ),
       ],

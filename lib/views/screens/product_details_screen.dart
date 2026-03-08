@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import '../../model/product_card_model.dart';
 import '../../controllers/product_details_controller.dart';
+import '../../controllers/wishlist_controller.dart';
 
 class ProductDetailsScreen extends StatelessWidget {
   final ProductCardModel product;
@@ -68,7 +69,7 @@ class ProductDetailsScreen extends StatelessWidget {
                     ],
                   ),
                   child: Icon(
-                    controller.isFavorite.value
+                    Get.find<WishlistController>().isInWishlist(product)
                         ? Icons.favorite
                         : Icons.favorite_border,
                     color: const Color(0xFF0d9488),
@@ -180,17 +181,6 @@ class ProductDetailsScreen extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // Product Info Card
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: _buildInfoCard(
-                      icon: Icons.verified_outlined,
-                      title: 'Fresh',
-                      subtitle: '100% Pure',
-                      color: const Color(0xFF10B981),
-                    ),
-                  ),
-
                   const SizedBox(height: 24),
 
                   // Description
@@ -246,8 +236,8 @@ class ProductDetailsScreen extends StatelessWidget {
                           _buildDetailRow(
                             icon: Icons.inventory_2_outlined,
                             label: 'Stock Status',
-                            value: 'In Stock',
-                            valueColor: const Color(0xFF10B981),
+                            value: product.inStock ? 'In Stock' : 'Out of Stock',
+                            valueColor: product.inStock ? const Color(0xFF10B981) : Colors.red,
                           ),
                           const SizedBox(height: 12),
                           Divider(color: Colors.grey.shade200, height: 1),
@@ -265,29 +255,46 @@ class ProductDetailsScreen extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  // Benefits Section
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Health Benefits',
-                          style: GoogleFonts.montserrat(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.black87,
-                            letterSpacing: 0.3,
+                  // Tags Section (Dynamic as Info Cards)
+                  if (product.tags != null && product.tags!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Highlights',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.black87,
+                              letterSpacing: 0.3,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        _buildBenefitItem('Rich in vitamins and minerals'),
-                        _buildBenefitItem('100% organic and pesticide-free'),
-                        _buildBenefitItem('Freshly sourced from local farms'),
-                        _buildBenefitItem('Supports healthy lifestyle'),
-                      ],
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            height: 135,
+                            child: ListView.separated(
+                              clipBehavior: Clip.none,
+                              scrollDirection: Axis.horizontal,
+                              itemCount: product.tags!.length,
+                              separatorBuilder: (context, index) => const SizedBox(width: 16),
+                              itemBuilder: (context, index) {
+                                return SizedBox(
+                                  width: 140, // Fixed width for each card
+                                  child: _buildInfoCard(
+                                    icon: Icons.verified_outlined,
+                                    title: 'Feature',
+                                    subtitle: product.tags![index],
+                                    color: const Color(0xFF10B981),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
 
                   const SizedBox(height: 120), // Space for bottom bar
                 ],
@@ -322,6 +329,8 @@ class ProductDetailsScreen extends StatelessWidget {
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
             padding: const EdgeInsets.all(10),
@@ -334,6 +343,7 @@ class ProductDetailsScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             title,
+            textAlign: TextAlign.center,
             style: GoogleFonts.montserrat(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -343,6 +353,9 @@ class ProductDetailsScreen extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             subtitle,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: GoogleFonts.montserrat(
               fontSize: 14,
               fontWeight: FontWeight.w800,
@@ -433,7 +446,7 @@ class ProductDetailsScreen extends StatelessWidget {
         ],
       ),
       child: SafeArea(
-        child: Row(
+        child: Obx(() => Row(
           children: [
             // Quantity Controls
             Container(
@@ -448,13 +461,13 @@ class ProductDetailsScreen extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Obx(() => _buildQuantityButton(
+                  _buildQuantityButton(
                     icon: Icons.remove,
-                    onPressed: controller.quantity.value > 1
+                    onPressed: (product.inStock && controller.quantity.value > 1)
                         ? controller.decreaseQuantity
                         : null,
-                  )),
-                  Obx(() => Padding(
+                  ),
+                  Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
                       '${controller.quantity.value}',
@@ -464,10 +477,10 @@ class ProductDetailsScreen extends StatelessWidget {
                         color: const Color(0xFF0d9488),
                       ),
                     ),
-                  )),
+                  ),
                   _buildQuantityButton(
                     icon: Icons.add,
-                    onPressed: controller.increaseQuantity,
+                    onPressed: product.inStock ? controller.increaseQuantity : null,
                   ),
                 ],
               ),
@@ -475,28 +488,30 @@ class ProductDetailsScreen extends StatelessWidget {
 
             const SizedBox(width: 16),
 
-            // Add to Cart Button
+            // Add to Cart Button (Flexible to prevent overflow)
             Expanded(
-              child: Obx(() => Container(
+              child: Container(
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
-                    colors: [Color(0xFF0d9488), Color(0xFF14b8a6)],
+                    colors: product.inStock 
+                        ? [const Color(0xFF0d9488), const Color(0xFF14b8a6)]
+                        : [Colors.grey.shade400, Colors.grey.shade500],
                   ),
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
+                  boxShadow: product.inStock ? [
                     BoxShadow(
                       color: const Color(0xFF0d9488).withOpacity(0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
-                  ],
+                  ] : [],
                 ),
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
-                    onTap: controller.addToCart,
+                    onTap: product.inStock ? controller.addToCart : null,
                     borderRadius: BorderRadius.circular(16),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -506,37 +521,60 @@ class ProductDetailsScreen extends StatelessWidget {
                           const Icon(
                             Icons.shopping_cart_outlined,
                             color: Colors.white,
-                            size: 22,
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            'Add to Cart',
-                            style: GoogleFonts.montserrat(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                              letterSpacing: 0.5,
-                            ),
+                            size: 20,
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            '₹${controller.totalPrice.toStringAsFixed(0)}',
-                            style: GoogleFonts.montserrat(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                              letterSpacing: 0.3,
+                          Flexible(
+                            child: Text(
+                              'Add to Cart',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: 0.5,
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 6),
+                          if (product.inStock)
+                            Flexible(
+                              child: Text(
+                                '₹${controller.totalPrice.toStringAsFixed(0)}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            )
+                          else
+                            Flexible(
+                              child: Text(
+                                'Out of Stock',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ),
                         ],
                       ),
                     ),
                   ),
                 ),
-              )),
+              ),
             ),
           ],
-        ),
+        )),
       ),
     );
   }

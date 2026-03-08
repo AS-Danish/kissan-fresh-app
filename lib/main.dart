@@ -19,6 +19,7 @@ void main() async{
   );
   await Hive.initFlutter();
   await Hive.openBox('maps_cache');
+  await Hive.openBox('cart_box');
   Get.put(AuthController(), permanent: true);
   runApp(const MyApp());
 }

@@ -9,6 +9,7 @@ class ProductCardModel {
   final double price;
   final String unit;
   final String? category; // Added category field
+  final List<String>? tags; // Dynamic tags
   final VoidCallback onTap;
   final VoidCallback onAddToCart;
 
@@ -23,6 +24,7 @@ class ProductCardModel {
     required this.price,
     required this.unit,
     this.category,
+    this.tags,
     this.inStock = true, // Default to true
     required this.onTap,
     required this.onAddToCart,

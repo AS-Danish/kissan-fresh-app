@@ -5,95 +5,83 @@ import '../model/product_card_model.dart';
 import '../routes/AppRoutes.dart';
 import 'homepage_controller.dart';
 
-class ProductsController extends GetxController {
+class CategorizedProductsController extends GetxController {
   final HomepageController homepageController = Get.find<HomepageController>();
-  final RxList<ProductCardModel> products = <ProductCardModel>[].obs;
-  
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
-  // Pagination observables
-  RxBool isLoadingProducts = false.obs;
-  RxBool isFetchingMore = false.obs;
-  RxBool hasMoreProducts = true.obs;
-  DocumentSnapshot? lastDocument;
-  
-  final int limit = 10;
+
+  // Map of category name to list of products
+  final RxMap<String, List<ProductCardModel>> categorizedProducts = <String, List<ProductCardModel>>{}.obs;
+  final RxBool isLoading = false.obs;
 
   @override
   void onInit() {
     super.onInit();
-    // Listen to tab changes
+    // Listen to tab changes to fetch categorized products for the correct origin
     ever(homepageController.currentTab, (_) {
-      fetchInitialProducts();
+      fetchCategorizedProducts();
     });
-    fetchInitialProducts();
+    fetchCategorizedProducts();
   }
 
   String get currentOrigin {
     return homepageController.currentTab.value == 'Grocery' ? 'kissan-fresh' : 'home-food';
   }
 
-  Future<void> fetchInitialProducts() async {
-    try {
-      isLoadingProducts.value = true;
-      hasMoreProducts.value = true;
-      products.clear();
-      
-      QuerySnapshot querySnapshot = await _firestore
-          .collection('products')
-          .where('productOrigin', isEqualTo: currentOrigin)
-          .limit(limit)
-          .get();
-
-      if (querySnapshot.docs.isEmpty) {
-        hasMoreProducts.value = false;
-        products.value = [];
-        return;
-      }
-
-      lastDocument = querySnapshot.docs.last;
-      products.value = querySnapshot.docs.map((doc) => _mapToProductCardModel(doc)).toList();
-      
-      if (querySnapshot.docs.length < limit) {
-        hasMoreProducts.value = false;
-      }
-    } catch (e) {
-      debugPrint("Error fetching initial products: $e");
-    } finally {
-      isLoadingProducts.value = false;
+  // Gets the relevant category names for the current origin
+  List<String> get currentCategories {
+    if (currentOrigin == 'kissan-fresh') {
+      return homepageController.categories
+          .where((c) => c.label != "All")
+          .map((c) => c.label)
+          .toList();
+    } else {
+      return homepageController.homeFoodCategories
+          .where((c) => c.label != "All")
+          .map((c) => c.label)
+          .toList();
     }
   }
 
-  Future<void> fetchNextPage() async {
-    if (isFetchingMore.value || !hasMoreProducts.value || lastDocument == null) return;
-
+  Future<void> fetchCategorizedProducts() async {
     try {
-      isFetchingMore.value = true;
+      isLoading.value = true;
+      categorizedProducts.clear();
 
+      final categoriesList = currentCategories;
+      final origin = currentOrigin;
+
+      // For performance and limits, we might only fetch the first 5 categories that have products
+      // We'll run a query for each category in parallel
+      List<Future<void>> fetchTasks = [];
+
+      for (String category in categoriesList) {
+        fetchTasks.add(_fetchProductsForCategory(category, origin));
+      }
+
+      await Future.wait(fetchTasks);
+
+    } catch (e) {
+      debugPrint("Error fetching categorized products: $e");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> _fetchProductsForCategory(String category, String origin) async {
+    try {
       QuerySnapshot querySnapshot = await _firestore
           .collection('products')
-          .where('productOrigin', isEqualTo: currentOrigin)
-          .startAfterDocument(lastDocument!)
-          .limit(limit)
+          .where('productOrigin', isEqualTo: origin)
+          .where('category', isEqualTo: category)
+          .limit(6) // limit to 6 products per category for the horizontal scroll
           .get();
 
-      if (querySnapshot.docs.isEmpty) {
-        hasMoreProducts.value = false;
-        return;
-      }
-
-      lastDocument = querySnapshot.docs.last;
-      
-      final newProducts = querySnapshot.docs.map((doc) => _mapToProductCardModel(doc)).toList();
-      products.addAll(newProducts);
-
-      if (querySnapshot.docs.length < limit) {
-        hasMoreProducts.value = false;
+      if (querySnapshot.docs.isNotEmpty) {
+        List<ProductCardModel> products = querySnapshot.docs.map((doc) => _mapToProductCardModel(doc)).toList();
+        categorizedProducts[category] = products;
       }
     } catch (e) {
-      debugPrint("Error fetching next page: $e");
-    } finally {
-      isFetchingMore.value = false;
+      debugPrint("Error fetching category $category: $e");
     }
   }
 
@@ -108,7 +96,7 @@ class ProductsController extends GetxController {
       imageUrl = data['images'][0];
     }
     
-    // Parse list of images if any (optional based on your model)
+    // Parse list of images if any
     List<String>? imagesList;
     if (data['images'] != null && data['images'] is List) {
       imagesList = List<String>.from(data['images']);
@@ -135,7 +123,7 @@ class ProductsController extends GetxController {
       id: doc.id,
       image: imageUrl,
       images: imagesList,
-      title: data['name'] ?? 'Unknown',
+      title: data['title'] ?? 'Unknown',
       description: data['description'] ?? '',
       price: (data['price'] ?? 0).toDouble(),
       unit: data['unit'] ?? 'unit',
@@ -146,7 +134,7 @@ class ProductsController extends GetxController {
         id: doc.id,
         image: imageUrl,
         images: imagesList,
-        title: data['name'] ?? 'Unknown',
+        title: data['title'] ?? 'Unknown',
         description: data['description'] ?? '',
         price: (data['price'] ?? 0).toDouble(),
         unit: data['unit'] ?? 'unit',
@@ -160,7 +148,6 @@ class ProductsController extends GetxController {
     );
   }
 
-  // Helper method for navigation using named routes
   static void _navigateToProductDetails({
     required String? id,
     required String image,
