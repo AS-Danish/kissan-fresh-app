@@ -11,6 +11,8 @@ import 'firebase_options.dart';
 
 import 'package:kissanfresh/controllers/auth_controller.dart';
 
+import 'package:kissanfresh/services/location_service.dart';
+
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
@@ -20,6 +22,8 @@ void main() async{
   await Hive.initFlutter();
   await Hive.openBox('maps_cache');
   await Hive.openBox('cart_box');
+  await Hive.openBox('user_settings'); // Add this for location service
+  Get.put(LocationService(), permanent: true); // Add LocationService
   Get.put(AuthController(), permanent: true);
   runApp(const MyApp());
 }

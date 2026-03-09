@@ -1,9 +1,14 @@
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import '../model/product_card_model.dart';
+import '../routes/AppRoutes.dart';
+import 'auth_controller.dart';
 
 class CartController extends GetxController {
+  final AuthController _authController = Get.find<AuthController>();
+
   // Observable list of cart items
   RxList<CartItem> cartItems = <CartItem>[].obs;
   
@@ -36,7 +41,19 @@ class CartController extends GetxController {
   }
 
   // Add product to cart from ProductCardModel
-  void addToCart(ProductCardModel product, int quantity) {
+  bool addToCart(ProductCardModel product, int quantity) {
+    if (_authController.firebaseUser.value == null) {
+      Get.toNamed(AppRoutes.loginScreen);
+      Get.snackbar(
+        'Login Required',
+        'Please login to add items to your cart.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF0d9488),
+        colorText: Colors.white,
+      );
+      return false;
+    }
+
     // Use product ID if available, otherwise use title
     final productId = product.id ?? product.title;
 
@@ -60,10 +77,23 @@ class CartController extends GetxController {
       cartItems.add(cartItem);
     }
     _saveToHive();
+    return true;
   }
 
   // Methods
-  void addItem(CartItem item) {
+  bool addItem(CartItem item) {
+    if (_authController.firebaseUser.value == null) {
+      Get.toNamed(AppRoutes.loginScreen);
+      Get.snackbar(
+        'Login Required',
+        'Please login to add items to your cart.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF0d9488),
+        colorText: Colors.white,
+      );
+      return false;
+    }
+
     final existingIndex = cartItems.indexWhere((i) => i.id == item.id);
 
     if (existingIndex >= 0) {
@@ -73,6 +103,7 @@ class CartController extends GetxController {
       cartItems.add(item);
     }
     _saveToHive();
+    return true;
   }
 
   void removeItem(String itemId) {

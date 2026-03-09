@@ -116,20 +116,24 @@ class AddressController extends GetxController {
   }
 
   Future<void> _reverseGeocode(LatLng point) async {
-    isLoading.value = true;
-    try {
-      final address = await _mapsCacheService.reverseGeocode(point);
-      if (address != null) {
-        currentAddress.value = address;
-      } else {
-        currentAddress.value = 'Address not found';
+    _geocodeDebounce?.cancel();
+
+    _geocodeDebounce = Timer(const Duration(milliseconds: 800), () async {
+      isLoading.value = true;
+      try {
+        final address = await _mapsCacheService.reverseGeocode(point);
+        if (address != null) {
+          currentAddress.value = address;
+        } else {
+          currentAddress.value = 'Address not found';
+        }
+      } catch (e) {
+        debugPrint('Reverse Geocoding Error: $e');
+        currentAddress.value = 'Unable to fetch address';
+      } finally {
+        isLoading.value = false;
       }
-    } catch (e) {
-      debugPrint('Reverse Geocoding Error: $e');
-      currentAddress.value = 'Unable to fetch address';
-    } finally {
-      isLoading.value = false;
-    }
+    });
   }
 
   Timer? _autocompleteDebounce;
@@ -145,7 +149,7 @@ class AddressController extends GetxController {
     isSearching.value = true;
     
     _autocompleteDebounce?.cancel();
-    _autocompleteDebounce = Timer(const Duration(milliseconds: 300), () async {
+    _autocompleteDebounce = Timer(const Duration(milliseconds: 800), () async {
        final results = await _mapsCacheService.getAutocompletePredictions(query);
        predictions.value = results;
     });

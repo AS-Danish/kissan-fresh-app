@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import '../../model/product_card_model.dart';
@@ -605,23 +606,20 @@ class ProductDetailsScreen extends StatelessWidget {
   }
 
   Widget _buildNetworkImage(String imageUrl) {
-    return Image.network(
-      imageUrl,
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
       fit: BoxFit.cover,
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) return child;
-        return Center(
+      placeholder: (context, url) => Center(
+        child: SizedBox(
+          width: 32,
+          height: 32,
           child: CircularProgressIndicator(
-            value: loadingProgress.expectedTotalBytes != null
-                ? loadingProgress.cumulativeBytesLoaded /
-                loadingProgress.expectedTotalBytes!
-                : null,
-            strokeWidth: 2,
             color: const Color(0xFF0d9488),
+            strokeWidth: 2.5,
           ),
-        );
-      },
-      errorBuilder: (context, error, stackTrace) {
+        ),
+      ),
+      errorWidget: (context, url, error) {
         return Container(
           color: Colors.grey.shade200,
           child: const Icon(

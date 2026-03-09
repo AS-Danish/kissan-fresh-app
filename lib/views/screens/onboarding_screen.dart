@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kissanfresh/controllers/onboarding_controller.dart';
+import 'package:kissanfresh/routes/AppRoutes.dart';
 
 class OnboardingScreen extends GetView<OnboardingController> {
   const OnboardingScreen({super.key});
@@ -59,7 +60,16 @@ class OnboardingScreen extends GetView<OnboardingController> {
               controller: controller.addressController,
               icon: Icons.location_on_outlined,
               maxLines: 3,
-              hint: 'Enter your delivery address',
+              hint: 'Tap to select delivery address on map',
+              readOnly: true,
+              onTap: () async {
+                final result = await Get.toNamed(AppRoutes.addressSelectionRoute); 
+                if (result != null && result is Map<String, dynamic>) {
+                  // The map screen returns {'address': address, 'lat': lat, 'lng': lng}
+                  // We update the controller with the selected address
+                  controller.addressController.text = result['address'] ?? '';
+                }
+              },
             ),
             const SizedBox(height: 16),
             _buildTextField(
@@ -110,6 +120,8 @@ class OnboardingScreen extends GetView<OnboardingController> {
     String? hint,
     TextInputType keyboardType = TextInputType.text,
     int maxLines = 1,
+    bool readOnly = false,
+    VoidCallback? onTap,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,6 +151,8 @@ class OnboardingScreen extends GetView<OnboardingController> {
             controller: controller,
             keyboardType: keyboardType,
             maxLines: maxLines,
+            readOnly: readOnly,
+            onTap: onTap,
             style: GoogleFonts.montserrat(
               fontSize: 14,
               fontWeight: FontWeight.w500,

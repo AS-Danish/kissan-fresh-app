@@ -67,8 +67,8 @@ class HomeHeader extends StatelessWidget {
                       InkWell(
                         onTap: () async {
                           final result = await Get.toNamed(AppRoutes.addressSelectionRoute);
-                          if (result != null) {
-                            Get.find<HomepageController>().updateAddress(result);
+                          if (result != null && result is Map<String, dynamic>) {
+                            Get.find<HomepageController>().updateAddress(result['address'] ?? '');
                           }
                         },
                         borderRadius: BorderRadius.circular(8),
@@ -89,7 +89,7 @@ class HomeHeader extends StatelessWidget {
                               const SizedBox(width: 8),
                               Flexible(
                                 child: Obx(() => Text(
-                                  Get.find<HomepageController>().currentAddress.value,
+                                  Get.find<HomepageController>().currentAddress.value ?? 'Fetching location...',
                                   style: GoogleFonts.montserrat(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,

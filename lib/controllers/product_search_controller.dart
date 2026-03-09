@@ -80,7 +80,7 @@ class ProductSearchController extends GetxController {
         ),
         onAddToCart: () {
           try {
-            Get.find<CartController>().addToCart(
+            bool added = Get.find<CartController>().addToCart(
               ProductCardModel(
                 id: product.id,
                 image: product.image,
@@ -95,7 +95,8 @@ class ProductSearchController extends GetxController {
               ),
               1, // quantity
             );
-             Get.snackbar(
+            if (added) {
+              Get.snackbar(
                 'Added to Cart',
                 '${product.title} added to cart',
                 snackPosition: SnackPosition.BOTTOM,
@@ -105,6 +106,7 @@ class ProductSearchController extends GetxController {
                 margin: const EdgeInsets.all(16),
                 borderRadius: 12,
               );
+            }
           } catch (e) {
             debugPrint("CartController not found: $e");
           }
@@ -166,7 +168,7 @@ class ProductSearchController extends GetxController {
            // We need to find the cart controller dynamically as this closure might be called later
            try {
              final cartController = Get.find<CartController>();
-              cartController.addToCart(
+              bool added = cartController.addToCart(
                 ProductCardModel(
                   image: image,
                   images: images,
@@ -179,16 +181,18 @@ class ProductSearchController extends GetxController {
                 ),
                 1
               );
-              Get.snackbar(
-                'Added to Cart',
-                '$title added to cart',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: const Color(0xFF10B981),
-                colorText: Colors.white,
-                duration: const Duration(seconds: 2),
-                margin: const EdgeInsets.all(16),
-                borderRadius: 12,
-              );
+              if (added) {
+                Get.snackbar(
+                  'Added to Cart',
+                  '$title added to cart',
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: const Color(0xFF10B981),
+                  colorText: Colors.white,
+                  duration: const Duration(seconds: 2),
+                  margin: const EdgeInsets.all(16),
+                  borderRadius: 12,
+                );
+              }
            } catch (e) {
              debugPrint("CartController not found: $e");
            }

@@ -1,22 +1,25 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import '../model/category_item_model.dart';
-import '../model/product_card_model.dart';
-import '../views/screens/product_details_screen.dart';
-import 'cart_controller.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:kissanfresh/services/location_service.dart';
+import 'package:kissanfresh/views/screens/product_details_screen.dart';
+import 'package:kissanfresh/model/product_card_model.dart';
+import 'package:kissanfresh/controllers/cart_controller.dart';
+import '../model/category_item_model.dart';
 
 class HomepageController extends GetxController {
   RxInt selectedIndex = 0.obs;
   RxString currentTab = 'Grocery'.obs; // 'Grocery' or 'HomeFood'
-  RxString currentAddress = 'Azam Colony, Roshan Gate'.obs;
+
+  // Expose LocationService address
+  RxnString get currentAddress => Get.find<LocationService>().currentAddress;
 
   void switchTab(String tab) {
     currentTab.value = tab;
   }
 
   void updateAddress(String newAddress) {
-    currentAddress.value = newAddress;
+    Get.find<LocationService>().currentAddress.value = newAddress;
   }
 
   final categories = [
@@ -197,7 +200,7 @@ class HomepageController extends GetxController {
             ));
       },
       onAddToCart: () {
-        Get.find<CartController>().addToCart(
+        bool added = Get.find<CartController>().addToCart(
           ProductCardModel(
             id: 'hf_1',
             title: "Spicy Paneer Thali",
@@ -211,13 +214,15 @@ class HomepageController extends GetxController {
           ),
           1,
         );
-        Get.snackbar("Added to Cart", "Spicy Paneer Thali added",
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: const Color(0xFF0d9488),
-            colorText: Colors.white,
-            margin: const EdgeInsets.all(16),
-            borderRadius: 16,
-            duration: const Duration(milliseconds: 1500));
+        if (added) {
+          Get.snackbar("Added to Cart", "Spicy Paneer Thali added",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFF0d9488),
+              colorText: Colors.white,
+              margin: const EdgeInsets.all(16),
+              borderRadius: 16,
+              duration: const Duration(milliseconds: 1500));
+        }
       },
     ),
     ProductCardModel(
@@ -245,7 +250,7 @@ class HomepageController extends GetxController {
             ));
       },
       onAddToCart: () {
-        Get.find<CartController>().addToCart(
+        bool added = Get.find<CartController>().addToCart(
           ProductCardModel(
             id: 'hf_2',
             title: "Chicken Biryani",
@@ -259,13 +264,15 @@ class HomepageController extends GetxController {
           ),
           1,
         );
-        Get.snackbar("Added to Cart", "Chicken Biryani added",
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: const Color(0xFF0d9488),
-            colorText: Colors.white,
-            margin: const EdgeInsets.all(16),
-            borderRadius: 16,
-            duration: const Duration(milliseconds: 1500));
+        if (added) {
+          Get.snackbar("Added to Cart", "Chicken Biryani added",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFF0d9488),
+              colorText: Colors.white,
+              margin: const EdgeInsets.all(16),
+              borderRadius: 16,
+              duration: const Duration(milliseconds: 1500));
+        }
       },
     ),
     ProductCardModel(
@@ -293,7 +300,7 @@ class HomepageController extends GetxController {
             ));
       },
       onAddToCart: () {
-        Get.find<CartController>().addToCart(
+        bool added = Get.find<CartController>().addToCart(
           ProductCardModel(
             id: 'hf_3',
             title: "Methi Thepla",
@@ -307,13 +314,15 @@ class HomepageController extends GetxController {
           ),
           1,
         );
-        Get.snackbar("Added to Cart", "Methi Thepla added",
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: const Color(0xFF0d9488),
-            colorText: Colors.white,
-            margin: const EdgeInsets.all(16),
-            borderRadius: 16,
-            duration: const Duration(milliseconds: 1500));
+        if (added) {
+          Get.snackbar("Added to Cart", "Methi Thepla added",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFF0d9488),
+              colorText: Colors.white,
+              margin: const EdgeInsets.all(16),
+              borderRadius: 16,
+              duration: const Duration(milliseconds: 1500));
+        }
       },
     ),
     ProductCardModel(
@@ -341,7 +350,7 @@ class HomepageController extends GetxController {
             ));
       },
       onAddToCart: () {
-        Get.find<CartController>().addToCart(
+        bool added = Get.find<CartController>().addToCart(
           ProductCardModel(
             id: 'hf_4',
             title: "Gajar Ka Halwa",
@@ -355,13 +364,15 @@ class HomepageController extends GetxController {
           ),
           1,
         );
-        Get.snackbar("Added to Cart", "Gajar Ka Halwa added",
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: const Color(0xFF0d9488),
-            colorText: Colors.white,
-            margin: const EdgeInsets.all(16),
-            borderRadius: 16,
-            duration: const Duration(milliseconds: 1500));
+        if (added) {
+          Get.snackbar("Added to Cart", "Gajar Ka Halwa added",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFF0d9488),
+              colorText: Colors.white,
+              margin: const EdgeInsets.all(16),
+              borderRadius: 16,
+              duration: const Duration(milliseconds: 1500));
+        }
       },
     ),
   ];

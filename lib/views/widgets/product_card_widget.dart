@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../model/product_card_model.dart';
 
@@ -52,28 +53,27 @@ class ProductCardWidget extends StatelessWidget {
                         : const ColorFilter.mode(
                             Colors.grey, BlendMode.saturation),
                     child: _isNetworkImage(product.image)
-                        ? Image.network(
-                            product.image,
+                        ? CachedNetworkImage(
+                            imageUrl: product.image,
                             fit: BoxFit.cover,
                             width: double.infinity,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Container(
-                                color: Colors.grey.shade50,
-                                child: Center(
+                            // Resize images dramatically to save memory rendering thousands of pixels we don't need
+                            memCacheWidth: 400, 
+                            memCacheHeight: 400,
+                            placeholder: (context, url) => Container(
+                              color: Colors.grey.shade50,
+                              child: const Center(
+                                child: SizedBox(
+                                  width: 24,
+                                  height: 24,
                                   child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes !=
-                                            null
-                                        ? loadingProgress.cumulativeBytesLoaded /
-                                            loadingProgress.expectedTotalBytes!
-                                        : null,
-                                    color: const Color(0xFF0d9488),
+                                    color: Color(0xFF0d9488),
                                     strokeWidth: 2.5,
                                   ),
                                 ),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
+                              ),
+                            ),
+                            errorWidget: (context, url, error) {
                               return _buildErrorPlaceholder();
                             },
                           )

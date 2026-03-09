@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:kissanfresh/model/user_model.dart';
 import 'package:kissanfresh/services/user_service.dart';
 import 'package:kissanfresh/routes/AppRoutes.dart';
+import 'package:kissanfresh/services/location_service.dart';
 
 class OnboardingController extends GetxController {
   final UserService _userService = UserService();
@@ -59,6 +60,9 @@ class OnboardingController extends GetxController {
       );
 
       await _userService.createUser(userModel);
+      
+      // Sync address globally to LocationService for immediate use
+      Get.find<LocationService>().currentAddress.value = address;
 
       isLoading.value = false;
       

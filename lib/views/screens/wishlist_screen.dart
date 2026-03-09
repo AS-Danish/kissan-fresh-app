@@ -105,17 +105,19 @@ class WishlistScreen extends StatelessWidget {
               onAddToCart: () {
                 try {
                   final cartController = Get.find<CartController>();
-                  cartController.addToCart(product, 1);
-                  Get.snackbar(
-                    'Added to Cart',
-                    '${product.title} added to cart',
-                    snackPosition: SnackPosition.BOTTOM,
-                    backgroundColor: const Color(0xFF10B981),
-                    colorText: Colors.white,
-                    duration: const Duration(seconds: 2),
-                    margin: const EdgeInsets.all(16),
-                    borderRadius: 12,
-                  );
+                  bool added = cartController.addToCart(product, 1);
+                  if (added) {
+                    Get.snackbar(
+                      'Added to Cart',
+                      '${product.title} added to cart',
+                      snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: const Color(0xFF10B981),
+                      colorText: Colors.white,
+                      duration: const Duration(seconds: 2),
+                      margin: const EdgeInsets.all(16),
+                      borderRadius: 12,
+                    );
+                  }
                 } catch (e) {
                    debugPrint("CartController not found: $e");
                 }

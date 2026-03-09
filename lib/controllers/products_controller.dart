@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,11 +12,25 @@ class ProductsController extends GetxController {
   
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   
+  // Real-time stream subscription for caching
+  StreamSubscription<QuerySnapshot>? _productsSubscription;
+
+  // Cache to store products per tab origin to avoid re-fetching on tab switch
+  final Map<String, List<ProductCardModel>> _cachedProducts = {
+    'kissan-fresh': [],
+    'home-food': [],
+  };
+
   // Pagination observables
   RxBool isLoadingProducts = false.obs;
   RxBool isFetchingMore = false.obs;
   RxBool hasMoreProducts = true.obs;
-  DocumentSnapshot? lastDocument;
+  
+  // Variables to hold the last document for each tab for pagination
+  final Map<String, DocumentSnapshot?> _lastDocuments = {
+    'kissan-fresh': null,
+    'home-food': null,
+  };
   
   final int limit = 10;
 
@@ -33,47 +48,87 @@ class ProductsController extends GetxController {
     return homepageController.currentTab.value == 'Grocery' ? 'kissan-fresh' : 'home-food';
   }
 
+  @override
+  void onClose() {
+    _productsSubscription?.cancel();
+    super.onClose();
+  }
+
   Future<void> fetchInitialProducts() async {
-    try {
+    final origin = currentOrigin;
+
+    // Load from cache instantly if available to prevent loading spinners
+    if (_cachedProducts[origin]!.isNotEmpty) {
+      products.value = _cachedProducts[origin]!;
+      // NOTE: We don't hide the loading indicator here because the UI is already populated.
+    } else {
       isLoadingProducts.value = true;
-      hasMoreProducts.value = true;
       products.clear();
+    }
+
+    try {
+      hasMoreProducts.value = true;
       
-      QuerySnapshot querySnapshot = await _firestore
+      // Cancel previous subscription if switching tabs
+      await _productsSubscription?.cancel();
+
+      // Setup a stream listener. This fetches from local cache first, then updates from server if changed.
+      _productsSubscription = _firestore
           .collection('products')
-          .where('productOrigin', isEqualTo: currentOrigin)
+          .where('productOrigin', isEqualTo: origin)
           .limit(limit)
-          .get();
+          .snapshots(includeMetadataChanges: true) // Allows observing cache vs server states
+          .listen((QuerySnapshot snapshot) {
+            
+        if (snapshot.docs.isEmpty) {
+          hasMoreProducts.value = false;
+          products.value = [];
+          _cachedProducts[origin] = [];
+          isLoadingProducts.value = false;
+          return;
+        }
 
-      if (querySnapshot.docs.isEmpty) {
-        hasMoreProducts.value = false;
-        products.value = [];
-        return;
-      }
+        // Store the last document of the initial load for pagination
+        _lastDocuments[origin] = snapshot.docs.last;
+        
+        final mappedProducts = snapshot.docs.map((doc) => _mapToProductCardModel(doc)).toList();
+        
+        // Only update if there's actually new or changed data. Stream triggers on initial load as well.
+        products.value = mappedProducts;
+        _cachedProducts[origin] = mappedProducts;
 
-      lastDocument = querySnapshot.docs.last;
-      products.value = querySnapshot.docs.map((doc) => _mapToProductCardModel(doc)).toList();
-      
-      if (querySnapshot.docs.length < limit) {
-        hasMoreProducts.value = false;
-      }
+        if (snapshot.docs.length < limit) {
+          hasMoreProducts.value = false;
+        } else {
+          hasMoreProducts.value = true;
+        }
+        
+        isLoadingProducts.value = false;
+      }, onError: (error) {
+        debugPrint("Error in products stream: $error");
+        isLoadingProducts.value = false;
+      });
+
     } catch (e) {
-      debugPrint("Error fetching initial products: $e");
-    } finally {
+      debugPrint("Error setting up initial products stream: $e");
       isLoadingProducts.value = false;
     }
   }
 
   Future<void> fetchNextPage() async {
-    if (isFetchingMore.value || !hasMoreProducts.value || lastDocument == null) return;
+    final origin = currentOrigin;
+    final lastDoc = _lastDocuments[origin];
+
+    if (isFetchingMore.value || !hasMoreProducts.value || lastDoc == null) return;
 
     try {
       isFetchingMore.value = true;
 
+      // Use a one-time get() for pagination to avoid compounding streams
       QuerySnapshot querySnapshot = await _firestore
           .collection('products')
-          .where('productOrigin', isEqualTo: currentOrigin)
-          .startAfterDocument(lastDocument!)
+          .where('productOrigin', isEqualTo: origin)
+          .startAfterDocument(lastDoc)
           .limit(limit)
           .get();
 
@@ -82,10 +137,12 @@ class ProductsController extends GetxController {
         return;
       }
 
-      lastDocument = querySnapshot.docs.last;
+      _lastDocuments[origin] = querySnapshot.docs.last;
       
       final newProducts = querySnapshot.docs.map((doc) => _mapToProductCardModel(doc)).toList();
+      
       products.addAll(newProducts);
+      _cachedProducts[origin]!.addAll(newProducts); // Update cache with paginated data
 
       if (querySnapshot.docs.length < limit) {
         hasMoreProducts.value = false;

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:kissanfresh/routes/AppRoutes.dart';
 import 'package:kissanfresh/services/auth_service.dart';
 import 'package:kissanfresh/services/user_service.dart';
+import 'package:kissanfresh/services/location_service.dart';
 
 class AuthController extends GetxController {
   static AuthController get instance => Get.find();
@@ -28,17 +29,28 @@ class AuthController extends GetxController {
     ever(firebaseUser, _setInitialScreen);
   }
 
-  _setInitialScreen(User? user) {
+  _setInitialScreen(User? user) async {
     // This logic can be used to redirect, but since we have a hybrid approach 
     // where home is always visible, we might not want to force redirect on init for everyone
     // unless they are in a protected route.
-    // For now, we will rely on manual checks or route guards.
+    // However, if the user IS logged in, we MUST verify onboarding status.
     if (user != null) {
-      // User is logged in
-       debugPrint("User is logged in: ${user.phoneNumber}");
-      // If we are on login screen, go back or go home
-      if (Get.currentRoute == AppRoutes.loginScreen || Get.currentRoute == AppRoutes.mainLayout) {
-         // Get.offAllNamed(AppRoutes.mainLayout); // Or just stay/go back
+      debugPrint("User is logged in: ${user.phoneNumber}");
+      
+      // Fetch user data from firestore to check onboarding
+      final userModel = await _userService.getUser(user.uid);
+      
+      if (userModel == null || !userModel.onboardingCompleted) {
+         // Profile is incomplete! Force them to onboarding screen
+         debugPrint("User onboarding is incomplete. Forcing redirect to onboarding.");
+         Get.offAllNamed(AppRoutes.onboardingRoute);
+      } else {
+         // User is fully onboarded.
+         // If we are on login screen, or onboarding screen by mistake, go home
+         if (Get.currentRoute == AppRoutes.loginScreen || 
+             Get.currentRoute == AppRoutes.onboardingRoute) {
+            Get.offAllNamed(AppRoutes.mainLayout);
+         }
       }
     } else {
        debugPrint("User is logged out");
@@ -137,8 +149,16 @@ class AuthController extends GetxController {
   void _handleSuccess() async {
     final user = _authService.currentUser;
     if (user != null) {
-      bool exists = await _userService.checkUserExists(user.uid);
-      if (exists) {
+      final userModel = await _userService.getUser(user.uid);
+      final bool isFullyOnboarded = userModel != null && userModel.onboardingCompleted;
+      
+      if (isFullyOnboarded) {
+        
+        // Populate global location logic via Firestore Profile
+        if (userModel?.address != null && userModel!.address!.isNotEmpty) {
+           Get.find<LocationService>().currentAddress.value = userModel.address;
+        }
+
         Get.offAllNamed(AppRoutes.mainLayout); // Clear stack and go home
         Get.snackbar(
           "Success",

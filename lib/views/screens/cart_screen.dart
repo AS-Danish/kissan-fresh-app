@@ -4,7 +4,8 @@ import 'package:get/get.dart';
 import 'package:kissanfresh/controllers/auth_controller.dart';
 import 'package:kissanfresh/routes/AppRoutes.dart';
 import 'package:kissanfresh/controllers/address_controller.dart';
-import '../../controllers/cart_controller.dart';
+import 'package:kissanfresh/controllers/cart_controller.dart';
+import 'package:kissanfresh/services/location_service.dart';
 
 class CartScreen extends StatelessWidget {
   CartScreen({super.key});
@@ -186,7 +187,7 @@ class CartScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Obx(() => Text(
-                  addressController.currentAddress.value,
+                  Get.find<LocationService>().currentAddress.value ?? 'Fetching location...',
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -202,8 +203,8 @@ class CartScreen extends StatelessWidget {
             onTap: () async {
               // Navigate to address selection
               final result = await Get.toNamed(AppRoutes.addressSelectionRoute);
-              if (result != null) {
-                // Address updated automatically via controller but we can handle result if needed
+              if (result != null && result is Map<String, dynamic>) {
+                 Get.find<LocationService>().currentAddress.value = result['address'] ?? '';
               }
             },
             borderRadius: BorderRadius.circular(20),

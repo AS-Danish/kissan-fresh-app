@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import '../model/product_card_model.dart';
 import 'cart_controller.dart';
 import 'wishlist_controller.dart';
+import 'auth_controller.dart';
+import '../routes/AppRoutes.dart';
 
 class ProductDetailsController extends GetxController {
   // Observable quantity
@@ -38,6 +40,19 @@ class ProductDetailsController extends GetxController {
 
   /// Toggle favorite status
   void toggleFavorite() {
+    final authController = Get.find<AuthController>();
+    if (authController.firebaseUser.value == null) {
+      Get.toNamed(AppRoutes.loginScreen);
+      Get.snackbar(
+        'Login Required',
+        'Please login to save favorite items across devices.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF0d9488),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
     final wishlistController = Get.find<WishlistController>();
     wishlistController.toggleWishlist(product);
     
@@ -59,6 +74,19 @@ class ProductDetailsController extends GetxController {
 
   /// Add product to cart
   void addToCart() {
+    final authController = Get.find<AuthController>();
+    if (authController.firebaseUser.value == null) {
+      Get.toNamed(AppRoutes.loginScreen);
+      Get.snackbar(
+        'Login Required',
+        'Please login to add items to your cart.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF0d9488),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
     try {
       final cartController = Get.put(CartController());
       final productId = product.id ?? product.title;

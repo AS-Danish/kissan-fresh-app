@@ -83,14 +83,7 @@ class WishlistController extends GetxController {
     if (!isInWishlist(product)) {
       final user = _authController.firebaseUser.value;
       if (user == null) {
-        Get.toNamed(AppRoutes.loginScreen);
-        Get.snackbar(
-          'Login Required',
-          'Please login to save favorite items across devices.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: const Color(0xFF0d9488),
-          colorText: Colors.white,
-        );
+        // Redundant check for safety, actual guard is in toggleWishlist now
         return;
       }
 
@@ -134,6 +127,19 @@ class WishlistController extends GetxController {
 
   // Toggle wishlist status
   void toggleWishlist(ProductCardModel product) {
+    final user = _authController.firebaseUser.value;
+    if (user == null) {
+      Get.toNamed(AppRoutes.loginScreen);
+      Get.snackbar(
+        'Login Required',
+        'Please login to save favorite items across devices.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: const Color(0xFF0d9488),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
     if (isInWishlist(product)) {
       removeFromWishlist(product);
     } else {
