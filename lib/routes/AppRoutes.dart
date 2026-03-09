@@ -18,6 +18,8 @@ import 'package:kissanfresh/views/screens/address_selection_screen.dart';
 import 'package:kissanfresh/views/screens/otp_verification_screen.dart';
 import 'package:kissanfresh/views/screens/onboarding_screen.dart';
 import 'package:kissanfresh/bindings/onboarding_binding.dart';
+import 'package:kissanfresh/middleware/auth_middleware.dart';
+
 abstract class AppRoutes {
   static const auth = '/';
   static const mainLayout = '/main-layout';
@@ -64,10 +66,18 @@ abstract class AppRoutes {
       },
       binding: ProductDetailsBinding(),
     ),
-    GetPage(name: loginScreen, page: () => LoginScreen()),
+    GetPage(
+      name: loginScreen, 
+      page: () => LoginScreen(),
+      middlewares: [AuthMiddleware()],
+    ),
     GetPage(name: profileRoute, page: () => const ProfileScreen()),
     GetPage(name: addressSelectionRoute, page: () => const AddressSelectionScreen()),
-    GetPage(name: otpVerificationRoute, page: () => OtpVerificationScreen()),
+    GetPage(
+      name: otpVerificationRoute, 
+      page: () => OtpVerificationScreen(),
+      middlewares: [AuthMiddleware()],
+    ),
     GetPage(name: onboardingRoute, page: () => const OnboardingScreen(), binding: OnboardingBinding()),
   ];
 }

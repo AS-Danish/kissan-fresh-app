@@ -184,6 +184,13 @@ class AuthController extends GetxController {
 
   void logout() async {
     await _authService.signOut();
+    Get.snackbar(
+      "Success",
+      "Successfully Logged Out",
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+    );
     Get.offAllNamed(AppRoutes.mainLayout);
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kissanfresh/routes/AppRoutes.dart';
+import 'package:kissanfresh/controllers/auth_controller.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -324,39 +325,79 @@ class SettingsScreen extends StatelessWidget {
   Widget _buildLogoutButton() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: ElevatedButton(
-        onPressed: () {
-          Get.toNamed(AppRoutes.loginScreen);
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: const Color(0xFFEF4444),
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(
-              color: Color(0xFFEF4444),
-              width: 1.5,
-            ),
-          ),
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          minimumSize: const Size(double.infinity, 50),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(Icons.logout, size: 20),
-            SizedBox(width: 8),
-            Text(
-              'Logout',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+      child: Obx(() {
+        final authController = AuthController.instance;
+        final isLoggedIn = authController.firebaseUser.value != null;
+
+        if (isLoggedIn) {
+          // Show Logout
+          return ElevatedButton(
+            onPressed: () {
+              // Trigger the true logout sequence which destroys Firebase session and redirects
+              authController.logout();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFFEF4444),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(
+                  color: Color(0xFFEF4444),
+                  width: 1.5,
+                ),
               ),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              minimumSize: const Size(double.infinity, 50),
             ),
-          ],
-        ),
-      ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(Icons.logout, size: 20),
+                SizedBox(width: 8),
+                Text(
+                  'Logout',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else {
+          // Show Login
+          return ElevatedButton(
+            onPressed: () {
+              Get.toNamed(AppRoutes.loginScreen);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0d9488),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              minimumSize: const Size(double.infinity, 50),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(Icons.login, size: 20),
+                SizedBox(width: 8),
+                Text(
+                  'Login',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+      }),
     );
   }
 
