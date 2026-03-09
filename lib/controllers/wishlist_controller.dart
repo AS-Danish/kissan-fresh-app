@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../model/product_card_model.dart';
 import '../routes/AppRoutes.dart';
 import 'auth_controller.dart';
@@ -23,6 +24,22 @@ class WishlistController extends GetxController {
     final user = _authController.firebaseUser.value;
     if (user == null) return;
 
+    final box = Hive.box('wishlist_box');
+    
+    // First: Load from local cache instantly
+    if (box.containsKey(user.uid)) {
+      final cachedData = box.get(user.uid) as List<dynamic>?;
+      if (cachedData != null) {
+        List<ProductCardModel> loadedItems = [];
+        for (var data in cachedData) {
+            final mapData = Map<String, dynamic>.from(data as Map);
+            loadedItems.add(_mapToProductCardModel(mapData));
+        }
+        wishlistItems.value = loadedItems;
+      }
+    }
+
+    // Second: Silent fetch from Firestore to ensure synchronization
     try {
       final docSnapshot = await _firestore
           .collection('users')
@@ -32,26 +49,35 @@ class WishlistController extends GetxController {
       List<ProductCardModel> loadedItems = [];
       if (docSnapshot.exists && docSnapshot.data() != null && docSnapshot.data()!.containsKey('wishlist')) {
         List<dynamic> wishlistData = docSnapshot.data()!['wishlist'];
+        
+        // Save raw network response to Box for next startup
+        box.put(user.uid, wishlistData);
+
         for (var data in wishlistData) {
-          loadedItems.add(ProductCardModel(
-            id: data['id'] ?? data['title'],
-            title: data['title'] ?? 'Unknown',
-            description: data['description'] ?? '',
-            price: (data['price'] ?? 0).toDouble(),
-            image: data['image'] ?? '',
-            unit: data['unit'] ?? 'unit',
-            category: data['category'],
-            inStock: data['inStock'] ?? true,
-            tags: data['tags'] != null ? List<String>.from(data['tags']) : null,
-            onTap: () {},
-            onAddToCart: () {},
-          ));
+          loadedItems.add(_mapToProductCardModel(data as Map<String, dynamic>));
         }
       }
       wishlistItems.value = loadedItems;
     } catch (e) {
-      print("Error fetching wishlist: $e");
+      print("Error fetching wishlist from network: $e");
     }
+  }
+
+  ProductCardModel _mapToProductCardModel(Map<String, dynamic> data) {
+    return ProductCardModel(
+      id: data['id'] ?? data['title'],
+      title: data['title'] ?? 'Unknown',
+      description: data['description'] ?? '',
+      price: (data['price'] ?? 0).toDouble(),
+      image: data['image'] ?? '',
+      images: data['images'] != null ? List<String>.from(data['images']) : null,
+      unit: data['unit'] ?? 'unit',
+      category: data['category'],
+      inStock: data['inStock'] ?? true,
+      tags: data['tags'] != null ? List<String>.from(data['tags']) : null,
+      onTap: () {},
+      onAddToCart: () {},
+    );
   }
 
   // Helper to sync local wishlist with Firestore array
@@ -67,7 +93,12 @@ class WishlistController extends GetxController {
         'category': item.category,
         'tags': item.tags,
         'inStock': item.inStock,
+        'images': item.images,
       }).toList();
+
+      // Update to Local Hive instantly
+      final box = Hive.box('wishlist_box');
+      box.put(uid, data);
 
       await _firestore
           .collection('users')

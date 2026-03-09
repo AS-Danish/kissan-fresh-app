@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/profile_controller.dart';
+import 'package:kissanfresh/routes/AppRoutes.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -31,10 +32,16 @@ class ProfileScreen extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF0d9488)),
+          );
+        }
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
             // Profile Image
             Center(
               child: Stack(
@@ -115,10 +122,10 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _buildTextField(
-              label: 'Email Address',
+              label: 'Email Address (Optional)',
               controller: controller.emailController,
               icon: Icons.email_outlined,
-              isReadOnly: true, // Email usually not editable directly
+              isReadOnly: false, 
             ),
             const SizedBox(height: 16),
              _buildTextField(
@@ -126,6 +133,7 @@ class ProfileScreen extends StatelessWidget {
               controller: controller.phoneController,
               icon: Icons.phone_outlined,
               keyboardType: TextInputType.phone,
+              isReadOnly: true,
             ),
             const SizedBox(height: 16),
             _buildTextField(
@@ -133,6 +141,13 @@ class ProfileScreen extends StatelessWidget {
               controller: controller.addressController,
               icon: Icons.location_on_outlined,
               maxLines: 3,
+              isReadOnly: true,
+              onTap: () async {
+                final result = await Get.toNamed(AppRoutes.addressSelectionRoute);
+                if (result != null && result is Map<String, dynamic>) {
+                   controller.addressController.text = result['address'] ?? '';
+                }
+              }
             ),
 
             const SizedBox(height: 32),
@@ -188,10 +203,11 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
             ),
-             const SizedBox(height: 32),
-          ],
-        ),
-      ),
+              const SizedBox(height: 32),
+            ],
+          ),
+        );
+      }),
     );
   }
 
@@ -202,6 +218,7 @@ class ProfileScreen extends StatelessWidget {
     bool isReadOnly = false,
     TextInputType keyboardType = TextInputType.text,
     int maxLines = 1,
+    VoidCallback? onTap,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,10 +249,11 @@ class ProfileScreen extends StatelessWidget {
             readOnly: isReadOnly,
             keyboardType: keyboardType,
             maxLines: maxLines,
+            onTap: onTap,
             style: GoogleFonts.montserrat(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Colors.black87,
+              color: isReadOnly && onTap == null ? Colors.grey.shade600 : Colors.black87,
             ),
             decoration: InputDecoration(
               prefixIcon: Icon(icon, color: const Color(0xFF9AA7AC), size: 20),
