@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kissanfresh/controllers/bottom_bar_controller.dart';
+import 'package:kissanfresh/controllers/cart_controller.dart';
 import '../../routes/AppRoutes.dart';
 import '../../themes/app_theme.dart';
 
@@ -174,29 +175,34 @@ class MainLayout extends StatelessWidget {
             ),
           ),
           // Badge
-          Positioned(
-            right: 0,
-            top: 0,
-            child: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: Colors.red,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
-              ),
-              constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
-              child: const Center(
-                child: Text(
-                  '3',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
+          Obx(() {
+            final cartController = Get.find<CartController>();
+            if (cartController.totalItemCount == 0) return const SizedBox.shrink();
+            
+            return Positioned(
+              right: 0,
+              top: 0,
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                child: Center(
+                  child: Text(
+                    '${cartController.totalItemCount}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-            ),
-          ),
+            );
+          }),
         ],
       ),
     );

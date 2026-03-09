@@ -10,7 +10,7 @@ import 'package:kissanfresh/views/layout/main_layout.dart';
 import 'firebase_options.dart';
 
 import 'package:kissanfresh/controllers/auth_controller.dart';
-
+import 'package:kissanfresh/controllers/cart_controller.dart';
 import 'package:kissanfresh/services/location_service.dart';
 
 void main() async{
@@ -26,6 +26,7 @@ void main() async{
   await Hive.openBox('wishlist_box');
   Get.put(LocationService(), permanent: true); // Add LocationService
   Get.put(AuthController(), permanent: true);
+  Get.put(CartController(), permanent: true);
   runApp(const MyApp());
 }
 

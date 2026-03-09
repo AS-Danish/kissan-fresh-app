@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../model/product_card_model.dart';
@@ -8,6 +9,7 @@ import 'auth_controller.dart';
 
 class CartController extends GetxController {
   final AuthController _authController = Get.find<AuthController>();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Observable list of cart items
   RxList<CartItem> cartItems = <CartItem>[].obs;
@@ -37,7 +39,7 @@ class CartController extends GetxController {
   }
 
   int get totalItemCount {
-    return cartItems.fold(0, (sum, item) => sum + item.count);
+    return cartItems.length;
   }
 
   // Add product to cart from ProductCardModel
@@ -64,6 +66,7 @@ class CartController extends GetxController {
       price: product.price,
       image: product.image,
       count: quantity,
+      inStock: product.inStock,
     );
 
     final existingIndex = cartItems.indexWhere((i) => i.id == productId);
@@ -152,6 +155,45 @@ class CartController extends GetxController {
   void onInit() {
     super.onInit();
     _loadFromHive();
+    validateCartItems();
+  }
+
+  // Ensures exact stock status and price maps directly from Firestore.
+  Future<void> validateCartItems() async {
+    if (cartItems.isEmpty) return;
+
+    bool needsUpdate = false;
+    for (int i = 0; i < cartItems.length; i++) {
+        try {
+          final docSnap = await _firestore.collection('products').doc(cartItems[i].id).get();
+          if (docSnap.exists) {
+            final data = docSnap.data();
+            if (data != null) {
+               final double freshPrice = (data['price'] ?? 0).toDouble();
+               final bool freshStock = data['inStock'] ?? true;
+               
+               if (cartItems[i].price != freshPrice || cartItems[i].inStock != freshStock) {
+                 cartItems[i].price = freshPrice;
+                 cartItems[i].inStock = freshStock;
+                 needsUpdate = true;
+               }
+            }
+          } else {
+             // Product deleted from db, forcefully flag out of stock
+             if (cartItems[i].inStock != false) {
+                 cartItems[i].inStock = false;
+                 needsUpdate = true;
+             }
+          }
+        } catch (e) {
+          print("Error validating cart item ${cartItems[i].id}: $e");
+        }
+    }
+
+    if (needsUpdate) {
+      cartItems.refresh();
+      _saveToHive();
+    }
   }
 
   void _loadFromHive() {
@@ -180,9 +222,10 @@ class CartItem {
   final String id;
   final String name;
   final String quantity;
-  final double price;
+  double price;
   final String image;
   int count;
+  bool inStock;
 
   CartItem({
     required this.id,
@@ -191,6 +234,7 @@ class CartItem {
     required this.price,
     required this.image,
     this.count = 1,
+    this.inStock = true,
   });
 
   // Convert CartItem to Map for storage/serialization
@@ -202,6 +246,7 @@ class CartItem {
       'price': price,
       'image': image,
       'count': count,
+      'inStock': inStock,
     };
   }
 
@@ -214,6 +259,7 @@ class CartItem {
       price: json['price'].toDouble(),
       image: json['image'],
       count: json['count'],
+      inStock: json['inStock'] ?? true,
     );
   }
 }

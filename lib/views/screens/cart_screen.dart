@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:kissanfresh/controllers/auth_controller.dart';
 import 'package:kissanfresh/routes/AppRoutes.dart';
 import 'package:kissanfresh/controllers/address_controller.dart';
@@ -290,32 +291,26 @@ class CartScreen extends StatelessWidget {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  item.image,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Center(
+                child: Opacity(
+                  opacity: item.inStock ? 1.0 : 0.5,
+                  child: CachedNetworkImage(
+                    imageUrl: item.image,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Center(
                       child: CircularProgressIndicator(
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded /
-                            loadingProgress.expectedTotalBytes!
-                            : null,
                         strokeWidth: 2,
                         color: const Color(0xFF0d9488),
                       ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
+                    ),
+                    errorWidget: (context, url, error) => Container(
                       color: Colors.grey.shade200,
                       child: const Icon(
                         Icons.image_not_supported_outlined,
                         color: Colors.grey,
                         size: 32,
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -368,13 +363,35 @@ class CartScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    item.quantity,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        item.quantity,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 13,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      if (!item.inStock) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEF4444).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'Out of Stock',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFFEF4444),
+                            ),
+                          ),
+                        ),
+                      ]
+                    ],
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -614,18 +631,36 @@ class CartScreen extends StatelessWidget {
                 margin: const EdgeInsets.all(16),
                 borderRadius: 12,
               );
-            } else {
-              Get.snackbar(
-                'Success',
-                'Proceeding to checkout',
+              return;
+            } 
+            
+            // Validate if any items are out of stock
+            final outOfStockItems = controller.cartItems.where((item) => !item.inStock).toList();
+            if (outOfStockItems.isNotEmpty) {
+               Get.snackbar(
+                'Items Out of Stock',
+                'Please remove out-of-stock items before checking out.',
                 snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: const Color(0xFF10B981),
+                backgroundColor: const Color(0xFFEF4444),
                 colorText: Colors.white,
-                duration: const Duration(seconds: 2),
+                duration: const Duration(seconds: 3),
                 margin: const EdgeInsets.all(16),
                 borderRadius: 12,
+                icon: const Icon(Icons.warning_amber_rounded, color: Colors.white),
               );
+              return;
             }
+
+            Get.snackbar(
+              'Success',
+              'Proceeding to checkout',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFF10B981),
+              colorText: Colors.white,
+              duration: const Duration(seconds: 2),
+              margin: const EdgeInsets.all(16),
+              borderRadius: 12,
+            );
           },
           borderRadius: BorderRadius.circular(28),
           child: Padding(
