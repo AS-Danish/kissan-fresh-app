@@ -15,37 +15,54 @@ class ProductsController extends GetxController {
   // Real-time stream subscription for caching
   StreamSubscription<QuerySnapshot>? _productsSubscription;
 
-  // Cache to store products per tab origin to avoid re-fetching on tab switch
-  final Map<String, List<ProductCardModel>> _cachedProducts = {
-    'kissan-fresh': [],
-    'home-food': [],
-  };
+  // Cache to store products per tab/category avoiding re-fetching
+  final Map<String, List<ProductCardModel>> _cachedProducts = {};
 
   // Pagination observables
   RxBool isLoadingProducts = false.obs;
   RxBool isFetchingMore = false.obs;
   RxBool hasMoreProducts = true.obs;
   
-  // Variables to hold the last document for each tab for pagination
-  final Map<String, DocumentSnapshot?> _lastDocuments = {
-    'kissan-fresh': null,
-    'home-food': null,
-  };
+  // Variables to hold the last document for each tab/category for pagination
+  final Map<String, DocumentSnapshot?> _lastDocuments = {};
   
   final int limit = 10;
 
   @override
   void onInit() {
     super.onInit();
-    // Listen to tab changes
-    ever(homepageController.currentTab, (_) {
-      fetchInitialProducts();
+    // Listen to tab and category changes
+    ever(homepageController.currentTab, (_) => fetchInitialProducts());
+    ever(homepageController.selectedIndex, (_) {
+      if (homepageController.currentTab.value == 'Grocery') fetchInitialProducts();
+    });
+    ever(homepageController.selectedHomeFoodIndex, (_) {
+      if (homepageController.currentTab.value == 'HomeFood') fetchInitialProducts();
     });
     fetchInitialProducts();
   }
 
   String get currentOrigin {
     return homepageController.currentTab.value == 'Grocery' ? 'kissan-fresh' : 'home-food';
+  }
+
+  String get currentCategory {
+    if (homepageController.currentTab.value == 'Grocery') {
+      final idx = homepageController.selectedIndex.value;
+      if (idx >= 0 && idx < homepageController.categories.length) {
+        return homepageController.categories[idx].label;
+      }
+    } else {
+      final idx = homepageController.selectedHomeFoodIndex.value;
+      if (idx >= 0 && idx < homepageController.homeFoodCategories.length) {
+        return homepageController.homeFoodCategories[idx].label;
+      }
+    }
+    return 'All';
+  }
+
+  String get currentCacheKey {
+    return '${currentOrigin}_$currentCategory';
   }
 
   @override
@@ -56,10 +73,12 @@ class ProductsController extends GetxController {
 
   Future<void> fetchInitialProducts() async {
     final origin = currentOrigin;
+    final category = currentCategory;
+    final cacheKey = currentCacheKey;
 
     // Load from cache instantly if available to prevent loading spinners
-    if (_cachedProducts[origin]!.isNotEmpty) {
-      products.value = _cachedProducts[origin]!;
+    if (_cachedProducts.containsKey(cacheKey) && _cachedProducts[cacheKey]!.isNotEmpty) {
+      products.value = _cachedProducts[cacheKey]!;
       // NOTE: We don't hide the loading indicator here because the UI is already populated.
     } else {
       isLoadingProducts.value = true;
@@ -73,9 +92,15 @@ class ProductsController extends GetxController {
       await _productsSubscription?.cancel();
 
       // Setup a stream listener. This fetches from local cache first, then updates from server if changed.
-      _productsSubscription = _firestore
+      Query query = _firestore
           .collection('products')
-          .where('productOrigin', isEqualTo: origin)
+          .where('productOrigin', isEqualTo: origin);
+          
+      if (category != 'All') {
+        query = query.where('category', isEqualTo: category);
+      }
+          
+      _productsSubscription = query
           .limit(limit)
           .snapshots(includeMetadataChanges: true) // Allows observing cache vs server states
           .listen((QuerySnapshot snapshot) {
@@ -83,19 +108,19 @@ class ProductsController extends GetxController {
         if (snapshot.docs.isEmpty) {
           hasMoreProducts.value = false;
           products.value = [];
-          _cachedProducts[origin] = [];
+          _cachedProducts[cacheKey] = [];
           isLoadingProducts.value = false;
           return;
         }
 
         // Store the last document of the initial load for pagination
-        _lastDocuments[origin] = snapshot.docs.last;
+        _lastDocuments[cacheKey] = snapshot.docs.last;
         
         final mappedProducts = snapshot.docs.map((doc) => _mapToProductCardModel(doc)).toList();
         
         // Only update if there's actually new or changed data. Stream triggers on initial load as well.
         products.value = mappedProducts;
-        _cachedProducts[origin] = mappedProducts;
+        _cachedProducts[cacheKey] = mappedProducts;
 
         if (snapshot.docs.length < limit) {
           hasMoreProducts.value = false;
@@ -117,17 +142,25 @@ class ProductsController extends GetxController {
 
   Future<void> fetchNextPage() async {
     final origin = currentOrigin;
-    final lastDoc = _lastDocuments[origin];
+    final category = currentCategory;
+    final cacheKey = currentCacheKey;
+    final lastDoc = _lastDocuments[cacheKey];
 
     if (isFetchingMore.value || !hasMoreProducts.value || lastDoc == null) return;
 
     try {
       isFetchingMore.value = true;
 
-      // Use a one-time get() for pagination to avoid compounding streams
-      QuerySnapshot querySnapshot = await _firestore
+      Query query = _firestore
           .collection('products')
-          .where('productOrigin', isEqualTo: origin)
+          .where('productOrigin', isEqualTo: origin);
+          
+      if (category != 'All') {
+        query = query.where('category', isEqualTo: category);
+      }
+
+      // Use a one-time get() for pagination to avoid compounding streams
+      QuerySnapshot querySnapshot = await query
           .startAfterDocument(lastDoc)
           .limit(limit)
           .get();
@@ -137,12 +170,13 @@ class ProductsController extends GetxController {
         return;
       }
 
-      _lastDocuments[origin] = querySnapshot.docs.last;
+      _lastDocuments[cacheKey] = querySnapshot.docs.last;
       
       final newProducts = querySnapshot.docs.map((doc) => _mapToProductCardModel(doc)).toList();
       
       products.addAll(newProducts);
-      _cachedProducts[origin]!.addAll(newProducts); // Update cache with paginated data
+      _cachedProducts[cacheKey] ??= [];
+      _cachedProducts[cacheKey]!.addAll(newProducts); // Update cache with paginated data
 
       if (querySnapshot.docs.length < limit) {
         hasMoreProducts.value = false;

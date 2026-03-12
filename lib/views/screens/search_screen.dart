@@ -127,6 +127,52 @@ class SearchScreen extends StatelessWidget {
                 ? Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (controller.recentSearches.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Text(
+                      'Recent Searches',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.black87,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: controller.recentSearches.map((query) => InputChip(
+                        label: Text(
+                          query,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF2D3748),
+                          ),
+                        ),
+                        backgroundColor: Colors.white,
+                        deleteIconColor: const Color(0xFF8E9AA0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        onSelected: (_) {
+                          searchTextController.text = query;
+                          controller.searchQuery.value = query;
+                        },
+                        onDeleted: () {
+                          controller.removeRecentSearch(query);
+                        },
+                      )).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Text(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../model/product_card_model.dart';
 import '../routes/AppRoutes.dart';
 import 'homepage_controller.dart';
@@ -33,11 +34,20 @@ class ProductSearchController extends GetxController {
   var speechToText = stt.SpeechToText();
   RxBool isListening = false.obs;
 
+  // Recent Searches
+  RxList<String> recentSearches = <String>[].obs;
+  static const String recentSearchesKey = 'recent_searches_history';
+
   @override
   void onInit() {
     super.onInit();
+    _loadRecentSearches();
     _setCategories();
     
+    if (Get.arguments != null && Get.arguments['category'] != null) {
+      selectedCategory.value = Get.arguments['category'];
+    }
+
     // Setup debouncing for search query
     debounce(searchQuery, (_) => _performSearch(), time: const Duration(milliseconds: 500));
     
@@ -56,6 +66,37 @@ class ProductSearchController extends GetxController {
       // Small delay to allow transition before triggering mic popup
       Future.delayed(const Duration(milliseconds: 300), startListening);
     }
+  }
+
+  Future<void> _loadRecentSearches() async {
+    final prefs = await SharedPreferences.getInstance();
+    final searches = prefs.getStringList(recentSearchesKey) ?? [];
+    recentSearches.assignAll(searches);
+  }
+
+  Future<void> _saveRecentSearch(String query) async {
+    String trimmed = query.trim();
+    if (trimmed.isEmpty) return;
+    
+    final prefs = await SharedPreferences.getInstance();
+    List<String> searches = prefs.getStringList(recentSearchesKey) ?? [];
+    
+    searches.remove(trimmed);
+    searches.insert(0, trimmed);
+    if (searches.length > 5) {
+      searches = searches.sublist(0, 5);
+    }
+    
+    await prefs.setStringList(recentSearchesKey, searches);
+    recentSearches.assignAll(searches);
+  }
+
+  Future<void> removeRecentSearch(String query) async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> searches = prefs.getStringList(recentSearchesKey) ?? [];
+    searches.remove(query);
+    await prefs.setStringList(recentSearchesKey, searches);
+    recentSearches.assignAll(searches);
   }
 
   void _initSpeech() async {
@@ -147,6 +188,9 @@ class ProductSearchController extends GetxController {
     if (currentToken == _searchToken) {
       if (searchResults.isNotEmpty && _lastDocument != null) {
         _cache[cacheKey] = List.from(searchResults);
+      }
+      if (searchQuery.value.trim().isNotEmpty) {
+        _saveRecentSearch(searchQuery.value);
       }
       isLoading.value = false;
     }

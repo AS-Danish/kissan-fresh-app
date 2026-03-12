@@ -168,32 +168,42 @@ class OtpVerificationScreen extends StatelessWidget {
                       
                       const SizedBox(height: 24),
                       
-                      // Resend Code (Mock for now, can be implemented later)
-                      Row(
+                      // Resend Code
+                      Obx(() => Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "Don't receive code? ",
+                            "Didn't receive code? ",
                             style: GoogleFonts.montserrat(
                               color: Colors.grey.shade600,
                               fontSize: 14,
                             ),
                           ),
-                          GestureDetector(
-                            onTap: () {
-                              // Resend logic
-                            },
-                            child: Text(
-                              "Resend",
+                          if (controller.resendTimer.value > 0)
+                            Text(
+                              "Resend in ${controller.resendTimer.value}s",
                               style: GoogleFonts.montserrat(
-                                color: const Color(0xFF0d9488),
+                                color: Colors.grey.shade500,
                                 fontSize: 14,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            )
+                          else
+                            GestureDetector(
+                              onTap: () {
+                                controller.resendOtp(phoneNumber);
+                              },
+                              child: Text(
+                                "Resend",
+                                style: GoogleFonts.montserrat(
+                                  color: const Color(0xFF0d9488),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                             ),
-                          ),
                         ],
-                      ),
+                      )),
                     ],
                   ),
                 ),

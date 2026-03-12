@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/products_controller.dart';
+import '../../controllers/homepage_controller.dart';
+import '../../routes/AppRoutes.dart';
 import 'product_card_widget.dart';
 
 class AllProductsSection extends StatelessWidget {
@@ -24,15 +26,26 @@ class AllProductsSection extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "All Products",
-                    style: GoogleFonts.montserrat(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.black87,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
+                  Obx(() {
+                    final homepageController = Get.find<HomepageController>();
+                    String title = "All Products";
+                    if (homepageController.currentTab.value == 'Grocery') {
+                       final lbl = homepageController.categories[homepageController.selectedIndex.value].label;
+                       if (lbl != 'All') title = lbl;
+                    } else {
+                       final lbl = homepageController.homeFoodCategories[homepageController.selectedHomeFoodIndex.value].label;
+                       if (lbl != 'All') title = lbl;
+                    }
+                    return Text(
+                      title,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.black87,
+                        letterSpacing: 0.3,
+                      ),
+                    );
+                  }),
                   const SizedBox(height: 2),
                   Text(
                     "Fresh & Quality Products",
@@ -47,7 +60,14 @@ class AllProductsSection extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () {
-                  debugPrint('See all products');
+                  final homepageController = Get.find<HomepageController>();
+                  String category = 'All';
+                  if (homepageController.currentTab.value == 'Grocery') {
+                    category = homepageController.categories[homepageController.selectedIndex.value].label;
+                  } else {
+                    category = homepageController.homeFoodCategories[homepageController.selectedHomeFoodIndex.value].label;
+                  }
+                  Get.toNamed(AppRoutes.searchRoute, arguments: {'category': category});
                 },
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(

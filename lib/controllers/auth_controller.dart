@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:get/get.dart';
 import 'package:kissanfresh/routes/AppRoutes.dart';
 import 'package:kissanfresh/services/auth_service.dart';
@@ -17,6 +18,10 @@ class AuthController extends GetxController {
   var verificationId = ''.obs;
   var isLoading = false.obs;
   
+  // Resend OTP variables
+  var resendTimer = 0.obs;
+  Timer? _countdownTimer;
+
   // Controllers
   final phoneController = TextEditingController();
   final otpController = TextEditingController(); // For OTP Screen if needed
@@ -57,6 +62,11 @@ class AuthController extends GetxController {
     }
   }
 
+  void onClose() {
+    _countdownTimer?.cancel();
+    super.onClose();
+  }
+
   // Send OTP
   void sendOtp() async {
     String phone = phoneController.text.trim();
@@ -94,8 +104,11 @@ class AuthController extends GetxController {
         onCodeSent: (String vId, int? resendToken) {
           verificationId.value = vId;
           isLoading.value = false;
-          // Navigate to OTP Screen
-          Get.toNamed(AppRoutes.otpVerificationRoute, arguments: phone);
+          _startResendTimer();
+          // Navigate to OTP Screen if not already there
+          if (Get.currentRoute != AppRoutes.otpVerificationRoute) {
+             Get.toNamed(AppRoutes.otpVerificationRoute, arguments: phone);
+          }
         },
         onCodeAutoRetrievalTimeout: (String vId) {
           verificationId.value = vId;
@@ -111,6 +124,24 @@ class AuthController extends GetxController {
         colorText: Colors.white,
       );
     }
+  }
+
+  void _startResendTimer() {
+    _countdownTimer?.cancel();
+    resendTimer.value = 60; // 60 seconds cooldown
+    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (resendTimer.value > 0) {
+        resendTimer.value--;
+      } else {
+        timer.cancel();
+      }
+    });
+  }
+
+  void resendOtp(String phone) async {
+     if (resendTimer.value > 0) return;
+     phoneController.text = phone; // Ensure the phone controller has the correct context
+     sendOtp();
   }
 
   // Verify OTP
@@ -147,6 +178,7 @@ class AuthController extends GetxController {
   }
 
   void _handleSuccess() async {
+    _countdownTimer?.cancel();
     final user = _authService.currentUser;
     if (user != null) {
       final userModel = await _userService.getUser(user.uid);

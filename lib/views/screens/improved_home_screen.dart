@@ -26,6 +26,7 @@ class ImprovedHomeScreen extends StatelessWidget {
             const SizedBox(height: 24),
             Obx(() {
               if (controller.currentTab.value == 'Grocery') {
+                final isAll = controller.categories[controller.selectedIndex.value].label == 'All';
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -35,16 +36,20 @@ class ImprovedHomeScreen extends StatelessWidget {
                       onCategorySelected: controller.selectCategory,
                     ),
                     const SizedBox(height: 32),
-                    const WelcomeSection(),
-                    const SizedBox(height: 24),
-                    const OffersSection(),
-                    const SizedBox(height: 32),
-                    BestsellersSection(),
-                    const SizedBox(height: 32),
+                    if (isAll) ...[
+                      const WelcomeSection(),
+                      const SizedBox(height: 24),
+                      const OffersSection(),
+                      const SizedBox(height: 32),
+                      BestsellersSection(),
+                      const SizedBox(height: 32),
+                    ],
                     AllProductsSection(),
                     const SizedBox(height: 32),
-                    CategorizedProductsSection(),
-                    const SizedBox(height: 32),
+                    if (isAll) ...[
+                      CategorizedProductsSection(),
+                      const SizedBox(height: 32),
+                    ],
                   ],
                 );
               } else {
