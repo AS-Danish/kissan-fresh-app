@@ -131,7 +131,10 @@ class LocationSearchBar extends StatelessWidget {
                       : null,
                     onTap: () {
                       FocusManager.instance.primaryFocus?.unfocus();
-                      controller.searchAddress(prediction['description']);
+                      controller.searchAddress(
+                        prediction['description'], 
+                        placeId: prediction['place_id'],
+                      );
                     },
                   );
                 },

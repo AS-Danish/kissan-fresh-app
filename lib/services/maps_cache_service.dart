@@ -171,27 +171,28 @@ class MapsCacheService {
     return null;
   }
 
-  Future<List<Map<String, dynamic>>> getAutocompletePredictions(String query) async {
+  Future<List<Map<String, dynamic>>> getAutocompletePredictions(String query, {String? sessionToken}) async {
     final trimmed = query.trim().toLowerCase();
     if (trimmed.isEmpty) return [];
 
+    // Keys for autocomplete are NOT globally cached because they are highly user-specific and transient
+    // We only use local Hive cache to prevent flicker/repeat calls in same session
     final key = 'auto_${trimmed.replaceAll(RegExp(r'[^a-zA-Z0-9]'), "_")}';
 
     // 1. Check Local Cache (Hive)
     final localData = await _checkLocalCache(key);
     if (localData != null) return List<Map<String, dynamic>>.from(localData['predictions'] ?? []);
 
-    // 2. Check Global Cache (Firestore)
-    final globalData = await _checkGlobalCache(key);
-    if (globalData != null) return List<Map<String, dynamic>>.from(globalData['predictions'] ?? []);
-
-    // 3. Google API Fallback
+    // 2. Google API Fallback
     debugPrint('Fetching from Google Places Autocomplete API: $key');
-    final url = Uri.parse(
-      'https://maps.googleapis.com/maps/api/place/autocomplete/json'
-          '?input=${Uri.encodeComponent(query.trim())}&key=$_apiKey'
-          // Optional: Add session tokens or components to narrow down results (e.g. '&components=country:in')
-    );
+    String urlString = 'https://maps.googleapis.com/maps/api/place/autocomplete/json'
+          '?input=${Uri.encodeComponent(query.trim())}&key=$_apiKey';
+    
+    if (sessionToken != null && sessionToken.isNotEmpty) {
+      urlString += '&sessiontoken=$sessionToken';
+    }
+
+    final url = Uri.parse(urlString);
 
     try {
       final response = await http.get(url);
@@ -205,7 +206,13 @@ class MapsCacheService {
                   })
               .toList();
 
-          await _saveToCache(key, {'predictions': predictions});
+          // We only save autocomplete to local cache (Hive) for short-term reuse
+          final cacheWrapper = {
+            'timestamp': DateTime.now().toIso8601String(),
+            'result': {'predictions': predictions},
+          };
+          await _saveToLocalCache(key, cacheWrapper);
+          
           return predictions;
         }
       }
@@ -213,5 +220,50 @@ class MapsCacheService {
       debugPrint('Autocomplete Error: $e');
     }
     return [];
+  }
+
+  Future<Map<String, dynamic>?> getPlaceDetails(String placeId, {String? sessionToken}) async {
+    final key = 'details_$placeId';
+
+    // 1. Check Local Cache
+    final localData = await _checkLocalCache(key);
+    if (localData != null) return localData;
+
+    // 2. Check Global Cache
+    final globalData = await _checkGlobalCache(key);
+    if (globalData != null) return globalData;
+
+    // 3. API Fetch
+    debugPrint('Fetching from Google Place Details API: $placeId');
+    // We strictly limit fields to keep costs in the "Basic" category
+    String urlString = 'https://maps.googleapis.com/maps/api/place/details/json'
+        '?place_id=$placeId&fields=geometry,formatted_address&key=$_apiKey';
+
+    if (sessionToken != null && sessionToken.isNotEmpty) {
+      urlString += '&sessiontoken=$sessionToken';
+    }
+
+    try {
+      final response = await http.get(Uri.parse(urlString));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'OK' && data['result'] != null) {
+          final result = data['result'];
+          final loc = result['geometry']['location'];
+          
+          final resultData = {
+            'lat': loc['lat'],
+            'lng': loc['lng'],
+            'address': result['formatted_address'],
+          };
+
+          await _saveToCache(key, resultData);
+          return resultData;
+        }
+      }
+    } catch (e) {
+      debugPrint('Place Details Error: $e');
+    }
+    return null;
   }
 }

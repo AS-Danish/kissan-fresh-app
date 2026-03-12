@@ -13,7 +13,7 @@ class AuthService {
   }) async {
     // DISABLE THIS FOR PRODUCTION!
     // This forcibly bypasses Play Integrity / reCAPTCHA on emulators for testing purposes.
-    await _auth.setSettings(appVerificationDisabledForTesting: true);
+    //await _auth.setSettings(appVerificationDisabledForTesting: true);
     
     await _auth.verifyPhoneNumber(
       phoneNumber: phoneNumber,

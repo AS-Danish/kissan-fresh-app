@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:uuid/uuid.dart';
 import 'package:kissanfresh/services/maps_cache_service.dart';
 
 class AddressController extends GetxController {
@@ -24,11 +25,19 @@ class AddressController extends GetxController {
   final MapsCacheService _mapsCacheService = MapsCacheService();
 
   Timer? _geocodeDebounce;
+  String _sessionToken = '';
+  final _uuid = const Uuid();
 
   @override
   void onInit() {
     super.onInit();
+    _refreshSessionToken();
     _checkPermission();
+  }
+
+  void _refreshSessionToken() {
+    _sessionToken = _uuid.v4();
+    debugPrint('New Maps Session Token: $_sessionToken');
   }
 
   @override
@@ -142,6 +151,7 @@ class AddressController extends GetxController {
     if (query.trim().isEmpty) {
       predictions.clear();
       isSearching.value = false;
+      _refreshSessionToken(); // Treat a clear as a new session start
       return;
     }
     
@@ -150,12 +160,15 @@ class AddressController extends GetxController {
     
     _autocompleteDebounce?.cancel();
     _autocompleteDebounce = Timer(const Duration(milliseconds: 800), () async {
-       final results = await _mapsCacheService.getAutocompletePredictions(query);
+       final results = await _mapsCacheService.getAutocompletePredictions(
+         query, 
+         sessionToken: _sessionToken,
+       );
        predictions.value = results;
     });
   }
 
-  Future<void> searchAddress(String query) async {
+  Future<void> searchAddress(String query, {String? placeId}) async {
     final trimmed = query.trim();
     if (trimmed.isEmpty) return;
 
@@ -163,7 +176,21 @@ class AddressController extends GetxController {
     FocusManager.instance.primaryFocus?.unfocus();
 
     try {
-      final resultData = await _mapsCacheService.searchAddress(trimmed);
+      Map<String, dynamic>? resultData;
+      
+      if (placeId != null && placeId.isNotEmpty) {
+        // High quality selection using Place Details (Efficient session usage)
+        resultData = await _mapsCacheService.getPlaceDetails(
+          placeId, 
+          sessionToken: _sessionToken,
+        );
+        // Session successfully "consumed" by a details call
+        _refreshSessionToken(); 
+      } else {
+        // Fallback to basic geocoding for raw string searches
+        resultData = await _mapsCacheService.searchAddress(trimmed);
+      }
+
       if (resultData != null) {
         final latLng = LatLng(resultData['lat'], resultData['lng']);
         final address = resultData['address'];
