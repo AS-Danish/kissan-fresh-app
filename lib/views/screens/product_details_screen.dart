@@ -519,15 +519,17 @@ class ProductDetailsScreen extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
-                            Icons.shopping_cart_outlined,
+                          Icon(
+                            product.inStock 
+                                ? Icons.shopping_cart_outlined 
+                                : Icons.remove_shopping_cart_outlined,
                             color: Colors.white,
                             size: 20,
                           ),
                           const SizedBox(width: 8),
                           Flexible(
                             child: Text(
-                              'Add to Cart',
+                              product.inStock ? 'Add to Cart' : 'Out of Stock',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.montserrat(
@@ -538,35 +540,6 @@ class ProductDetailsScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 6),
-                          if (product.inStock)
-                            Flexible(
-                              child: Text(
-                                '₹${controller.totalPrice.toStringAsFixed(0)}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                  letterSpacing: 0.3,
-                                ),
-                              ),
-                            )
-                          else
-                            Flexible(
-                              child: Text(
-                                'Out of Stock',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                  letterSpacing: 0.3,
-                                ),
-                              ),
-                            ),
                         ],
                       ),
                     ),
