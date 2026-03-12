@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../model/product_card_model.dart';
 import '../routes/AppRoutes.dart';
 import 'homepage_controller.dart';
@@ -28,6 +29,10 @@ class ProductSearchController extends GetxController {
   // Caching
   final Map<String, List<ProductCardModel>> _cache = {};
 
+  // Speech to Text
+  var speechToText = stt.SpeechToText();
+  RxBool isListening = false.obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -43,7 +48,56 @@ class ProductSearchController extends GetxController {
       selectedCategory.value = 'All'; // Will trigger search
     });
     
+    _initSpeech();
     _performSearch();
+    
+    // Automatically start listening if navigated here with arguments
+    if (Get.arguments?['startSpeech'] == true) {
+      // Small delay to allow transition before triggering mic popup
+      Future.delayed(const Duration(milliseconds: 300), startListening);
+    }
+  }
+
+  void _initSpeech() async {
+    try {
+      bool available = await speechToText.initialize(
+        onStatus: (status) {
+          if (status == 'done' || status == 'notListening') {
+            isListening.value = false;
+          }
+        },
+        onError: (error) {
+          isListening.value = false;
+          debugPrint('Speech error: $error');
+        },
+      );
+      if (!available) {
+        debugPrint("Speech recognition not available");
+      }
+    } catch (e) {
+      debugPrint("Speech init exception: $e");
+    }
+  }
+
+  void startListening() async {
+    if (!isListening.value) {
+      bool available = await speechToText.initialize();
+      if (available) {
+        isListening.value = true;
+        speechToText.listen(
+          onResult: (result) {
+            searchQuery.value = result.recognizedWords;
+            // The ever() listener on searchQuery will trigger _performSearch via debounce automatically
+          },
+          localeId: 'en_IN', // Good default for English/Hinglish
+        );
+      }
+    }
+  }
+
+  void stopListening() async {
+    await speechToText.stop();
+    isListening.value = false;
   }
 
   // Required since search_screen uses filteredProducts

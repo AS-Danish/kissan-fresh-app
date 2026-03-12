@@ -75,19 +75,43 @@ class SearchScreen extends StatelessWidget {
                         color: Color(0xFF11968a),
                       ),
                     ),
-                    suffixIcon: Obx(() => controller.searchQuery.value.isNotEmpty
-                        ? IconButton(
-                      icon: const Icon(
-                        Icons.clear,
-                        size: 20,
-                        color: Color(0xFF9AA7AC),
-                      ),
-                      onPressed: () {
-                        searchTextController.clear();
-                        controller.searchQuery.value = '';
-                      },
-                    )
-                        : const SizedBox.shrink()),
+                    suffixIcon: Obx(() {
+                      if (controller.isListening.value) {
+                        return IconButton(
+                          icon: const Icon(
+                            Icons.stop_circle,
+                            size: 24,
+                            color: Colors.red,
+                          ),
+                          onPressed: () {
+                            controller.stopListening();
+                          },
+                        );
+                      } else if (controller.searchQuery.value.isNotEmpty) {
+                        return IconButton(
+                          icon: const Icon(
+                            Icons.clear,
+                            size: 20,
+                            color: Color(0xFF9AA7AC),
+                          ),
+                          onPressed: () {
+                            searchTextController.clear();
+                            controller.searchQuery.value = '';
+                          },
+                        );
+                      } else {
+                        return IconButton(
+                          icon: const Icon(
+                            Icons.mic,
+                            size: 22,
+                            color: Color(0xFF9AA7AC),
+                          ),
+                          onPressed: () {
+                            controller.startListening();
+                          },
+                        );
+                      }
+                    }),
                   ),
                   style: GoogleFonts.montserrat(
                     fontSize: 14,

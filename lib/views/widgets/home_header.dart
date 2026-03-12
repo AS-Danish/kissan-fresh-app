@@ -178,9 +178,14 @@ class HomeHeader extends StatelessWidget {
                           color: Color(0xFF11968a),
                         ),
                       ),
-                      suffixIcon: const Padding(
-                        padding: EdgeInsets.only(right: 4),
-                        child: Icon(Icons.mic, size: 22, color: Color(0xFF9AA7AC)),
+                      suffixIcon: Padding(
+                        padding: const EdgeInsets.only(right: 4),
+                        child: IconButton(
+                          icon: const Icon(Icons.mic, size: 22, color: Color(0xFF9AA7AC)),
+                          onPressed: () {
+                            Get.toNamed(AppRoutes.searchRoute, arguments: {'startSpeech': true});
+                          },
+                        ),
                       ),
                     ),
                     style: GoogleFonts.montserrat(

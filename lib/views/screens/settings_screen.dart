@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kissanfresh/routes/AppRoutes.dart';
 import 'package:kissanfresh/controllers/auth_controller.dart';
+import 'package:kissanfresh/controllers/profile_controller.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -147,93 +148,176 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildProfileSection() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Profile Avatar
-          Container(
-            width: 64,
-            height: 64,
+    return Obx(() {
+      final user = AuthController.instance.firebaseUser.value;
+      
+      if (user == null) {
+        return GestureDetector(
+          onTap: () => Get.toNamed(AppRoutes.loginScreen),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                colors: [Color(0xFF0d9488), Color(0xFF14b8a6)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: const Center(
-              child: Text(
-                'JD',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-
-          // Profile Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Abdul Salaam Danish',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF0d9488),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'asdanish123@gmail.com',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF718096),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  '+91 98765 43210',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF718096),
-                  ),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
-          ),
-
-          // Edit Icon
-          IconButton(
-            icon: const Icon(
-              Icons.edit_outlined,
-              color: Color(0xFF0d9488),
+            child: Row(
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.lock_outline, color: Colors.grey, size: 28),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: const [
+                      Text(
+                        'Unlock Profile',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF2D3748),
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Login to continue',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF718096),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right, color: Color(0xFF718096)),
+              ],
             ),
-            onPressed: () {
-              Get.toNamed(AppRoutes.profileRoute);
-            },
           ),
-        ],
-      ),
-    );
+        );
+      }
+
+      final profileController = Get.put(ProfileController());
+
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Obx(() {
+          if (profileController.isLoading.value) {
+            return const SizedBox(
+              height: 64, 
+              child: Center(
+                child: CircularProgressIndicator(color: Color(0xFF0d9488))
+              )
+            );
+          }
+          final String initial = profileController.name.value.isNotEmpty 
+            ? profileController.name.value[0].toUpperCase() 
+            : 'U';
+            
+          return Row(
+            children: [
+              // Profile Avatar
+              Container(
+                width: 64,
+                height: 64,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF0d9488), Color(0xFF14b8a6)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    initial,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+
+              // Profile Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      profileController.name.value.isNotEmpty ? profileController.name.value : 'User',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF0d9488),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      profileController.email.value.isNotEmpty ? profileController.email.value : 'No email added',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF718096),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      profileController.phoneNumber.value.isNotEmpty ? profileController.phoneNumber.value : user.phoneNumber ?? '',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF718096),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Edit Icon
+              IconButton(
+                icon: const Icon(
+                  Icons.edit_outlined,
+                  color: Color(0xFF0d9488),
+                ),
+                onPressed: () {
+                  Get.toNamed(AppRoutes.profileRoute);
+                },
+              ),
+            ],
+          );
+        }),
+      );
+    });
   }
 
   Widget _buildSectionHeader(String title) {

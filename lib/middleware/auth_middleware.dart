@@ -22,3 +22,16 @@ class AuthMiddleware extends GetMiddleware {
     return null;
   }
 }
+
+class RequireAuthMiddleware extends GetMiddleware {
+  @override
+  int? get priority => 1;
+
+  @override
+  RouteSettings? redirect(String? route) {
+    if (AuthController.instance.firebaseUser.value == null) {
+      return const RouteSettings(name: AppRoutes.loginScreen);
+    }
+    return null;
+  }
+}

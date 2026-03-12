@@ -71,7 +71,11 @@ abstract class AppRoutes {
       page: () => LoginScreen(),
       middlewares: [AuthMiddleware()],
     ),
-    GetPage(name: profileRoute, page: () => const ProfileScreen()),
+    GetPage(
+      name: profileRoute, 
+      page: () => const ProfileScreen(),
+      middlewares: [RequireAuthMiddleware()],
+    ),
     GetPage(name: addressSelectionRoute, page: () => const AddressSelectionScreen()),
     GetPage(
       name: otpVerificationRoute, 
