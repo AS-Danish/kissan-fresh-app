@@ -38,7 +38,6 @@ class ProductCardWidget extends StatelessWidget {
           children: [
             // Product Image
             Expanded(
-              flex: 3,
               child: Stack(
                 children: [
                   ClipRRect(
@@ -128,7 +127,7 @@ class ProductCardWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Title
+                    // Title
                   Text(
                     product.title,
                     style: GoogleFonts.montserrat(

@@ -1,158 +1,271 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../data/product_data.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/product_card_model.dart';
 import '../routes/AppRoutes.dart';
-import '../views/screens/product_details_screen.dart';
-import 'products_controller.dart';
+import 'homepage_controller.dart';
 import 'cart_controller.dart';
 
 class ProductSearchController extends GetxController {
-  final ProductsController productsController = Get.find<ProductsController>();
+  final HomepageController homepageController = Get.find<HomepageController>();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   RxString searchQuery = ''.obs;
   RxString selectedCategory = 'All'.obs;
+  
+  RxList<Map<String, dynamic>> categories = <Map<String, dynamic>>[].obs;
+  
+  RxList<ProductCardModel> searchResults = <ProductCardModel>[].obs;
+  RxBool isLoading = false.obs;
+  int _searchToken = 0;
+  
+  // Pagination
+  RxBool isFetchingMore = false.obs;
+  RxBool hasMoreProducts = true.obs;
+  DocumentSnapshot? _lastDocument;
+  final int limit = 15;
 
-  // Categories with icons and colors
-  final List<Map<String, dynamic>> categories = [
-    {
-      'name': 'All',
-      'icon': Icons.grid_view_rounded,
+  // Caching
+  final Map<String, List<ProductCardModel>> _cache = {};
+
+  @override
+  void onInit() {
+    super.onInit();
+    _setCategories();
+    
+    // Setup debouncing for search query
+    debounce(searchQuery, (_) => _performSearch(), time: const Duration(milliseconds: 500));
+    
+    // Listen to category changes
+    ever(selectedCategory, (_) => _performSearch());
+    ever(homepageController.currentTab, (_) {
+      _setCategories();
+      selectedCategory.value = 'All'; // Will trigger search
+    });
+    
+    _performSearch();
+  }
+
+  // Required since search_screen uses filteredProducts
+  List<ProductCardModel> get filteredProducts => searchResults.toList();
+
+  void _setCategories() {
+    final isHomeFood = homepageController.currentTab.value == 'HomeFood';
+    final sourceCategories = isHomeFood 
+        ? homepageController.homeFoodCategories 
+        : homepageController.categories;
+        
+    categories.assignAll(sourceCategories.map((c) => {
+      'name': c.label,
+      'icon': c.icon,
       'color': const Color(0xFF0d9488),
-    },
-    {
-      'name': 'Vegetables',
-      'icon': Icons.eco_outlined,
-      'color': const Color(0xFF10B981),
-    },
-    {
-      'name': 'Fruits',
-      'icon': Icons.apple_outlined,
-      'color': const Color(0xFFEF4444),
-    },
-    {
-      'name': 'Dairy',
-      'icon': Icons.coffee_outlined,
-      'color': const Color(0xFF3B82F6),
-    },
-    {
-      'name': 'Bakery',
-      'icon': Icons.bakery_dining_outlined,
-      'color': const Color(0xFFFF9800),
-    },
-    {
-      'name': 'Beverages',
-      'icon': Icons.local_drink_outlined,
-      'color': const Color(0xFF8B5CF6),
-    },
-    {
-      'name': 'Snacks',
-      'icon': Icons.fastfood_outlined,
-      'color': const Color(0xFFF59E0B),
-    },
-    {
-      'name': 'Grains',
-      'icon': Icons.grass_outlined,
-      'color': const Color(0xFF92400E),
-    },
-  ];
+    }).toList());
+  }
+  
+  String get _currentOrigin => homepageController.currentTab.value == 'Grocery' ? 'kissan-fresh' : 'home-food';
 
-  // All products with categories
-  List<ProductCardModel> get allProducts {
-    return ProductData.products.map((product) {
-      return ProductCardModel(
-        id: product.id,
-        image: product.image,
-        images: product.images,
-        title: product.title,
-        description: product.description,
-        price: product.price,
-        unit: product.unit,
-        category: product.category,
-        onTap: () => _navigateToDetails(
-          product.id,
-          product.title,
-          product.image,
-          product.images,
-          product.description,
-          product.price,
-          product.unit,
-        ),
-        onAddToCart: () {
-          try {
-            bool added = Get.find<CartController>().addToCart(
-              ProductCardModel(
-                id: product.id,
-                image: product.image,
-                images: product.images,
-                title: product.title,
-                description: product.description,
-                price: product.price,
-                unit: product.unit,
-                category: product.category,
-                onTap: () {},
-                onAddToCart: () {},
-              ),
-              1, // quantity
+  String _getCacheKey() {
+    return '${_currentOrigin}_${selectedCategory.value}_${searchQuery.value.trim().toLowerCase()}';
+  }
+
+  void _performSearch() async {
+    final int currentToken = ++_searchToken;
+    final cacheKey = _getCacheKey();
+    
+    if (_cache.containsKey(cacheKey)) {
+      searchResults.assignAll(_cache[cacheKey]!);
+      hasMoreProducts.value = false; // Simplified caching
+      isLoading.value = false;
+      return;
+    }
+
+    isLoading.value = true;
+    _lastDocument = null;
+    hasMoreProducts.value = true;
+    
+    // Only clear if we are starting a fresh search matching the current token
+    if (currentToken == _searchToken) {
+      searchResults.clear();
+    }
+
+    await _fetchData(currentToken);
+    
+    if (currentToken == _searchToken) {
+      if (searchResults.isNotEmpty && _lastDocument != null) {
+        _cache[cacheKey] = List.from(searchResults);
+      }
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> fetchNextPage() async {
+    if (isFetchingMore.value || !hasMoreProducts.value || _lastDocument == null) return;
+    
+    isFetchingMore.value = true;
+    await _fetchData(_searchToken);
+    
+    // Check if the search wasn't cancelled while we fetched
+    if (isFetchingMore.value) {
+      isFetchingMore.value = false;
+    }
+  }
+
+  Future<void> _fetchData(int token) async {
+    try {
+      Query query = _firestore.collection('products').where('productOrigin', isEqualTo: _currentOrigin);
+      
+      if (selectedCategory.value != 'All') {
+        query = query.where('category', isEqualTo: selectedCategory.value);
+      }
+      
+      final sq = searchQuery.value.trim();
+      if (sq.isNotEmpty) {
+         String prefix = sq;
+         if (sq.length > 1) {
+           prefix = sq[0].toUpperCase() + sq.substring(1).toLowerCase();
+         } else {
+           prefix = sq.toUpperCase();
+         }
+         
+         query = query.where('name', isGreaterThanOrEqualTo: prefix)
+                      .where('name', isLessThan: prefix + '\u{f8ff}');
+      }
+
+      query = query.limit(limit);
+      
+      if (_lastDocument != null) {
+        query = query.startAfterDocument(_lastDocument!);
+      }
+
+      final snapshot = await query.get();
+      
+      if (token != _searchToken) return;
+      
+      if (snapshot.docs.isEmpty) {
+        hasMoreProducts.value = false;
+        return;
+      }
+      
+      _lastDocument = snapshot.docs.last;
+      
+      final mappedProducts = snapshot.docs.map((doc) => _mapToProductCardModel(doc)).toList();
+      searchResults.addAll(mappedProducts);
+      
+      if (snapshot.docs.length < limit) {
+        hasMoreProducts.value = false;
+      }
+    } catch (e) {
+      debugPrint("Search Error: $e");
+      if (token == _searchToken) {
+        hasMoreProducts.value = false;
+      }
+    }
+  }
+
+  ProductCardModel _mapToProductCardModel(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    
+    String imageUrl = '';
+    if (data['image'] != null && data['image'].toString().isNotEmpty) {
+      imageUrl = data['image'];
+    } else if (data['images'] != null && data['images'] is List && data['images'].isNotEmpty) {
+      imageUrl = data['images'][0];
+    }
+    
+    List<String>? imagesList;
+    if (data['images'] != null && data['images'] is List) {
+      imagesList = List<String>.from(data['images']);
+    }
+
+    final inStock = data['inStock'] ?? true;
+    final category = data['category'] ?? 'General';
+
+    List<String> dynamicTags = [];
+    if (data['tags'] != null && data['tags'] is List) {
+      dynamicTags = List<String>.from(data['tags']);
+    }
+    
+    if (category != 'General' && !dynamicTags.contains(category)) {
+      dynamicTags.add(category);
+    }
+    if (inStock && !dynamicTags.contains('In Stock')) {
+      dynamicTags.add('In Stock');
+    }
+
+    return ProductCardModel(
+      id: doc.id,
+      image: imageUrl,
+      images: imagesList,
+      title: data['name'] ?? 'Unknown',
+      description: data['description'] ?? '',
+      price: (data['price'] ?? 0).toDouble(),
+      unit: data['unit'] ?? 'unit',
+      category: category,
+      tags: dynamicTags.isNotEmpty ? dynamicTags : null,
+      inStock: inStock,
+      onTap: () => _navigateToProductDetails(
+        id: doc.id,
+        image: imageUrl,
+        images: imagesList,
+        title: data['name'] ?? 'Unknown',
+        description: data['description'] ?? '',
+        price: (data['price'] ?? 0).toDouble(),
+        unit: data['unit'] ?? 'unit',
+        category: category,
+        tags: dynamicTags.isNotEmpty ? dynamicTags : null,
+        inStock: inStock,
+      ),
+      onAddToCart: () {
+        try {
+          final cartController = Get.find<CartController>();
+          bool added = cartController.addToCart(
+            ProductCardModel(
+              id: doc.id,
+              image: imageUrl,
+              images: imagesList,
+              title: data['name'] ?? 'Unknown',
+              description: data['description'] ?? '',
+              price: (data['price'] ?? 0).toDouble(),
+              unit: data['unit'] ?? 'unit',
+              category: category,
+              tags: dynamicTags.isNotEmpty ? dynamicTags : null,
+              inStock: inStock,
+              onTap: () {},
+              onAddToCart: () {},
+            ),
+            1
+          );
+          if (added) {
+            Get.snackbar(
+              'Added to Cart',
+              '${data['name'] ?? 'Product'} added to cart',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFF10B981),
+              colorText: Colors.white,
+              duration: const Duration(seconds: 2),
+              margin: const EdgeInsets.all(16),
+              borderRadius: 12,
             );
-            if (added) {
-              Get.snackbar(
-                'Added to Cart',
-                '${product.title} added to cart',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: const Color(0xFF10B981),
-                colorText: Colors.white,
-                duration: const Duration(seconds: 2),
-                margin: const EdgeInsets.all(16),
-                borderRadius: 12,
-              );
-            }
-          } catch (e) {
-            debugPrint("CartController not found: $e");
           }
-        },
-      );
-    }).toList();
+        } catch (e) {
+          debugPrint("CartController not found: $e");
+        }
+      },
+    );
   }
 
-  // Filtered products based on search and category
-  List<ProductCardModel> get filteredProducts {
-    var products = allProducts;
-
-    // Filter by category
-    if (selectedCategory.value != 'All') {
-      products = products
-          .where((p) => p.category == selectedCategory.value)
-          .toList();
-    }
-
-    // Filter by search query
-    if (searchQuery.value.isNotEmpty) {
-      products = products.where((product) {
-        return product.title.toLowerCase().contains(
-              searchQuery.value.toLowerCase(),
-            ) ||
-            product.description.toLowerCase().contains(
-              searchQuery.value.toLowerCase(),
-            ) ||
-            (product.category ?? '').toLowerCase().contains(
-              searchQuery.value.toLowerCase(),
-            );
-      }).toList();
-    }
-
-    return products;
-  }
-
-  void _navigateToDetails(
-    String? id,
-    String title,
-    String image,
+  static void _navigateToProductDetails({
+    required String? id,
+    required String image,
     List<String>? images,
-    String description,
-    double price,
-    String unit,
-  ) {
+    required String title,
+    required String description,
+    required double price,
+    required String unit,
+    String? category,
+    List<String>? tags,
+    bool inStock = true,
+  }) {
     Get.toNamed(
       AppRoutes.productDetailsRoute,
       arguments: ProductCardModel(
@@ -163,40 +276,11 @@ class ProductSearchController extends GetxController {
         description: description,
         price: price,
         unit: unit,
-        onTap: () {}, // Recursive navigation not needed here as we are already navigating
-        onAddToCart: () {
-           // We need to find the cart controller dynamically as this closure might be called later
-           try {
-             final cartController = Get.find<CartController>();
-              bool added = cartController.addToCart(
-                ProductCardModel(
-                  image: image,
-                  images: images,
-                  title: title,
-                  description: description,
-                  price: price,
-                  unit: unit,
-                  onTap: () {},
-                  onAddToCart: () {},
-                ),
-                1
-              );
-              if (added) {
-                Get.snackbar(
-                  'Added to Cart',
-                  '$title added to cart',
-                  snackPosition: SnackPosition.BOTTOM,
-                  backgroundColor: const Color(0xFF10B981),
-                  colorText: Colors.white,
-                  duration: const Duration(seconds: 2),
-                  margin: const EdgeInsets.all(16),
-                  borderRadius: 12,
-                );
-              }
-           } catch (e) {
-             debugPrint("CartController not found: $e");
-           }
-        },
+        category: category,
+        tags: tags,
+        inStock: inStock,
+        onTap: () {},
+        onAddToCart: () {},
       ),
     );
   }

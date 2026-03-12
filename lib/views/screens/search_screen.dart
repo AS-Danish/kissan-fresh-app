@@ -152,18 +152,21 @@ class SearchScreen extends StatelessWidget {
             Obx(() {
               final products = controller.filteredProducts;
 
-              if (controller.searchQuery.value.isNotEmpty &&
-                  products.isEmpty) {
-                return const EmptyStateWidget(
-                  title: 'No products found',
-                  message: 'Try searching with different keywords or browse categories',
+              if (controller.isLoading.value && products.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.all(32.0),
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: Color(0xFF0d9488),
+                    ),
+                  ),
                 );
               }
 
               if (products.isEmpty) {
                 return const EmptyStateWidget(
-                  title: 'Start searching',
-                  message: 'Search for your favorite products',
+                  title: 'No products found',
+                  message: 'Try searching with different keywords or browse categories',
                   icon: Icons.search_off,
                 );
               }
@@ -207,9 +210,8 @@ class SearchScreen extends StatelessWidget {
                     child: GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
+                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 200,
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
                         childAspectRatio: 0.68,
@@ -220,6 +222,38 @@ class SearchScreen extends StatelessWidget {
                       },
                     ),
                   ),
+                  if (controller.isFetchingMore.value)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24.0),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF0d9488),
+                        ),
+                      ),
+                    )
+                  else if (controller.hasMoreProducts.value && products.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24.0),
+                      child: Center(
+                        child: OutlinedButton(
+                          onPressed: () => controller.fetchNextPage(),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF0d9488),
+                            side: const BorderSide(color: Color(0xFF0d9488)),
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          child: Text(
+                            "Load More",
+                            style: GoogleFonts.montserrat(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   const SizedBox(height: 32),
                 ],
               );
