@@ -6,6 +6,7 @@ import 'package:kissanfresh/views/screens/product_details_screen.dart';
 import 'package:kissanfresh/model/product_card_model.dart';
 import 'package:kissanfresh/controllers/cart_controller.dart';
 import '../model/category_item_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomepageController extends GetxController {
   RxInt selectedIndex = 0.obs;
@@ -14,6 +15,110 @@ class HomepageController extends GetxController {
   // Expose LocationService address
   RxnString get currentAddress => Get.find<LocationService>().currentAddress;
 
+  // Today's Specials observables
+  RxList<ProductCardModel> todaysSpecials = <ProductCardModel>[].obs;
+  RxBool isLoadingSpecials = false.obs;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchTodaysSpecials();
+  }
+
+  Future<void> fetchTodaysSpecials() async {
+    try {
+      isLoadingSpecials.value = true;
+      todaysSpecials.clear();
+
+      // Get current date in yyyy-MM-dd format
+      final now = DateTime.now();
+      final dateStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+
+      final docSnapshot = await _firestore.collection('todays_specials').doc(dateStr).get();
+
+      if (docSnapshot.exists && docSnapshot.data() != null) {
+        final data = docSnapshot.data()!;
+        if (data['specials'] != null && data['specials'] is List) {
+          final specialsList = data['specials'] as List;
+          
+          List<ProductCardModel> fetchedSpecials = [];
+          
+          for (var specialItem in specialsList) {
+            if (specialItem is Map && specialItem['productId'] != null) {
+              final productId = specialItem['productId'].toString();
+              
+              // Fetch full product details
+              final productDoc = await _firestore.collection('products').doc(productId).get();
+              if (productDoc.exists && productDoc.data() != null) {
+                final productData = productDoc.data()!;
+                
+                // Extract image logic similar to ProductsController
+                String imageUrl = '';
+                if (productData['image'] != null && productData['image'].toString().isNotEmpty) {
+                  imageUrl = productData['image'];
+                } else if (productData['images'] != null && productData['images'] is List && productData['images'].isNotEmpty) {
+                  imageUrl = productData['images'][0];
+                }
+
+                List<String>? imagesList;
+                if (productData['images'] != null && productData['images'] is List) {
+                  imagesList = List<String>.from(productData['images']);
+                }
+
+                final inStock = productData['inStock'] ?? true;
+                final category = productData['category'] ?? 'General';
+                
+                List<String> dynamicTags = [];
+                if (productData['tags'] != null && productData['tags'] is List) {
+                  dynamicTags = List<String>.from(productData['tags']);
+                }
+                
+                fetchedSpecials.add(ProductCardModel(
+                  id: productDoc.id,
+                  image: imageUrl,
+                  images: imagesList,
+                  title: productData['name'] ?? 'Unknown',
+                  description: productData['description'] ?? '',
+                  price: (productData['price'] ?? 0).toDouble(),
+                  unit: productData['unit'] ?? 'unit',
+                  category: category,
+                  tags: dynamicTags.isNotEmpty ? dynamicTags : null,
+                  inStock: inStock,
+                  onTap: () {
+                    // Navigate to product details
+                    Get.to(() => ProductDetailsScreen(
+                      product: ProductCardModel(
+                        id: productDoc.id,
+                        image: imageUrl,
+                        images: imagesList,
+                        title: productData['name'] ?? 'Unknown',
+                        description: productData['description'] ?? '',
+                        price: (productData['price'] ?? 0).toDouble(),
+                        unit: productData['unit'] ?? 'unit',
+                        category: category,
+                        tags: dynamicTags.isNotEmpty ? dynamicTags : null,
+                        inStock: inStock,
+                        onTap: () {},
+                        onAddToCart: () {},
+                      ),
+                    ));
+                  },
+                  onAddToCart: () {},
+                ));
+              }
+            }
+          }
+          
+          todaysSpecials.value = fetchedSpecials;
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching today's specials: $e");
+    } finally {
+      isLoadingSpecials.value = false;
+    }
+  }
   void switchTab(String tab) {
     currentTab.value = tab;
   }
