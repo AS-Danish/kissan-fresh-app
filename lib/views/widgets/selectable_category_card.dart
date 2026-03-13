@@ -22,8 +22,8 @@ class SelectableCategoryCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 100, // Default width, can be constrained by parent
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        width: 76, // Default width, can be constrained by parent
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         decoration: BoxDecoration(
           gradient: isSelected
               ? const LinearGradient(
@@ -33,7 +33,7 @@ class SelectableCategoryCard extends StatelessWidget {
                 )
               : null,
           color: isSelected ? null : Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? Colors.transparent : Colors.grey.shade200,
             width: 1,
@@ -53,25 +53,25 @@ class SelectableCategoryCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 50,
-              height: 50,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
                 color: isSelected
                     ? Colors.white.withOpacity(0.2)
                     : (iconColor ?? const Color(0xFF0d9488)).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 icon,
-                size: 28,
+                size: 24,
                 color: isSelected ? Colors.white : (iconColor ?? const Color(0xFF0d9488)),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               label,
               style: GoogleFonts.montserrat(
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: FontWeight.w700,
                 color: isSelected ? Colors.white : Colors.black87,
                 letterSpacing: 0.2,

@@ -9,7 +9,7 @@ class OffersSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 120,
+      height: 105,
       child: Obx(() {
         final isGrocery =
             Get.find<HomepageController>().currentTab.value == 'Grocery';
@@ -72,8 +72,8 @@ class OffersSection extends StatelessWidget {
     required String subtitle,
   }) {
     return Container(
-      width: 320,
-      padding: const EdgeInsets.all(18),
+      width: 290,
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -90,15 +90,15 @@ class OffersSection extends StatelessWidget {
         children: [
           // Icon container
           Container(
-            width: 56,
-            height: 56,
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
               color: iconBgColor,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: iconColor, size: 28),
+            child: Icon(icon, color: iconColor, size: 24),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           // Text content
           Expanded(
             child: Column(
@@ -108,27 +108,27 @@ class OffersSection extends StatelessWidget {
                 Text(
                   badge,
                   style: GoogleFonts.montserrat(
-                    fontSize: 10.5,
+                    fontSize: 10,
                     fontWeight: FontWeight.w700,
                     color: badgeColor,
                     letterSpacing: 0.8,
                   ),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 4),
                 Text(
                   title,
                   style: GoogleFonts.montserrat(
-                    fontSize: 17,
+                    fontSize: 16,
                     fontWeight: FontWeight.w800,
                     color: Colors.black87,
                     letterSpacing: 0.3,
                   ),
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 2),
                 Text(
                   subtitle,
                   style: GoogleFonts.montserrat(
-                    fontSize: 12.5,
+                    fontSize: 11.5,
                     color: Colors.grey.shade600,
                     fontWeight: FontWeight.w500,
                   ),
