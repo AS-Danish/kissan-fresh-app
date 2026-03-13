@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:kissanfresh/routes/AppRoutes.dart';
 import 'package:kissanfresh/controllers/auth_controller.dart';
 import 'package:kissanfresh/controllers/profile_controller.dart';
+import 'package:kissanfresh/controllers/theme_controller.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -10,14 +11,14 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5FFFE),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF5FFFE),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Settings',
           style: TextStyle(
-            color: Color(0xFF2D3748),
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
@@ -31,13 +32,13 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Profile Section
-            _buildProfileSection(),
+            _buildProfileSection(context),
 
             const SizedBox(height: 24),
 
             // Account Settings
-            _buildSectionHeader('Account'),
-            _buildSettingsList([
+            _buildSectionHeader(context, 'Account'),
+            _buildSettingsList(context, [
               _SettingsItem(
                 icon: Icons.shopping_bag_outlined,
                 title: 'My Orders',
@@ -67,8 +68,8 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Preferences
-            _buildSectionHeader('Preferences'),
-            _buildSettingsList([
+            _buildSectionHeader(context, 'Preferences'),
+            _buildSettingsList(context, [
               _SettingsItem(
                 icon: Icons.notifications_outlined,
                 title: 'Notifications',
@@ -91,19 +92,24 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Dark Mode',
                 subtitle: 'Adjust your theme',
                 onTap: () {},
-                trailing: Switch(
-                  value: false,
-                  onChanged: (value) {},
-                  activeColor: const Color(0xFF14b8a6),
-                ),
+                trailing: Obx(() {
+                  final themeController = Get.find<ThemeController>();
+                  return Switch(
+                    value: themeController.isDarkMode.value,
+                    onChanged: (value) {
+                      themeController.switchTheme(value);
+                    },
+                    activeColor: Theme.of(context).primaryColor,
+                  );
+                }),
               ),
             ]),
 
             const SizedBox(height: 24),
 
             // Support & Information
-            _buildSectionHeader('Support & Information'),
-            _buildSettingsList([
+            _buildSectionHeader(context, 'Support & Information'),
+            _buildSettingsList(context, [
               _SettingsItem(
                 icon: Icons.help_outline,
                 title: 'Help & Support',
@@ -133,12 +139,12 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Logout Button
-            _buildLogoutButton(),
+            _buildLogoutButton(context),
 
             const SizedBox(height: 32),
 
             // App Version
-            _buildAppVersion(),
+            _buildAppVersion(context),
 
             const SizedBox(height: 32),
           ],
@@ -147,7 +153,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileSection() {
+  Widget _buildProfileSection(BuildContext context) {
     return Obx(() {
       final user = AuthController.instance.firebaseUser.value;
       
@@ -158,7 +164,7 @@ class SettingsScreen extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 16),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -174,36 +180,36 @@ class SettingsScreen extends StatelessWidget {
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: Theme.of(context).dividerColor.withOpacity(0.5),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.lock_outline, color: Colors.grey, size: 28),
+                  child: Icon(Icons.lock_outline, color: Theme.of(context).iconTheme.color, size: 28),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
                         'Unlock Profile',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF2D3748),
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         'Login to continue',
                         style: TextStyle(
                           fontSize: 14,
-                          color: Color(0xFF718096),
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right, color: Color(0xFF718096)),
+                Icon(Icons.chevron_right, color: Theme.of(context).textTheme.bodyMedium?.color),
               ],
             ),
           ),
@@ -216,7 +222,7 @@ class SettingsScreen extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -284,10 +290,10 @@ class SettingsScreen extends StatelessWidget {
                   children: [
                     Text(
                       profileController.name.value.isNotEmpty ? profileController.name.value : 'User',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF0d9488),
+                        color: Theme.of(context).primaryColor,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -295,9 +301,9 @@ class SettingsScreen extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       profileController.email.value.isNotEmpty ? profileController.email.value : 'No email added',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
-                        color: Color(0xFF718096),
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -305,9 +311,9 @@ class SettingsScreen extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       profileController.phoneNumber.value.isNotEmpty ? profileController.phoneNumber.value : user.phoneNumber ?? '',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
-                        color: Color(0xFF718096),
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
                       ),
                     ),
                   ],
@@ -316,9 +322,9 @@ class SettingsScreen extends StatelessWidget {
 
               // Edit Icon
               IconButton(
-                icon: const Icon(
+                icon: Icon(
                   Icons.edit_outlined,
-                  color: Color(0xFF0d9488),
+                  color: Theme.of(context).primaryColor,
                 ),
                 onPressed: () {
                   Get.toNamed(AppRoutes.profileRoute);
@@ -331,25 +337,25 @@ class SettingsScreen extends StatelessWidget {
     });
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w600,
-          color: Color(0xFF2D3748),
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
     );
   }
 
-  Widget _buildSettingsList(List<_SettingsItem> items) {
+  Widget _buildSettingsList(BuildContext context, List<_SettingsItem> items) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -379,36 +385,36 @@ class SettingsScreen extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFF14b8a6).withOpacity(0.1),
+                color: Theme.of(context).primaryColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 item.icon,
-                color: const Color(0xFF14b8a6),
+                color: Theme.of(context).primaryColor,
                 size: 22,
               ),
             ),
             title: Text(
               item.title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF2D3748),
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             subtitle: item.subtitle != null
                 ? Text(
               item.subtitle!,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
-                color: Color(0xFF718096),
+                color: Theme.of(context).textTheme.bodyMedium?.color,
               ),
             )
                 : null,
             trailing: item.trailing ??
-                const Icon(
+                Icon(
                   Icons.chevron_right,
-                  color: Color(0xFF718096),
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
             onTap: item.onTap,
           );
@@ -417,7 +423,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLogoutButton() {
+  Widget _buildLogoutButton(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Obx(() {
@@ -432,13 +438,13 @@ class SettingsScreen extends StatelessWidget {
               authController.logout();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFFEF4444),
+              backgroundColor: Theme.of(context).colorScheme.surface,
+              foregroundColor: Theme.of(context).colorScheme.error,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(
-                  color: Color(0xFFEF4444),
+                side: BorderSide(
+                  color: Theme.of(context).colorScheme.error,
                   width: 1.5,
                 ),
               ),
@@ -467,8 +473,8 @@ class SettingsScreen extends StatelessWidget {
               Get.toNamed(AppRoutes.loginScreen);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0d9488),
-              foregroundColor: Colors.white,
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -496,13 +502,13 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAppVersion() {
+  Widget _buildAppVersion(BuildContext context) {
     return Center(
       child: Text(
         'Version 1.0.0',
         style: TextStyle(
           fontSize: 12,
-          color: const Color(0xFF718096).withOpacity(0.7),
+          color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
         ),
       ),
     );

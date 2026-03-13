@@ -18,7 +18,7 @@ class ImprovedHomeScreen extends StatelessWidget {
     final controller = Get.find<HomepageController>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5FFFE),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SingleChildScrollView(
         child: Column(
           children: [

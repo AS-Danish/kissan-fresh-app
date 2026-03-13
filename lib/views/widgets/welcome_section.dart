@@ -19,7 +19,7 @@ class WelcomeSection extends StatelessWidget {
               style: GoogleFonts.montserrat(
                 fontSize: 28,
                 fontWeight: FontWeight.w800,
-                color: const Color(0xFF0d9488),
+                color: Theme.of(context).primaryColor,
                 letterSpacing: 1.2,
               ),
             ),
@@ -30,7 +30,7 @@ class WelcomeSection extends StatelessWidget {
                   : "Authentic homemade meals",
               style: GoogleFonts.montserrat(
                 fontSize: 15,
-                color: Colors.grey.shade600,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
                 fontWeight: FontWeight.w500,
                 letterSpacing: 0.2,
               ),

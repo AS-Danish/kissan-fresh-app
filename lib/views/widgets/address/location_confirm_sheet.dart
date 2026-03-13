@@ -12,9 +12,9 @@ class LocationConfirmSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
         ),
@@ -38,11 +38,11 @@ class LocationConfirmSheet extends StatelessWidget {
                 style: GoogleFonts.montserrat(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF2D3748),
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.my_location, color: Color(0xFF0d9488)),
+                icon: Icon(Icons.my_location, color: Theme.of(context).primaryColor),
                 onPressed: controller.getCurrentLocation,
                 tooltip: 'Use Current Location',
               ),
@@ -53,7 +53,7 @@ class LocationConfirmSheet extends StatelessWidget {
             controller.currentAddress.value,
             style: GoogleFonts.montserrat(
               fontSize: 14,
-              color: const Color(0xFF718096),
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -62,7 +62,7 @@ class LocationConfirmSheet extends StatelessWidget {
           Obx(() => ElevatedButton(
             onPressed: controller.isLoading.value ? null : controller.confirmLocation,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0d9488),
+              backgroundColor: Theme.of(context).primaryColor,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),

@@ -24,14 +24,14 @@ class EmptyStateWidget extends StatelessWidget {
             Container(
               width: 120,
               height: 120,
-              decoration: const BoxDecoration(
-                color: Color(0xFFF0FDFA),
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
                 size: 60,
-                color: const Color(0xFF0d9488),
+                color: Theme.of(context).primaryColor,
               ),
             ),
             const SizedBox(height: 24),
@@ -40,7 +40,7 @@ class EmptyStateWidget extends StatelessWidget {
               style: GoogleFonts.montserrat(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: Colors.black87,
+                color: Theme.of(context).colorScheme.onSurface,
                 letterSpacing: 0.3,
               ),
             ),
@@ -52,7 +52,7 @@ class EmptyStateWidget extends StatelessWidget {
                 style: GoogleFonts.montserrat(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: Colors.grey.shade600,
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
                 textAlign: TextAlign.center,
               ),

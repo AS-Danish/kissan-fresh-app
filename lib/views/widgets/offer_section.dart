@@ -21,11 +21,12 @@ class OffersSection extends StatelessWidget {
           itemBuilder: (context, index) {
             if (index == 0) {
               return _buildOfferCard(
+                context: context,
                 icon: Icons.percent,
-                iconBgColor: const Color(0xFFD5F5F2),
-                iconColor: const Color(0xFF11968a),
+                iconBgColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                iconColor: Theme.of(context).primaryColor,
                 badge: 'EXCLUSIVE DEAL',
-                badgeColor: const Color(0xFF11968a),
+                badgeColor: Theme.of(context).primaryColor,
                 title: isGrocery ? 'FLAT ₹100 OFF' : 'FLAT ₹50 OFF',
                 subtitle: isGrocery
                     ? 'On orders above ₹499'
@@ -33,11 +34,12 @@ class OffersSection extends StatelessWidget {
               );
             } else if (index == 1) {
               return _buildOfferCard(
+                context: context,
                 icon: Icons.local_shipping_outlined,
-                iconBgColor: const Color(0xFFFFF4E6),
-                iconColor: const Color(0xFFFF9800),
+                iconBgColor: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+                iconColor: Theme.of(context).colorScheme.secondary,
                 badge: 'FREE DELIVERY',
-                badgeColor: const Color(0xFFFF9800),
+                badgeColor: Theme.of(context).colorScheme.secondary,
                 title: 'FREE Shipping',
                 subtitle: isGrocery
                     ? 'On orders above ₹299'
@@ -45,11 +47,12 @@ class OffersSection extends StatelessWidget {
               );
             } else {
               return _buildOfferCard(
+                context: context,
                 icon: Icons.card_giftcard,
-                iconBgColor: const Color(0xFFFCE4EC),
-                iconColor: const Color(0xFFE91E63),
+                iconBgColor: Theme.of(context).primaryColor.withOpacity(0.2),
+                iconColor: Theme.of(context).primaryColor,
                 badge: 'NEW USER',
-                badgeColor: const Color(0xFFE91E63),
+                badgeColor: Theme.of(context).primaryColor,
                 title: isGrocery ? 'Get FLAT ₹50 OFF' : 'FREE DESSERT',
                 subtitle: isGrocery
                     ? 'On first order above ₹199'
@@ -63,6 +66,7 @@ class OffersSection extends StatelessWidget {
   }
 
   Widget _buildOfferCard({
+    required BuildContext context,
     required IconData icon,
     required Color iconBgColor,
     required Color iconColor,
@@ -75,7 +79,7 @@ class OffersSection extends StatelessWidget {
       width: 290,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -84,7 +88,7 @@ class OffersSection extends StatelessWidget {
             offset: const Offset(0, 4),
           ),
         ],
-        border: Border.all(color: Colors.grey.shade100, width: 1),
+        border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.5), width: 1),
       ),
       child: Row(
         children: [
@@ -120,7 +124,7 @@ class OffersSection extends StatelessWidget {
                   style: GoogleFonts.montserrat(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
-                    color: Colors.black87,
+                    color: Theme.of(context).colorScheme.onSurface,
                     letterSpacing: 0.3,
                   ),
                 ),

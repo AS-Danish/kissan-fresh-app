@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/homepage_controller.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../views/widgets/product_card_widget.dart';
 import 'all_products_section.dart';
 import 'categories_section.dart';
@@ -30,9 +31,13 @@ class HomeFoodSection extends StatelessWidget {
           if (!isAll) return const SizedBox.shrink();
 
           if (controller.isLoadingSpecials.value) {
-            return const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              child: Center(child: CircularProgressIndicator()),
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
             );
           }
 
@@ -53,7 +58,7 @@ class HomeFoodSection extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1f2937),
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   ),
@@ -73,10 +78,10 @@ class HomeFoodSection extends StatelessWidget {
                             height: 180,
                             width: double.infinity,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFfff1f2),
+                              color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(16),
                               image: DecorationImage(
-                                image: NetworkImage(special.image),
+                                image: CachedNetworkImageProvider(special.image),
                                 fit: BoxFit.cover,
                               ),
                               boxShadow: [

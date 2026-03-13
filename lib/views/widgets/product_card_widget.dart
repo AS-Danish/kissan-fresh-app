@@ -22,7 +22,7 @@ class ProductCardWidget extends StatelessWidget {
       onTap: product.onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -31,7 +31,7 @@ class ProductCardWidget extends StatelessWidget {
               offset: const Offset(0, 4),
             ),
           ],
-          border: Border.all(color: Colors.grey.shade100, width: 1),
+          border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.5), width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,13 +60,13 @@ class ProductCardWidget extends StatelessWidget {
                             memCacheWidth: 400, 
                             memCacheHeight: 400,
                             placeholder: (context, url) => Container(
-                              color: Colors.grey.shade50,
-                              child: const Center(
+                              color: Theme.of(context).scaffoldBackgroundColor,
+                              child: Center(
                                 child: SizedBox(
                                   width: 24,
                                   height: 24,
                                   child: CircularProgressIndicator(
-                                    color: Color(0xFF0d9488),
+                                    color: Theme.of(context).primaryColor,
                                     strokeWidth: 2.5,
                                   ),
                                 ),
@@ -133,7 +133,7 @@ class ProductCardWidget extends StatelessWidget {
                     style: GoogleFonts.montserrat(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: product.inStock ? Colors.black87 : Colors.grey,
+                      color: product.inStock ? Theme.of(context).colorScheme.onSurface : Colors.grey,
                       letterSpacing: 0.2,
                       height: 1.2,
                     ),
@@ -173,7 +173,7 @@ class ProductCardWidget extends StatelessWidget {
                               style: GoogleFonts.montserrat(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w800,
-                                color: product.inStock ? const Color(0xFF0d9488) : Colors.grey,
+                                color: product.inStock ? Theme.of(context).primaryColor : Colors.grey,
                                 letterSpacing: 0.3,
                                 height: 1.1,
                               ),
@@ -203,11 +203,11 @@ class ProductCardWidget extends StatelessWidget {
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: product.inStock ? const Color(0xFF0d9488) : Colors.grey.shade300,
+                            color: product.inStock ? Theme.of(context).primaryColor : Colors.grey.shade300,
                             borderRadius: BorderRadius.circular(10),
                             boxShadow: product.inStock ? [
                               BoxShadow(
-                                color: const Color(0xFF0d9488).withOpacity(0.3),
+                                color: Theme.of(context).primaryColor.withOpacity(0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 3),
                               ),
@@ -248,27 +248,31 @@ class ProductCardWidget extends StatelessWidget {
 
   // Error placeholder widget
   Widget _buildErrorPlaceholder() {
-    return Container(
-      color: Colors.grey.shade50,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.image_not_supported_outlined,
-            size: 48,
-            color: Colors.grey.shade400,
+    return Builder(
+      builder: (context) {
+        return Container(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.image_not_supported_outlined,
+                size: 48,
+                color: Colors.grey.shade400,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Image not available',
+                style: GoogleFonts.montserrat(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey.shade500,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            'Image not available',
-            style: GoogleFonts.montserrat(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey.shade500,
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

@@ -12,14 +12,14 @@ class MyOrdersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5FFFE),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF5FFFE),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         title: Text(
           'My Orders',
           style: GoogleFonts.montserrat(
-            color: const Color(0xFF2D3748),
+            color: Theme.of(context).appBarTheme.titleTextStyle?.color,
             fontSize: 20,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.3,
@@ -29,15 +29,15 @@ class MyOrdersScreen extends StatelessWidget {
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const Center(
+          return Center(
             child: CircularProgressIndicator(
-              color: Color(0xFF0d9488),
+              color: Theme.of(context).primaryColor,
             ),
           );
         }
 
         if (controller.orders.isEmpty) {
-          return _buildEmptyState();
+          return _buildEmptyState(context);
         }
 
         return ListView.separated(
@@ -45,14 +45,14 @@ class MyOrdersScreen extends StatelessWidget {
           itemCount: controller.orders.length,
           separatorBuilder: (context, index) => const SizedBox(height: 16),
           itemBuilder: (context, index) {
-            return _buildOrderCard(controller.orders[index]);
+            return _buildOrderCard(context, controller.orders[index]);
           },
         );
       }),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -60,14 +60,14 @@ class MyOrdersScreen extends StatelessWidget {
           Container(
             width: 120,
             height: 120,
-            decoration: const BoxDecoration(
-              color: Color(0xFFF0FDFA),
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.shopping_bag_outlined,
               size: 60,
-              color: Color(0xFF0d9488),
+              color: Theme.of(context).primaryColor,
             ),
           ),
           const SizedBox(height: 24),
@@ -76,7 +76,7 @@ class MyOrdersScreen extends StatelessWidget {
             style: GoogleFonts.montserrat(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: Colors.black87,
+              color: Theme.of(context).colorScheme.onSurface,
               letterSpacing: 0.3,
             ),
           ),
@@ -93,7 +93,7 @@ class MyOrdersScreen extends StatelessWidget {
           ElevatedButton(
             onPressed: () => Get.back(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0d9488),
+              backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -115,10 +115,10 @@ class MyOrdersScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildOrderCard(OrderModel order) {
+  Widget _buildOrderCard(BuildContext context, OrderModel order) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -136,7 +136,7 @@ class MyOrdersScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFF0FDFA),
+              color: Theme.of(context).primaryColor.withOpacity(0.05),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
@@ -153,7 +153,7 @@ class MyOrdersScreen extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0d9488),
+                        color: Theme.of(context).primaryColor,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -168,7 +168,7 @@ class MyOrdersScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                _buildStatusBadge(order.status),
+                _buildStatusBadge(context, order.status),
               ],
             ),
           ),
@@ -219,7 +219,7 @@ class MyOrdersScreen extends StatelessWidget {
                               style: GoogleFonts.montserrat(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.black87,
+                                color: Theme.of(context).colorScheme.onSurface,
                                 letterSpacing: 0.2,
                               ),
                               maxLines: 1,
@@ -242,7 +242,7 @@ class MyOrdersScreen extends StatelessWidget {
                         style: GoogleFonts.montserrat(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF0d9488),
+                          color: Theme.of(context).primaryColor,
                           letterSpacing: 0.2,
                         ),
                       ),
@@ -259,7 +259,7 @@ class MyOrdersScreen extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF0d9488),
+                        color: Theme.of(context).primaryColor,
                         letterSpacing: 0.2,
                       ),
                     ),
@@ -296,7 +296,7 @@ class MyOrdersScreen extends StatelessWidget {
                           style: GoogleFonts.montserrat(
                             fontSize: 18,
                             fontWeight: FontWeight.w900,
-                            color: Colors.black87,
+                            color: Theme.of(context).colorScheme.onSurface,
                             letterSpacing: 0.3,
                           ),
                         ),
@@ -336,12 +336,12 @@ class MyOrdersScreen extends StatelessWidget {
                   width: double.infinity,
                   child: OutlinedButton(
                     onPressed: () {
-                      _showOrderDetails(order);
+                      _showOrderDetails(context, order);
                     },
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF0d9488),
-                      side: const BorderSide(
-                        color: Color(0xFF0d9488),
+                      foregroundColor: Theme.of(context).primaryColor,
+                      side: BorderSide(
+                        color: Theme.of(context).primaryColor,
                         width: 1.5,
                       ),
                       shape: RoundedRectangleBorder(
@@ -367,40 +367,40 @@ class MyOrdersScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusBadge(OrderStatus status) {
+  Widget _buildStatusBadge(BuildContext context, OrderStatus status) {
     Color backgroundColor;
     Color textColor;
     IconData icon;
 
     switch (status) {
       case OrderStatus.pending:
-        backgroundColor = const Color(0xFFFFF4E6);
-        textColor = const Color(0xFFFF9800);
+        backgroundColor = Colors.orange.withOpacity(0.1);
+        textColor = Colors.orange;
         icon = Icons.schedule;
         break;
       case OrderStatus.confirmed:
-        backgroundColor = const Color(0xFFE3F2FD);
-        textColor = const Color(0xFF2196F3);
+        backgroundColor = Colors.blue.withOpacity(0.1);
+        textColor = Colors.blue;
         icon = Icons.check_circle_outline;
         break;
       case OrderStatus.processing:
-        backgroundColor = const Color(0xFFFFF4E6);
-        textColor = const Color(0xFFFF9800);
+        backgroundColor = Colors.orange.withOpacity(0.1);
+        textColor = Colors.orange;
         icon = Icons.hourglass_empty;
         break;
       case OrderStatus.outForDelivery:
-        backgroundColor = const Color(0xFFE1F5FE);
-        textColor = const Color(0xFF0288D1);
+        backgroundColor = Colors.blue.withOpacity(0.1);
+        textColor = Colors.blue;
         icon = Icons.local_shipping_outlined;
         break;
       case OrderStatus.delivered:
-        backgroundColor = const Color(0xFFE8F5E9);
-        textColor = const Color(0xFF10B981);
+        backgroundColor = Colors.green.withOpacity(0.1);
+        textColor = Colors.green;
         icon = Icons.check_circle;
         break;
       case OrderStatus.cancelled:
-        backgroundColor = const Color(0xFFFFEBEE);
-        textColor = const Color(0xFFEF4444);
+        backgroundColor = Colors.red.withOpacity(0.1);
+        textColor = Colors.red;
         icon = Icons.cancel_outlined;
         break;
     }
@@ -447,12 +447,12 @@ class MyOrdersScreen extends StatelessWidget {
     }
   }
 
-  void _showOrderDetails(OrderModel order) {
+  void _showOrderDetails(BuildContext context, OrderModel order) {
     Get.bottomSheet(
       Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(24),
             topRight: Radius.circular(24),
           ),
@@ -482,19 +482,19 @@ class MyOrdersScreen extends StatelessWidget {
                   style: GoogleFonts.montserrat(
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
-                    color: Colors.black87,
+                    color: Theme.of(context).colorScheme.onSurface,
                     letterSpacing: 0.3,
                   ),
                 ),
                 const SizedBox(height: 20),
 
-                _buildDetailRow('Order Number', order.orderNumber),
-                _buildDetailRow('Order Date', order.formattedOrderDate),
+                _buildDetailRow(context, 'Order Number', order.orderNumber),
+                _buildDetailRow(context, 'Order Date', order.formattedOrderDate),
                 if (order.isDelivered)
-                  _buildDetailRow('Delivered On', order.formattedDeliveredDate),
-                _buildDetailRow('Status', _getStatusText(order.status)),
-                _buildDetailRow('Delivery Address', order.deliveryAddress),
-                _buildDetailRow('Total Amount', '₹${order.totalAmount.toStringAsFixed(0)}'),
+                  _buildDetailRow(context, 'Delivered On', order.formattedDeliveredDate),
+                _buildDetailRow(context, 'Status', _getStatusText(order.status)),
+                _buildDetailRow(context, 'Delivery Address', order.deliveryAddress),
+                _buildDetailRow(context, 'Total Amount', '₹${order.totalAmount.toStringAsFixed(0)}'),
 
                 const SizedBox(height: 20),
 
@@ -503,7 +503,7 @@ class MyOrdersScreen extends StatelessWidget {
                   style: GoogleFonts.montserrat(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black87,
+                    color: Theme.of(context).colorScheme.onSurface,
                     letterSpacing: 0.2,
                   ),
                 ),
@@ -544,7 +544,7 @@ class MyOrdersScreen extends StatelessWidget {
                               style: GoogleFonts.montserrat(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.black87,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                             Text(
@@ -562,7 +562,7 @@ class MyOrdersScreen extends StatelessWidget {
                         style: GoogleFonts.montserrat(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF0d9488),
+                          color: Theme.of(context).primaryColor,
                         ),
                       ),
                     ],
@@ -574,7 +574,7 @@ class MyOrdersScreen extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () => Get.back(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0d9488),
+                    backgroundColor: Theme.of(context).primaryColor,
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
@@ -601,7 +601,7 @@ class MyOrdersScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(BuildContext context, String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -624,7 +624,7 @@ class MyOrdersScreen extends StatelessWidget {
               style: GoogleFonts.montserrat(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),

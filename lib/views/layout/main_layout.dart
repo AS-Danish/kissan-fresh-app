@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:kissanfresh/controllers/bottom_bar_controller.dart';
 import 'package:kissanfresh/controllers/cart_controller.dart';
 import '../../routes/AppRoutes.dart';
-import '../../themes/app_theme.dart';
 
 class MainLayout extends StatelessWidget {
   const MainLayout({super.key});
@@ -22,7 +21,7 @@ class MainLayout extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: AppTheme().backgroundColor,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       bottomNavigationBar: Obx(
             () => Stack(
           clipBehavior: Clip.none,
@@ -31,8 +30,8 @@ class MainLayout extends StatelessWidget {
             // Bottom Navigation Bar
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: const BorderRadius.only(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(24).copyWith(
                   topLeft: Radius.circular(24),
                   topRight: Radius.circular(24),
                 ),
@@ -54,12 +53,14 @@ class MainLayout extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       _buildNavItem(
+                        context: context,
                         icon: Icons.home_outlined,
                         label: "HOME",
                         index: 0,
                         barController: barController,
                       ),
                       _buildNavItem(
+                        context: context,
                         icon: Icons.favorite_border,
                         label: "Wishlist",
                         index: 1,
@@ -67,12 +68,14 @@ class MainLayout extends StatelessWidget {
                       ),
                       const SizedBox(width: 72),
                       _buildNavItem(
+                        context: context,
                         icon: Icons.receipt_long,
                         label: "My Orders",
                         index: 3,
                         barController: barController,
                       ),
                       _buildNavItem(
+                        context: context,
                         icon: Icons.settings,
                         label: "SETTINGS",
                         index: 4,
@@ -86,7 +89,7 @@ class MainLayout extends StatelessWidget {
             // Floating Cart Button
             Positioned(
               bottom: 25,
-              child: _buildCenterCartButton(barController),
+              child: _buildCenterCartButton(context, barController),
             ),
           ],
         ),
@@ -102,6 +105,7 @@ class MainLayout extends StatelessWidget {
   }
 
   Widget _buildNavItem({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required int index,
@@ -121,8 +125,8 @@ class MainLayout extends StatelessWidget {
               Icon(
                 icon,
                 color: isSelected
-                    ? AppTheme().primaryColor
-                    : Colors.grey.shade600,
+                    ? Theme.of(context).primaryColor
+                    : Theme.of(context).textTheme.bodyMedium?.color,
                 size: 26,
               ),
               const SizedBox(height: 4),
@@ -133,8 +137,8 @@ class MainLayout extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: isSelected
-                      ? AppTheme().primaryColor
-                      : Colors.grey.shade600,
+                      ? Theme.of(context).primaryColor
+                      : Theme.of(context).textTheme.bodyMedium?.color,
                   fontSize: 10,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 ),
@@ -146,7 +150,7 @@ class MainLayout extends StatelessWidget {
     );
   }
 
-  Widget _buildCenterCartButton(BottomBarController barController) {
+  Widget _buildCenterCartButton(BuildContext context, BottomBarController barController) {
     return InkWell(
       onTap: () => barController.changePage(2),
       borderRadius: BorderRadius.circular(35),
@@ -157,11 +161,11 @@ class MainLayout extends StatelessWidget {
             width: 70,
             height: 70,
             decoration: BoxDecoration(
-              color: const Color(0xFF14b8a6),
+              color: Theme.of(context).colorScheme.secondary,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme().primaryColor.withOpacity(0.5),
+                  color: Theme.of(context).primaryColor.withOpacity(0.5),
                   blurRadius: 15,
                   spreadRadius: 2,
                   offset: const Offset(0, 5),

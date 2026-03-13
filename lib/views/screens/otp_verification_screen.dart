@@ -18,29 +18,29 @@ class OtpVerificationScreen extends StatelessWidget {
       height: 56,
       textStyle: GoogleFonts.montserrat(
         fontSize: 20,
-        color: Colors.black87,
+        color: Theme.of(context).colorScheme.onSurface,
         fontWeight: FontWeight.w600,
       ),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
+        border: Border.all(color: Theme.of(context).dividerColor),
         borderRadius: BorderRadius.circular(12),
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
       ),
     );
 
     final focusedPinTheme = defaultPinTheme.copyDecorationWith(
-      border: Border.all(color: const Color(0xFF0d9488), width: 2),
+      border: Border.all(color: Theme.of(context).primaryColor, width: 2),
       borderRadius: BorderRadius.circular(12),
     );
 
     final submittedPinTheme = defaultPinTheme.copyWith(
       decoration: defaultPinTheme.decoration!.copyWith(
-        color: const Color(0xFFF0FDFA),
+        color: Theme.of(context).primaryColor.withOpacity(0.1),
       ),
     );
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0d9488),
+      backgroundColor: Theme.of(context).primaryColor,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -89,9 +89,9 @@ class OtpVerificationScreen extends StatelessWidget {
               flex: 7,
               child: Container(
                 width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(32),
                     topRight: Radius.circular(32),
                   ),
@@ -107,7 +107,7 @@ class OtpVerificationScreen extends StatelessWidget {
                         style: GoogleFonts.montserrat(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade600,
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -139,8 +139,8 @@ class OtpVerificationScreen extends StatelessWidget {
                                   controller.verifyOtp(controller.otpController.text);
                                 },
                            style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0d9488),
-                            disabledBackgroundColor: const Color(0xFF0d9488).withOpacity(0.6),
+                            backgroundColor: Theme.of(context).primaryColor,
+                            disabledBackgroundColor: Theme.of(context).primaryColor.withOpacity(0.6),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
@@ -175,7 +175,7 @@ class OtpVerificationScreen extends StatelessWidget {
                           Text(
                             "Didn't receive code? ",
                             style: GoogleFonts.montserrat(
-                              color: Colors.grey.shade600,
+                              color: Theme.of(context).textTheme.bodyMedium?.color,
                               fontSize: 14,
                             ),
                           ),
@@ -183,7 +183,7 @@ class OtpVerificationScreen extends StatelessWidget {
                             Text(
                               "Resend in ${controller.resendTimer.value}s",
                               style: GoogleFonts.montserrat(
-                                color: Colors.grey.shade500,
+                                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -196,7 +196,7 @@ class OtpVerificationScreen extends StatelessWidget {
                               child: Text(
                                 "Resend",
                                 style: GoogleFonts.montserrat(
-                                  color: const Color(0xFF0d9488),
+                                  color: Theme.of(context).primaryColor,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
                                 ),

@@ -41,7 +41,7 @@ class AllProductsSection extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 24,
                         fontWeight: FontWeight.w800,
-                        color: Colors.black87,
+                        color: Theme.of(context).colorScheme.onSurface,
                         letterSpacing: 0.3,
                       ),
                     );
@@ -52,7 +52,7 @@ class AllProductsSection extends StatelessWidget {
                     style: GoogleFonts.montserrat(
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade600,
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
                       letterSpacing: 0.1,
                     ),
                   ),
@@ -74,7 +74,7 @@ class AllProductsSection extends StatelessWidget {
                     horizontal: 12,
                     vertical: 8,
                   ),
-                  backgroundColor: const Color(0xFFF0FDFA),
+                  backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -89,15 +89,15 @@ class AllProductsSection extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF0d9488),
+                        color: Theme.of(context).primaryColor,
                         letterSpacing: 0.2,
                       ),
                     ),
                     const SizedBox(width: 4),
-                    const Icon(
+                    Icon(
                       Icons.arrow_forward_ios,
                       size: 12,
-                      color: Color(0xFF0d9488),
+                      color: Theme.of(context).primaryColor,
                     ),
                   ],
                 ),
@@ -113,11 +113,11 @@ class AllProductsSection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Obx(() {
               if (controller.isLoadingProducts.value && controller.products.isEmpty) {
-                return const Padding(
-                  padding: EdgeInsets.all(32.0),
+                return Padding(
+                  padding: const EdgeInsets.all(32.0),
                   child: Center(
                     child: CircularProgressIndicator(
-                      color: Color(0xFF0d9488),
+                      color: Theme.of(context).primaryColor,
                     ),
                   ),
                 );
@@ -131,7 +131,7 @@ class AllProductsSection extends StatelessWidget {
                       "No products available.",
                       style: GoogleFonts.montserrat(
                         fontSize: 16,
-                        color: Colors.grey.shade600,
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
                       ),
                     ),
                   ),
@@ -156,11 +156,11 @@ class AllProductsSection extends StatelessWidget {
                     },
                   ),
                   if (controller.isFetchingMore.value)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24.0),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24.0),
                       child: Center(
                         child: CircularProgressIndicator(
-                          color: Color(0xFF0d9488),
+                          color: Theme.of(context).primaryColor,
                         ),
                       ),
                     )
@@ -170,8 +170,8 @@ class AllProductsSection extends StatelessWidget {
                       child: OutlinedButton(
                         onPressed: () => controller.fetchNextPage(),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF0d9488),
-                          side: const BorderSide(color: Color(0xFF0d9488)),
+                          foregroundColor: Theme.of(context).primaryColor,
+                          side: BorderSide(color: Theme.of(context).primaryColor),
                           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),

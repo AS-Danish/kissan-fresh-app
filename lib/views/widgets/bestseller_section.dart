@@ -32,7 +32,7 @@ class BestsellersSection extends StatelessWidget {
                     style: GoogleFonts.montserrat(
                       fontSize: 24,
                       fontWeight: FontWeight.w800,
-                      color: Colors.black87,
+                      color: Theme.of(context).colorScheme.onSurface,
                       letterSpacing: 0.3,
                     ),
                   )),
@@ -53,7 +53,7 @@ class BestsellersSection extends StatelessWidget {
                   style: GoogleFonts.montserrat(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF0d9488),
+                    color: Theme.of(context).primaryColor,
                     letterSpacing: 0.2,
                   ),
                 ),
@@ -80,7 +80,7 @@ class BestsellersSection extends StatelessWidget {
               ),
               itemCount: controller.bestsellers.length,
               itemBuilder: (context, index) {
-                return _buildBestsellerCard(controller.bestsellers[index]);
+                return _buildBestsellerCard(context, controller.bestsellers[index]);
               },
             );
           }),
@@ -89,12 +89,12 @@ class BestsellersSection extends StatelessWidget {
     );
   }
 
-  Widget _buildBestsellerCard(BestsellerCardModel item) {
+  Widget _buildBestsellerCard(BuildContext context, BestsellerCardModel item) {
     return GestureDetector(
       onTap: item.onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
@@ -103,7 +103,7 @@ class BestsellersSection extends StatelessWidget {
               offset: const Offset(0, 4),
             ),
           ],
-          border: Border.all(color: Colors.grey.shade100, width: 1),
+          border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.5), width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,11 +119,11 @@ class BestsellersSection extends StatelessWidget {
                       child: Column(
                         children: [
                           Expanded(
-                            child: _buildImageContainer(item.image1),
+                            child: _buildImageContainer(context, item.image1),
                           ),
                           const SizedBox(height: 8),
                           Expanded(
-                            child: _buildImageContainer(item.image2),
+                            child: _buildImageContainer(context, item.image2),
                           ),
                         ],
                       ),
@@ -134,11 +134,12 @@ class BestsellersSection extends StatelessWidget {
                       child: Column(
                         children: [
                           Expanded(
-                            child: _buildImageContainer(item.image3),
+                            child: _buildImageContainer(context, item.image3),
                           ),
                           const SizedBox(height: 8),
                           Expanded(
                             child: _buildMoreContainer(
+                              context,
                               item.image4,
                               item.moreCount,
                             ),
@@ -164,7 +165,7 @@ class BestsellersSection extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: Colors.black87,
+                        color: Theme.of(context).colorScheme.onSurface,
                         letterSpacing: 0.2,
                       ),
                       maxLines: 2,
@@ -176,13 +177,13 @@ class BestsellersSection extends StatelessWidget {
                     width: 28,
                     height: 28,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF0FDFA),
+                      color: Theme.of(context).primaryColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.arrow_forward_ios,
                       size: 12,
-                      color: Color(0xFF0d9488),
+                      color: Theme.of(context).primaryColor,
                     ),
                   ),
                 ],
@@ -194,7 +195,7 @@ class BestsellersSection extends StatelessWidget {
     );
   }
 
-  Widget _buildImageContainer(String imageUrl) {
+  Widget _buildImageContainer(BuildContext context, String imageUrl) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
@@ -214,7 +215,7 @@ class BestsellersSection extends StatelessWidget {
                     loadingProgress.expectedTotalBytes!
                     : null,
                 strokeWidth: 2,
-                color: const Color(0xFF0d9488),
+                color: Theme.of(context).primaryColor,
               ),
             );
           },
@@ -233,7 +234,7 @@ class BestsellersSection extends StatelessWidget {
     );
   }
 
-  Widget _buildMoreContainer(String imageUrl, String count) {
+  Widget _buildMoreContainer(BuildContext context, String imageUrl, String count) {
     return Stack(
       children: [
         // Background Image
@@ -258,7 +259,7 @@ class BestsellersSection extends StatelessWidget {
                         loadingProgress.expectedTotalBytes!
                         : null,
                     strokeWidth: 2,
-                    color: const Color(0xFF0d9488),
+                    color: Theme.of(context).primaryColor,
                   ),
                 );
               },
@@ -283,8 +284,8 @@ class BestsellersSection extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                const Color(0xFF99F6E4).withOpacity(0.85),
-                const Color(0xFF5EEAD4).withOpacity(0.95),
+                Theme.of(context).primaryColor.withOpacity(0.85),
+                Theme.of(context).primaryColor.withOpacity(0.95),
               ],
             ),
           ),
@@ -297,7 +298,7 @@ class BestsellersSection extends StatelessWidget {
                   style: GoogleFonts.montserrat(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
-                    color: const Color(0xFF0d9488),
+                    color: Theme.of(context).primaryColor,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -306,7 +307,7 @@ class BestsellersSection extends StatelessWidget {
                   style: GoogleFonts.montserrat(
                     fontSize: 9,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF0d9488),
+                    color: Theme.of(context).primaryColor,
                     letterSpacing: 1.2,
                   ),
                 ),

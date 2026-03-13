@@ -15,7 +15,7 @@ class HomeTabToggle extends StatelessWidget {
       height: 52,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFF0d9488).withOpacity(0.2),
+        color: Theme.of(context).primaryColor.withOpacity(0.2),
         borderRadius: BorderRadius.circular(30),
         border: Border.all(
           color: Colors.white.withOpacity(0.2),
@@ -37,7 +37,7 @@ class HomeTabToggle extends StatelessWidget {
                 width: (MediaQuery.of(context).size.width - 48) / 2,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(26),
                   boxShadow: [
                     BoxShadow(
@@ -63,8 +63,8 @@ class HomeTabToggle extends StatelessWidget {
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: isGrocery
-                              ? const Color(0xFF0d9488)
-                              : Colors.white.withOpacity(0.9),
+                              ? Theme.of(context).primaryColor
+                              : Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.9),
                         ),
                       ),
                     ),
@@ -82,8 +82,8 @@ class HomeTabToggle extends StatelessWidget {
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: !isGrocery
-                              ? const Color(0xFF0d9488)
-                              : Colors.white.withOpacity(0.9),
+                              ? Theme.of(context).primaryColor
+                              : Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.9),
                         ),
                       ),
                     ),

@@ -17,14 +17,14 @@ class WishlistScreen extends StatelessWidget {
     final WishlistController controller = Get.put(WishlistController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5FFFE),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF5FFFE),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         title: Text(
           'Your Wishlist',
           style: GoogleFonts.montserrat(
-            color: const Color(0xFF2D3748),
+            color: Theme.of(context).appBarTheme.titleTextStyle?.color,
             fontSize: 20,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.3,
@@ -41,13 +41,13 @@ class WishlistScreen extends StatelessWidget {
                  Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: Theme.of(context).dividerColor.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.favorite_border,
                     size: 60,
-                    color: Colors.grey.shade400,
+                    color: Theme.of(context).dividerColor.withOpacity(0.5),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -56,7 +56,7 @@ class WishlistScreen extends StatelessWidget {
                   style: GoogleFonts.montserrat(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black87,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -65,7 +65,7 @@ class WishlistScreen extends StatelessWidget {
                   style: GoogleFonts.montserrat(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: Colors.grey.shade600,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
                   ),
                 ),
               ],

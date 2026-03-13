@@ -17,10 +17,10 @@ class HomeHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF0d9488), Color(0xFF14b8a6)],
+          colors: [Theme.of(context).primaryColor, Theme.of(context).colorScheme.secondary],
         ),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(32),
@@ -28,7 +28,7 @@ class HomeHeader extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0d9488).withOpacity(0.3),
+            color: Theme.of(context).primaryColor.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -197,7 +197,7 @@ class HomeHeader extends StatelessWidget {
 
               Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -218,7 +218,7 @@ class HomeHeader extends StatelessWidget {
                       hintText: 'Search "fresh organic avocados"',
                       hintStyle: GoogleFonts.montserrat(
                         fontSize: 14,
-                        color: const Color(0xFF8E9AA0),
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
                         fontWeight: FontWeight.w500,
                       ),
                       border: InputBorder.none,
@@ -227,12 +227,12 @@ class HomeHeader extends StatelessWidget {
                         vertical: 16,
                         horizontal: 16,
                       ),
-                      prefixIcon: const Padding(
-                        padding: EdgeInsets.only(left: 4),
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only(left: 4),
                         child: Icon(
                           Icons.search,
                           size: 24,
-                          color: Color(0xFF11968a),
+                          color: Theme.of(context).primaryColor,
                         ),
                       ),
                       suffixIcon: Padding(
@@ -247,7 +247,7 @@ class HomeHeader extends StatelessWidget {
                     ),
                     style: GoogleFonts.montserrat(
                       fontSize: 14,
-                      color: Colors.black87,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
                     ),
                   ),

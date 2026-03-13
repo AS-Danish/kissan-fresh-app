@@ -12,6 +12,8 @@ import 'firebase_options.dart';
 import 'package:kissanfresh/controllers/auth_controller.dart';
 import 'package:kissanfresh/controllers/cart_controller.dart';
 import 'package:kissanfresh/services/location_service.dart';
+import 'package:kissanfresh/controllers/theme_controller.dart';
+import 'package:kissanfresh/utils/app_theme.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +26,7 @@ void main() async{
   await Hive.openBox('cart_box');
   await Hive.openBox('user_settings'); // Add this for location service
   await Hive.openBox('wishlist_box');
+  Get.put(ThemeController()); // Initialize theme early
   Get.put(LocationService(), permanent: true); // Add LocationService
   Get.put(AuthController(), permanent: true);
   Get.put(CartController(), permanent: true);
@@ -35,11 +38,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeController themeController = Get.find<ThemeController>();
+
     return GetMaterialApp(
       title: 'Kissan Fresh',
-      theme: ThemeData(
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeController.themeMode,
       getPages: AppRoutes.pages,
       initialBinding: BottomBarBinding(),
       home: MainLayout(),

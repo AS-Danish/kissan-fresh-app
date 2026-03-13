@@ -15,7 +15,7 @@ class LocationSearchBar extends StatelessWidget {
         // Main Search Bar
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
@@ -38,13 +38,13 @@ class LocationSearchBar extends StatelessWidget {
                   style: GoogleFonts.montserrat(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
-                    color: Colors.black87,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   decoration: InputDecoration(
                     hintText: 'Search for building, street or area...',
                     hintStyle: GoogleFonts.montserrat(
                       fontSize: 14,
-                      color: Colors.grey.shade400,
+                      color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
                     ),
                     border: InputBorder.none,
                     isDense: true,
@@ -75,7 +75,7 @@ class LocationSearchBar extends StatelessWidget {
           return Container(
             margin: const EdgeInsets.only(top: 8),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
@@ -92,7 +92,7 @@ class LocationSearchBar extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: controller.predictions.length,
-                separatorBuilder: (context, index) => Divider(height: 1, color: Colors.grey.shade200),
+                separatorBuilder: (context, index) => Divider(height: 1, color: Theme.of(context).dividerColor),
                 itemBuilder: (context, index) {
                   final prediction = controller.predictions[index];
                   // Extract main text and secondary text if possible (Google usually separates these by comma)
@@ -113,7 +113,7 @@ class LocationSearchBar extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -123,7 +123,7 @@ class LocationSearchBar extends StatelessWidget {
                           secondaryText,
                           style: GoogleFonts.montserrat(
                             fontSize: 12,
-                            color: Colors.grey.shade600,
+                            color: Theme.of(context).textTheme.bodyMedium?.color,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

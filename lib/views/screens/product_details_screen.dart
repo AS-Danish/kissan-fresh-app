@@ -24,19 +24,19 @@ class ProductDetailsScreen extends StatelessWidget {
     controller.initializeProduct(product);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5FFFE),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
           // App Bar with Image
           SliverAppBar(
             expandedHeight: 350,
             pinned: true,
-            backgroundColor: Colors.white,
+            backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
             leading: IconButton(
               icon: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
@@ -46,9 +46,9 @@ class ProductDetailsScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.arrow_back_ios_new,
-                  color: Color(0xFF0d9488),
+                  color: Theme.of(context).primaryColor,
                   size: 20,
                 ),
               ),
@@ -59,7 +59,7 @@ class ProductDetailsScreen extends StatelessWidget {
                 icon: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
@@ -73,7 +73,7 @@ class ProductDetailsScreen extends StatelessWidget {
                     Get.find<WishlistController>().isInWishlist(product)
                         ? Icons.favorite
                         : Icons.favorite_border,
-                    color: const Color(0xFF0d9488),
+                    color: Theme.of(context).primaryColor,
                     size: 20,
                   ),
                 ),
@@ -91,7 +91,7 @@ class ProductDetailsScreen extends StatelessWidget {
                             itemCount: product.images!.length,
                             onPageChanged: controller.onImageChanged,
                             itemBuilder: (context, index) {
-                              return _buildNetworkImage(product.images![index]);
+                              return _buildNetworkImage(context, product.images![index]);
                             },
                           ),
                           Positioned(
@@ -109,8 +109,8 @@ class ProductDetailsScreen extends StatelessWidget {
                                       height: 8,
                                       decoration: BoxDecoration(
                                         color: controller.currentImageIndex.value == index
-                                            ? const Color(0xFF0d9488)
-                                            : Colors.grey.shade400,
+                                            ? Theme.of(context).primaryColor
+                                            : Theme.of(context).dividerColor.withOpacity(0.5),
                                         borderRadius: BorderRadius.circular(4),
                                       ),
                                     ),
@@ -119,7 +119,7 @@ class ProductDetailsScreen extends StatelessWidget {
                           ),
                         ],
                       )
-                    : _buildNetworkImage(product.image),
+                    : _buildNetworkImage(context, product.image),
               ),
             ),
           ),
@@ -127,9 +127,9 @@ class ProductDetailsScreen extends StatelessWidget {
           // Product Details Content
           SliverToBoxAdapter(
             child: Container(
-              decoration: const BoxDecoration(
-                color: Color(0xFFF5FFFE),
-                borderRadius: BorderRadius.only(
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(24),
                   topRight: Radius.circular(24),
                 ),
@@ -150,7 +150,7 @@ class ProductDetailsScreen extends StatelessWidget {
                           style: GoogleFonts.montserrat(
                             fontSize: 26,
                             fontWeight: FontWeight.w900,
-                            color: Colors.black87,
+                            color: Theme.of(context).colorScheme.onSurface,
                             letterSpacing: 0.3,
                           ),
                         ),
@@ -162,7 +162,7 @@ class ProductDetailsScreen extends StatelessWidget {
                               style: GoogleFonts.montserrat(
                                 fontSize: 32,
                                 fontWeight: FontWeight.w900,
-                                color: const Color(0xFF0d9488),
+                                color: Theme.of(context).primaryColor,
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -195,7 +195,7 @@ class ProductDetailsScreen extends StatelessWidget {
                           style: GoogleFonts.montserrat(
                             fontSize: 18,
                             fontWeight: FontWeight.w800,
-                            color: Colors.black87,
+                            color: Theme.of(context).colorScheme.onSurface,
                             letterSpacing: 0.3,
                           ),
                         ),
@@ -205,7 +205,7 @@ class ProductDetailsScreen extends StatelessWidget {
                           style: GoogleFonts.montserrat(
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
-                            color: Colors.grey.shade700,
+                            color: Theme.of(context).textTheme.bodyMedium?.color,
                             height: 1.6,
                             letterSpacing: 0.2,
                           ),
@@ -222,7 +222,7 @@ class ProductDetailsScreen extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
@@ -235,6 +235,7 @@ class ProductDetailsScreen extends StatelessWidget {
                       child: Column(
                         children: [
                           _buildDetailRow(
+                            context: context,
                             icon: Icons.inventory_2_outlined,
                             label: 'Stock Status',
                             value: product.inStock ? 'In Stock' : 'Out of Stock',
@@ -244,6 +245,7 @@ class ProductDetailsScreen extends StatelessWidget {
                           Divider(color: Colors.grey.shade200, height: 1),
                           const SizedBox(height: 12),
                           _buildDetailRow(
+                            context: context,
                             icon: Icons.local_offer_outlined,
                             label: 'Category',
                             value: product.category ?? 'Fresh Vegetables',
@@ -268,7 +270,7 @@ class ProductDetailsScreen extends StatelessWidget {
                             style: GoogleFonts.montserrat(
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
-                              color: Colors.black87,
+                              color: Theme.of(context).colorScheme.onSurface,
                               letterSpacing: 0.3,
                             ),
                           ),
@@ -284,6 +286,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                 return SizedBox(
                                   width: 140, // Fixed width for each card
                                   child: _buildInfoCard(
+                                    context: context,
                                     icon: Icons.verified_outlined,
                                     title: 'Feature',
                                     subtitle: product.tags![index],
@@ -306,11 +309,12 @@ class ProductDetailsScreen extends StatelessWidget {
       ),
 
       // Bottom Add to Cart Bar
-      bottomNavigationBar: _buildBottomBar(controller),
+      bottomNavigationBar: _buildBottomBar(context, controller),
     );
   }
 
   Widget _buildInfoCard({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -319,7 +323,7 @@ class ProductDetailsScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -360,7 +364,7 @@ class ProductDetailsScreen extends StatelessWidget {
             style: GoogleFonts.montserrat(
               fontSize: 14,
               fontWeight: FontWeight.w800,
-              color: Colors.black87,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],
@@ -369,6 +373,7 @@ class ProductDetailsScreen extends StatelessWidget {
   }
 
   Widget _buildDetailRow({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required String value,
@@ -399,7 +404,7 @@ class ProductDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBenefitItem(String text) {
+  Widget _buildBenefitItem(BuildContext context, String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -407,8 +412,8 @@ class ProductDetailsScreen extends StatelessWidget {
           Container(
             width: 6,
             height: 6,
-            decoration: const BoxDecoration(
-              color: Color(0xFF0d9488),
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor,
               shape: BoxShape.circle,
             ),
           ),
@@ -429,11 +434,11 @@ class ProductDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomBar(ProductDetailsController controller) {
+  Widget _buildBottomBar(BuildContext context, ProductDetailsController controller) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
@@ -452,10 +457,10 @@ class ProductDetailsScreen extends StatelessWidget {
             // Quantity Controls
             Container(
               decoration: BoxDecoration(
-                color: const Color(0xFFF0FDFA),
+                color: Theme.of(context).primaryColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: const Color(0xFF14b8a6).withOpacity(0.3),
+                  color: Theme.of(context).primaryColor.withOpacity(0.3),
                   width: 1,
                 ),
               ),
@@ -463,6 +468,7 @@ class ProductDetailsScreen extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildQuantityButton(
+                    context: context,
                     icon: Icons.remove,
                     onPressed: (product.inStock && controller.quantity.value > 1)
                         ? controller.decreaseQuantity
@@ -475,11 +481,12 @@ class ProductDetailsScreen extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
-                        color: const Color(0xFF0d9488),
+                        color: Theme.of(context).primaryColor,
                       ),
                     ),
                   ),
                   _buildQuantityButton(
+                    context: context,
                     icon: Icons.add,
                     onPressed: product.inStock ? controller.increaseQuantity : null,
                   ),
@@ -497,13 +504,13 @@ class ProductDetailsScreen extends StatelessWidget {
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                     colors: product.inStock 
-                        ? [const Color(0xFF0d9488), const Color(0xFF14b8a6)]
-                        : [Colors.grey.shade400, Colors.grey.shade500],
+                        ? [Theme.of(context).primaryColor, Theme.of(context).primaryColor.withOpacity(0.8)]
+                        : [Theme.of(context).dividerColor.withOpacity(0.3), Theme.of(context).dividerColor.withOpacity(0.5)],
                   ),
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: product.inStock ? [
                     BoxShadow(
-                      color: const Color(0xFF0d9488).withOpacity(0.3),
+                      color: Theme.of(context).primaryColor.withOpacity(0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -554,6 +561,7 @@ class ProductDetailsScreen extends StatelessWidget {
   }
 
   Widget _buildQuantityButton({
+    required BuildContext context,
     required IconData icon,
     required VoidCallback? onPressed,
   }) {
@@ -571,14 +579,14 @@ class ProductDetailsScreen extends StatelessWidget {
           icon,
           size: 20,
           color: onPressed != null
-              ? const Color(0xFF0d9488)
-              : const Color(0xFF0d9488).withOpacity(0.3),
+              ? Theme.of(context).primaryColor
+              : Theme.of(context).primaryColor.withOpacity(0.3),
         ),
       ),
     );
   }
 
-  Widget _buildNetworkImage(String imageUrl) {
+  Widget _buildNetworkImage(BuildContext context, String imageUrl) {
     return CachedNetworkImage(
       imageUrl: imageUrl,
       fit: BoxFit.cover,
@@ -587,7 +595,7 @@ class ProductDetailsScreen extends StatelessWidget {
           width: 32,
           height: 32,
           child: CircularProgressIndicator(
-            color: const Color(0xFF0d9488),
+            color: Theme.of(context).primaryColor,
             strokeWidth: 2.5,
           ),
         ),

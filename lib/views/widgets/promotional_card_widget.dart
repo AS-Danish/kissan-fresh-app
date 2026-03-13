@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kissanfresh/model/promotional_card_model.dart';
 
-import '../../themes/app_theme.dart';
+
 class PromotionalCardWidget extends StatelessWidget {
   final PromotionalCardModel promotionCard;
   const PromotionalCardWidget({super.key, required this.promotionCard});
@@ -12,7 +12,7 @@ class PromotionalCardWidget extends StatelessWidget {
     return Container(
       width: 300,
       decoration: BoxDecoration(
-        color: AppTheme().primaryColor,
+        color: Theme.of(context).primaryColor,
         borderRadius: BorderRadius.circular(30),
       ),
       child: Padding(
@@ -42,7 +42,7 @@ class PromotionalCardWidget extends StatelessWidget {
                 ),
                 child: Text(
                   promotionCard.btnText,
-                  style: GoogleFonts.poppins(color: AppTheme().primaryColor),
+                  style: GoogleFonts.poppins(color: Theme.of(context).primaryColor),
                 ),
               ),
             ),

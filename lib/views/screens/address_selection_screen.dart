@@ -18,14 +18,14 @@ class AddressSelectionScreen extends StatelessWidget {
         title: Text(
           'Select Location',
           style: GoogleFonts.montserrat(
-            color: const Color(0xFF2D3748),
+            color: Theme.of(context).appBarTheme.titleTextStyle?.color,
             fontWeight: FontWeight.w700,
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).appBarTheme.iconTheme?.color),
           onPressed: () => Get.back(),
         ),
       ),
@@ -48,10 +48,10 @@ class AddressSelectionScreen extends StatelessWidget {
             bottom: 220,
             child: FloatingActionButton(
               heroTag: 'my_location_btn',
-              backgroundColor: Colors.white,
+              backgroundColor: Theme.of(context).colorScheme.surface,
               elevation: 4,
               onPressed: controller.getCurrentLocation,
-              child: const Icon(Icons.my_location, color: Color(0xFF0d9488)),
+              child: Icon(Icons.my_location, color: Theme.of(context).primaryColor),
             ),
           ),
 

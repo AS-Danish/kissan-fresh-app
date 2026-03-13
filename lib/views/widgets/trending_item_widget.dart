@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kissanfresh/model/trending_item_model.dart';
-import 'package:kissanfresh/themes/app_theme.dart';
 
 class TrendingItemWidget extends StatelessWidget {
   final TrendingItemModel trendingItem;
@@ -16,7 +15,7 @@ class TrendingItemWidget extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
@@ -38,7 +37,7 @@ class TrendingItemWidget extends StatelessWidget {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: AppTheme().secondaryColor,
+                    color: Theme.of(context).colorScheme.secondary,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: trendingItem.imageUrl != null
@@ -73,6 +72,7 @@ class TrendingItemWidget extends StatelessWidget {
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w600,
                           fontSize: 15,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -82,7 +82,7 @@ class TrendingItemWidget extends StatelessWidget {
                         trendingItem.subtitle,
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w400,
-                          color: AppTheme().secondaryTextColor,
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
                           fontSize: 12,
                         ),
                       ),
@@ -92,7 +92,7 @@ class TrendingItemWidget extends StatelessWidget {
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.w600,
                           fontSize: 15,
-                          color: AppTheme().primaryColor,
+                          color: Theme.of(context).primaryColor,
                         ),
                       ),
                     ],
@@ -104,7 +104,7 @@ class TrendingItemWidget extends StatelessWidget {
           SizedBox(width: 8),
           MaterialButton(
             onPressed: trendingItem.onTap,
-            color: AppTheme().primaryColor,
+            color: Theme.of(context).primaryColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),

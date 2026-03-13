@@ -25,8 +25,40 @@ class ProductCardModel {
     required this.unit,
     this.category,
     this.tags,
-    this.inStock = true, // Default to true
+    this.inStock = true,
     required this.onTap,
     required this.onAddToCart,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'image': image,
+      'images': images,
+      'title': title,
+      'description': description,
+      'price': price,
+      'unit': unit,
+      'category': category,
+      'tags': tags,
+      'inStock': inStock,
+    };
+  }
+
+  factory ProductCardModel.fromJson(Map<String, dynamic> json, {VoidCallback? onTap, VoidCallback? onAddToCart}) {
+    return ProductCardModel(
+      id: json['id'],
+      image: json['image'] ?? '',
+      images: json['images'] != null ? List<String>.from(json['images']) : null,
+      title: json['title'] ?? 'Unknown',
+      description: json['description'] ?? '',
+      price: (json['price'] ?? 0).toDouble(),
+      unit: json['unit'] ?? 'unit',
+      category: json['category'],
+      tags: json['tags'] != null ? List<String>.from(json['tags']) : null,
+      inStock: json['inStock'] ?? true,
+      onTap: onTap ?? () {},
+      onAddToCart: onAddToCart ?? () {},
+    );
+  }
 }

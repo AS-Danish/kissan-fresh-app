@@ -18,14 +18,14 @@ class CartScreen extends StatelessWidget {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5FFFE),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF5FFFE),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         title: Text(
           'My Cart',
           style: GoogleFonts.montserrat(
-            color: const Color(0xFF2D3748),
+            color: Theme.of(context).appBarTheme.titleTextStyle?.color,
             fontSize: 20,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.3,
@@ -45,30 +45,30 @@ class CartScreen extends StatelessWidget {
       ),
       body: Obx(() {
         if (controller.cartItems.isEmpty) {
-          return _buildEmptyCart();
+          return _buildEmptyCart(context);
         }
 
         return Column(
           children: [
             // Delivery Info Card
-            _buildDeliveryInfoCard(),
+            _buildDeliveryInfoCard(context),
 
             const SizedBox(height: 16),
 
             // Cart Items List
             Expanded(
-              child: _buildCartItemsList(),
+              child: _buildCartItemsList(context),
             ),
 
             // Bottom Section with Price Summary and Checkout
-            _buildBottomSection(),
+            _buildBottomSection(context),
           ],
         );
       }),
     );
   }
 
-  Widget _buildEmptyCart() {
+  Widget _buildEmptyCart(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -77,13 +77,13 @@ class CartScreen extends StatelessWidget {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: const Color(0xFFF0FDFA),
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.shopping_cart_outlined,
               size: 60,
-              color: Color(0xFF0d9488),
+              color: Theme.of(context).primaryColor,
             ),
           ),
           const SizedBox(height: 24),
@@ -92,7 +92,7 @@ class CartScreen extends StatelessWidget {
             style: GoogleFonts.montserrat(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: Colors.black87,
+              color: Theme.of(context).colorScheme.onSurface,
               letterSpacing: 0.3,
             ),
           ),
@@ -102,14 +102,14 @@ class CartScreen extends StatelessWidget {
             style: GoogleFonts.montserrat(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Colors.grey.shade600,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
           ),
           const SizedBox(height: 32),
           ElevatedButton(
             onPressed: () => Get.back(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0d9488),
+              backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -131,12 +131,12 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDeliveryInfoCard() {
+  Widget _buildDeliveryInfoCard(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -145,19 +145,19 @@ class CartScreen extends StatelessWidget {
             offset: const Offset(0, 2),
           ),
         ],
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.5)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF0d9488).withOpacity(0.1),
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.location_on_outlined,
-              color: Color(0xFF0d9488),
+              color: Theme.of(context).primaryColor,
               size: 20,
             ),
           ),
@@ -181,7 +181,7 @@ class CartScreen extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 12,
                         fontWeight: FontWeight.w800,
-                        color: const Color(0xFF0d9488),
+                        color: Theme.of(context).primaryColor,
                       ),
                     ),
                   ],
@@ -192,7 +192,7 @@ class CartScreen extends StatelessWidget {
                   style: GoogleFonts.montserrat(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black87,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -211,9 +211,9 @@ class CartScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(20),
             child: Container(
               padding: const EdgeInsets.all(8),
-              child: const Icon(
+              child: Icon(
                 Icons.edit_outlined,
-                color: Color(0xFF0d9488),
+                color: Theme.of(context).primaryColor,
                 size: 20,
               ),
             ),
@@ -223,19 +223,19 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCartItemsList() {
+  Widget _buildCartItemsList(BuildContext context) {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       itemCount: controller.cartItems.length,
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final item = controller.cartItems[index];
-        return _buildCartItem(item);
+        return _buildCartItem(context, item);
       },
     );
   }
 
-  Widget _buildCartItem(CartItem item) {
+  Widget _buildCartItem(BuildContext context, CartItem item) {
     return Dismissible(
       key: Key(item.id),
       direction: DismissDirection.endToStart,
@@ -268,7 +268,7 @@ class CartScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -277,7 +277,7 @@ class CartScreen extends StatelessWidget {
               offset: const Offset(0, 2),
             ),
           ],
-          border: Border.all(color: Colors.grey.shade100, width: 1),
+          border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.5), width: 1),
         ),
         child: Row(
           children: [
@@ -299,7 +299,7 @@ class CartScreen extends StatelessWidget {
                     placeholder: (context, url) => Center(
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: const Color(0xFF0d9488),
+                        color: Theme.of(context).primaryColor,
                       ),
                     ),
                     errorWidget: (context, url, error) => Container(
@@ -330,7 +330,7 @@ class CartScreen extends StatelessWidget {
                           style: GoogleFonts.montserrat(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
-                            color: Colors.black87,
+                            color: Theme.of(context).colorScheme.onSurface,
                             letterSpacing: 0.2,
                           ),
                           maxLines: 2,
@@ -401,13 +401,13 @@ class CartScreen extends StatelessWidget {
                         style: GoogleFonts.montserrat(
                           fontSize: 17,
                           fontWeight: FontWeight.w800,
-                          color: const Color(0xFF0d9488),
+                          color: Theme.of(context).primaryColor,
                           letterSpacing: 0.3,
                         ),
                       ),
                       const Spacer(),
                       // Quantity Controls
-                      _buildQuantityControls(item),
+                      _buildQuantityControls(context, item),
                     ],
                   ),
                 ],
@@ -419,13 +419,13 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildQuantityControls(CartItem item) {
+  Widget _buildQuantityControls(BuildContext context, CartItem item) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF0FDFA),
+        color: Theme.of(context).primaryColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: const Color(0xFF14b8a6).withOpacity(0.3),
+          color: Theme.of(context).primaryColor.withOpacity(0.3),
           width: 1,
         ),
       ),
@@ -433,6 +433,7 @@ class CartScreen extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildQuantityButton(
+            context: context,
             icon: Icons.remove,
             onPressed: item.count > 1 ? () => controller.decrementItem(item.id) : null,
             isDisabled: item.count <= 1,
@@ -444,11 +445,12 @@ class CartScreen extends StatelessWidget {
               style: GoogleFonts.montserrat(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: const Color(0xFF0d9488),
+                color: Theme.of(context).primaryColor,
               ),
             ),
           ),
           _buildQuantityButton(
+            context: context,
             icon: Icons.add,
             onPressed: () => controller.incrementItem(item.id),
             isDisabled: false,
@@ -459,6 +461,7 @@ class CartScreen extends StatelessWidget {
   }
 
   Widget _buildQuantityButton({
+    required BuildContext context,
     required IconData icon,
     required VoidCallback? onPressed,
     required bool isDisabled,
@@ -477,17 +480,17 @@ class CartScreen extends StatelessWidget {
           icon,
           size: 18,
           color: isDisabled
-              ? const Color(0xFF0d9488).withOpacity(0.3)
-              : const Color(0xFF0d9488),
+              ? Theme.of(context).primaryColor.withOpacity(0.3)
+              : Theme.of(context).primaryColor,
         ),
       ),
     );
   }
 
-  Widget _buildBottomSection() {
+  Widget _buildBottomSection(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
@@ -507,12 +510,12 @@ class CartScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               // Price Summary
-              _buildPriceSummary(),
+              _buildPriceSummary(context),
 
               const SizedBox(height: 20),
 
               // Checkout Button
-              _buildCheckoutButton(),
+              _buildCheckoutButton(context),
             ],
           ),
         ),
@@ -520,12 +523,13 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPriceSummary() {
+  Widget _buildPriceSummary(BuildContext context) {
     return Obx(() => Column(
       children: [
-        _buildPriceRow('Subtotal', '₹${controller.subtotal.toStringAsFixed(0)}'),
+        _buildPriceRow(context, 'Subtotal', '₹${controller.subtotal.toStringAsFixed(0)}'),
         const SizedBox(height: 8),
         _buildPriceRow(
+          context,
           'Delivery Fee',
           '₹${controller.deliveryFee.toStringAsFixed(0)}',
           isDelivery: controller.deliveryFee == 0,
@@ -533,6 +537,7 @@ class CartScreen extends StatelessWidget {
         if (controller.discount > 0) const SizedBox(height: 8),
         if (controller.discount > 0)
           _buildPriceRow(
+            context,
             'Discount',
             '-₹${controller.discount.toStringAsFixed(0)}',
             isDiscount: true,
@@ -541,7 +546,7 @@ class CartScreen extends StatelessWidget {
     ));
   }
 
-  Widget _buildPriceRow(String label, String amount,
+  Widget _buildPriceRow(BuildContext context, String label, String amount,
       {bool isDelivery = false, bool isDiscount = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -584,7 +589,7 @@ class CartScreen extends StatelessWidget {
                     ? const Color(0xFF10B981)
                     : isDelivery
                     ? Colors.grey.shade400
-                    : Colors.black87,
+                    : Theme.of(context).colorScheme.onSurface,
                 letterSpacing: 0.2,
                 decoration: isDelivery && controller.deliveryFee == 0
                     ? TextDecoration.lineThrough
@@ -597,18 +602,18 @@ class CartScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCheckoutButton() {
+  Widget _buildCheckoutButton(BuildContext context) {
     return Obx(() => Container(
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
-          colors: [Color(0xFF0d9488), Color(0xFF14b8a6)],
+          colors: [Theme.of(context).primaryColor, Theme.of(context).primaryColor.withOpacity(0.8)],
         ),
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0d9488).withOpacity(0.3),
+            color: Theme.of(context).primaryColor.withOpacity(0.3),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -735,7 +740,7 @@ class CartScreen extends StatelessWidget {
           style: GoogleFonts.montserrat(
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: Colors.black87,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         content: Text(

@@ -13,18 +13,18 @@ class ProfileScreen extends StatelessWidget {
     final ProfileController controller = Get.put(ProfileController());
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5FFFE),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF5FFFE),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF2D3748)),
+          icon: Icon(Icons.arrow_back_ios, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => Get.back(),
         ),
         title: Text(
           'Edit Profile',
           style: GoogleFonts.montserrat(
-            color: const Color(0xFF2D3748),
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 20,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.3,
@@ -51,14 +51,14 @@ class ProfileScreen extends StatelessWidget {
                     height: 120,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF0d9488), Color(0xFF14b8a6)],
+                      gradient: LinearGradient(
+                        colors: [Theme.of(context).primaryColor, Theme.of(context).colorScheme.secondary],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF0d9488).withOpacity(0.3),
+                          color: Theme.of(context).primaryColor.withOpacity(0.3),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -93,7 +93,7 @@ class ProfileScreen extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.surface,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
@@ -103,9 +103,9 @@ class ProfileScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.camera_alt,
-                          color: Color(0xFF0d9488),
+                          color: Theme.of(context).primaryColor,
                           size: 20,
                         ),
                       ),
@@ -118,12 +118,14 @@ class ProfileScreen extends StatelessWidget {
 
             // Form Fields
             _buildTextField(
+              context: context,
               label: 'Full Name',
               controller: controller.nameController,
               icon: Icons.person_outline,
             ),
             const SizedBox(height: 16),
             _buildTextField(
+              context: context,
               label: 'Email Address (Optional)',
               controller: controller.emailController,
               icon: Icons.email_outlined,
@@ -131,6 +133,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
              _buildTextField(
+              context: context,
               label: 'Phone Number',
               controller: controller.phoneController,
               icon: Icons.phone_outlined,
@@ -139,6 +142,7 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _buildTextField(
+              context: context,
               label: 'Address',
               controller: controller.addressController,
               icon: Icons.location_on_outlined,
@@ -161,12 +165,12 @@ class ProfileScreen extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: controller.updateProfile,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0d9488),
+                  backgroundColor: Theme.of(context).primaryColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
                   elevation: 8,
-                  shadowColor: const Color(0xFF0d9488).withOpacity(0.5),
+                  shadowColor: Theme.of(context).primaryColor.withOpacity(0.5),
                 ),
                 child: Text(
                   'Save Changes',
@@ -214,6 +218,7 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildTextField({
+    required BuildContext context,
     required String label,
     required TextEditingController controller,
     required IconData icon,
@@ -230,13 +235,13 @@ class ProfileScreen extends StatelessWidget {
           style: GoogleFonts.montserrat(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF2D3748),
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
@@ -255,17 +260,17 @@ class ProfileScreen extends StatelessWidget {
             style: GoogleFonts.montserrat(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: isReadOnly && onTap == null ? Colors.grey.shade600 : Colors.black87,
+              color: isReadOnly && onTap == null ? Theme.of(context).textTheme.bodyMedium?.color : Theme.of(context).colorScheme.onSurface,
             ),
             decoration: InputDecoration(
-              prefixIcon: Icon(icon, color: const Color(0xFF9AA7AC), size: 20),
+              prefixIcon: Icon(icon, color: Theme.of(context).textTheme.bodyMedium?.color, size: 20),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 16,
               ),
               hintStyle: GoogleFonts.montserrat(
-                color: const Color(0xFFCBD5E0),
+                color: Theme.of(context).dividerColor,
               ),
             ),
           ),

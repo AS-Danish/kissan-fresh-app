@@ -10,15 +10,15 @@ class OnboardingScreen extends GetView<OnboardingController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5FFFE),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: const Color(0xFFF5FFFE),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         title: Text(
           'Complete Profile',
           style: GoogleFonts.montserrat(
-            color: const Color(0xFF2D3748),
+            color: Theme.of(context).appBarTheme.titleTextStyle?.color,
             fontSize: 22,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.3,
@@ -36,7 +36,7 @@ class OnboardingScreen extends GetView<OnboardingController> {
               style: GoogleFonts.montserrat(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF2D3748),
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 8),
@@ -44,11 +44,12 @@ class OnboardingScreen extends GetView<OnboardingController> {
               'Please provide a few details to complete your registration.',
               style: GoogleFonts.montserrat(
                 fontSize: 16,
-                color: const Color(0xFF718096),
+                color: Theme.of(context).textTheme.bodyMedium?.color,
               ),
             ),
             const SizedBox(height: 32),
             _buildTextField(
+              context: context,
               label: 'Full Name *',
               controller: controller.nameController,
               icon: Icons.person_outline,
@@ -56,6 +57,7 @@ class OnboardingScreen extends GetView<OnboardingController> {
             ),
             const SizedBox(height: 16),
             _buildTextField(
+              context: context,
               label: 'Address *',
               controller: controller.addressController,
               icon: Icons.location_on_outlined,
@@ -73,6 +75,7 @@ class OnboardingScreen extends GetView<OnboardingController> {
             ),
             const SizedBox(height: 16),
             _buildTextField(
+              context: context,
               label: 'Email (Optional)',
               controller: controller.emailController,
               icon: Icons.email_outlined,
@@ -86,12 +89,12 @@ class OnboardingScreen extends GetView<OnboardingController> {
                   child: ElevatedButton(
                     onPressed: controller.isLoading.value ? null : controller.submit,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0d9488),
+                      backgroundColor: Theme.of(context).primaryColor,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
                       elevation: 8,
-                      shadowColor: const Color(0xFF0d9488).withOpacity(0.5),
+                      shadowColor: Theme.of(context).primaryColor.withOpacity(0.5),
                     ),
                     // ignore: prefer_const_constructors
                     child: controller.isLoading.value
@@ -114,6 +117,7 @@ class OnboardingScreen extends GetView<OnboardingController> {
   }
 
   Widget _buildTextField({
+    required BuildContext context,
     required String label,
     required TextEditingController controller,
     required IconData icon,
@@ -131,13 +135,13 @@ class OnboardingScreen extends GetView<OnboardingController> {
           style: GoogleFonts.montserrat(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF2D3748),
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
@@ -156,10 +160,10 @@ class OnboardingScreen extends GetView<OnboardingController> {
             style: GoogleFonts.montserrat(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: Colors.black87,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
             decoration: InputDecoration(
-              prefixIcon: Icon(icon, color: const Color(0xFF9AA7AC), size: 20),
+              prefixIcon: Icon(icon, color: Theme.of(context).primaryColor, size: 20),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,

@@ -13,10 +13,10 @@ class CategorizedProductsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       if (controller.isLoading.value && controller.categorizedProducts.isEmpty) {
-        return const Padding(
-          padding: EdgeInsets.all(32.0),
+        return Padding(
+          padding: const EdgeInsets.all(32.0),
           child: Center(
-            child: CircularProgressIndicator(color: Color(0xFF0d9488)),
+            child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
           ),
         );
       }
@@ -47,7 +47,7 @@ class CategorizedProductsSection extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
-                        color: Colors.black87,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     TextButton(
@@ -57,7 +57,7 @@ class CategorizedProductsSection extends StatelessWidget {
                         style: GoogleFonts.montserrat(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: const Color(0xFF0d9488),
+                          color: Theme.of(context).primaryColor,
                         ),
                       ),
                     ),

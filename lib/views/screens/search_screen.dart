@@ -15,14 +15,14 @@ class SearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5FFFE),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF5FFFE),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         title: Text(
           'Search Products',
           style: GoogleFonts.montserrat(
-            color: const Color(0xFF2D3748),
+            color: Theme.of(context).appBarTheme.titleTextStyle?.color,
             fontSize: 20,
             fontWeight: FontWeight.w700,
             letterSpacing: 0.3,
@@ -38,7 +38,7 @@ class SearchScreen extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
@@ -58,7 +58,7 @@ class SearchScreen extends StatelessWidget {
                     hintText: 'Search for products...',
                     hintStyle: GoogleFonts.montserrat(
                       fontSize: 14,
-                      color: const Color(0xFF8E9AA0),
+                      color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
                       fontWeight: FontWeight.w500,
                     ),
                     border: InputBorder.none,
@@ -67,12 +67,12 @@ class SearchScreen extends StatelessWidget {
                       vertical: 16,
                       horizontal: 16,
                     ),
-                    prefixIcon: const Padding(
-                      padding: EdgeInsets.only(left: 4),
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.only(left: 4),
                       child: Icon(
                         Icons.search,
                         size: 24,
-                        color: Color(0xFF11968a),
+                        color: Theme.of(context).primaryColor,
                       ),
                     ),
                     suffixIcon: Obx(() {
@@ -115,7 +115,7 @@ class SearchScreen extends StatelessWidget {
                   ),
                   style: GoogleFonts.montserrat(
                     fontSize: 14,
-                    color: Colors.black87,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -135,7 +135,7 @@ class SearchScreen extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
-                        color: Colors.black87,
+                        color: Theme.of(context).colorScheme.onSurface,
                         letterSpacing: 0.3,
                       ),
                     ),
@@ -155,11 +155,11 @@ class SearchScreen extends StatelessWidget {
                             color: const Color(0xFF2D3748),
                           ),
                         ),
-                        backgroundColor: Colors.white,
-                        deleteIconColor: const Color(0xFF8E9AA0),
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        deleteIconColor: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
-                          side: BorderSide(color: Colors.grey.shade300),
+                          side: BorderSide(color: Theme.of(context).dividerColor),
                         ),
                         onSelected: (_) {
                           searchTextController.text = query;
@@ -180,7 +180,7 @@ class SearchScreen extends StatelessWidget {
                     style: GoogleFonts.montserrat(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: Colors.black87,
+                      color: Theme.of(context).colorScheme.onSurface,
                       letterSpacing: 0.3,
                     ),
                   ),
@@ -223,11 +223,11 @@ class SearchScreen extends StatelessWidget {
               final products = controller.filteredProducts;
 
               if (controller.isLoading.value && products.isEmpty) {
-                return const Padding(
-                  padding: EdgeInsets.all(32.0),
+                return Padding(
+                  padding: const EdgeInsets.all(32.0),
                   child: Center(
                     child: CircularProgressIndicator(
-                      color: Color(0xFF0d9488),
+                      color: Theme.of(context).primaryColor,
                     ),
                   ),
                 );
@@ -258,7 +258,7 @@ class SearchScreen extends StatelessWidget {
                           style: GoogleFonts.montserrat(
                             fontSize: 18,
                             fontWeight: FontWeight.w800,
-                            color: Colors.black87,
+                            color: Theme.of(context).colorScheme.onSurface,
                             letterSpacing: 0.3,
                           ),
                         ),
@@ -267,7 +267,7 @@ class SearchScreen extends StatelessWidget {
                           style: GoogleFonts.montserrat(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFF0d9488),
+                            color: Theme.of(context).primaryColor,
                             letterSpacing: 0.2,
                           ),
                         ),
@@ -293,11 +293,11 @@ class SearchScreen extends StatelessWidget {
                     ),
                   ),
                   if (controller.isFetchingMore.value)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24.0),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24.0),
                       child: Center(
                         child: CircularProgressIndicator(
-                          color: Color(0xFF0d9488),
+                          color: Theme.of(context).primaryColor,
                         ),
                       ),
                     )
@@ -308,8 +308,8 @@ class SearchScreen extends StatelessWidget {
                         child: OutlinedButton(
                           onPressed: () => controller.fetchNextPage(),
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF0d9488),
-                            side: const BorderSide(color: Color(0xFF0d9488)),
+                            foregroundColor: Theme.of(context).primaryColor,
+                            side: BorderSide(color: Theme.of(context).primaryColor),
                             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),

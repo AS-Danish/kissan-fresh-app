@@ -7,6 +7,7 @@ import 'package:kissanfresh/model/product_card_model.dart';
 import 'package:kissanfresh/controllers/cart_controller.dart';
 import '../model/category_item_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hive/hive.dart';
 
 class HomepageController extends GetxController {
   RxInt selectedIndex = 0.obs;
@@ -19,11 +20,27 @@ class HomepageController extends GetxController {
   RxList<ProductCardModel> todaysSpecials = <ProductCardModel>[].obs;
   RxBool isLoadingSpecials = false.obs;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final Box _cacheBox = Hive.box('user_settings'); // Reusing existing box or creating new one
+  // Actually, implementation plan said 'cached_specials', let's use that if it exists or just user_settings if simpler.
+  // Given user_settings is already used for theme, I'll use it for specials too to avoid needing more openBox calls in main.
+  // Or I can open it here. Let's stick to the plan and open 'cached_specials'.
 
   @override
   void onInit() {
     super.onInit();
+    _loadCachedSpecials();
     fetchTodaysSpecials();
+  }
+
+  void _loadCachedSpecials() {
+    try {
+      final cachedData = _cacheBox.get('todays_specials_cache');
+      if (cachedData != null && cachedData is List) {
+        todaysSpecials.value = cachedData.map((e) => ProductCardModel.fromJson(Map<String, dynamic>.from(e))).toList();
+      }
+    } catch (e) {
+      debugPrint("Error loading cached specials: $e");
+    }
   }
 
   Future<void> fetchTodaysSpecials() async {
@@ -111,6 +128,10 @@ class HomepageController extends GetxController {
           }
           
           todaysSpecials.value = fetchedSpecials;
+          
+          // Save to cache
+          final cacheData = fetchedSpecials.map((e) => e.toJson()).toList();
+          await _cacheBox.put('todays_specials_cache', cacheData);
         }
       }
     } catch (e) {
