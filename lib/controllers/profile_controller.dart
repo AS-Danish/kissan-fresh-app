@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:kissanfresh/model/user_model.dart';
 import 'package:kissanfresh/services/user_service.dart';
 import 'package:kissanfresh/services/location_service.dart';
@@ -189,72 +190,175 @@ class ProfileController extends GetxController {
   }
   
   void deleteAccount() {
-    Get.defaultDialog(
-      title: "Delete Account",
-      middleText: "Are you sure you want to delete your account? This action cannot be undone.",
-      textConfirm: "Delete",
-      textCancel: "Cancel",
-      confirmTextColor: Colors.white,
-      buttonColor: Colors.red,
-      onConfirm: () async {
-        Get.back(); // Close dialog
-        isLoading.value = true;
-        
-        try {
-          final currentUser = FirebaseAuth.instance.currentUser;
-          if (currentUser != null) {
-             // 1. Optional: Delete image from storage if exists
-             if (profileImage.value.isNotEmpty) {
-               try {
-                 final ref = FirebaseStorage.instance.refFromURL(profileImage.value);
-                 await ref.delete();
-               } catch (e) {
-                 debugPrint("Could not delete image: $e");
-               }
-             }
-             
-             // 2. Clear from Firestore
-             // Since we use set locally, you'd need delete logic. Assuming db instance:
-             // We can do it directly or wait. For complete deletion, Firebase Auth is most critical.
-             // Note: in a production app, do you delete the Firestore record? Usually yes.
-             // await FirebaseFirestore.instance.collection('users').doc(currentUser.uid).delete();
-             
-             // 3. Clear cache
-             final prefs = await SharedPreferences.getInstance();
-             await prefs.clear();
-             
-             // 4. Delete Auth User
-             await currentUser.delete();
-             
-             Get.snackbar(
-               'Account Deleted',
-               'Your account has been permanently deleted.',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: Colors.green,
-                colorText: Colors.white,
-             );
-             
-             Get.offAllNamed(AppRoutes.loginScreen);
-          }
-        } on FirebaseAuthException catch (e) {
-           if (e.code == 'requires-recent-login') {
-              Get.snackbar(
-                'Requires Login',
-                'Please log out and log back in to verify your identity before deleting.',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: Colors.orange,
-                colorText: Colors.white,
-              );
-           } else {
-             Get.snackbar('Error', e.message ?? 'Failed to delete account.', backgroundColor: Colors.red, colorText: Colors.white);
-           }
-        } catch (e) {
-             Get.snackbar('Error', 'An unknown error occurred.', backgroundColor: Colors.red, colorText: Colors.white);
-        } finally {
-          isLoading.value = false;
-        }
-      }
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: Theme.of(Get.context!).colorScheme.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+        contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Delete Account',
+                style: GoogleFonts.montserrat(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: Theme.of(Get.context!).colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'This action is permanent and cannot be undone. All your data, including order history and saved addresses, will be removed.',
+              style: GoogleFonts.montserrat(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Theme.of(Get.context!).colorScheme.onSurface.withOpacity(0.7),
+                height: 1.5,
+              ),
+            ),
+          ],
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: TextButton(
+                  onPressed: () => Get.back(),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Cancel',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(Get.context!).colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () async {
+                    Get.back(); // Close dialog
+                    _processAccountDeletion();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Delete',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
+  }
+
+  Future<void> _processAccountDeletion() async {
+    isLoading.value = true;
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        // 1. Optional: Delete image from storage if exists
+        if (profileImage.value.isNotEmpty) {
+          try {
+            final ref = FirebaseStorage.instance.refFromURL(profileImage.value);
+            await ref.delete();
+          } catch (e) {
+            debugPrint("Could not delete image: $e");
+          }
+        }
+
+        // 2. Clear cache
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.clear();
+
+        // 3. Delete Auth User
+        await currentUser.delete();
+
+        Get.snackbar(
+          'Account Deleted',
+          'Your account has been permanently deleted.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.black87,
+          colorText: Colors.white,
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
+        );
+
+        Get.offAllNamed(AppRoutes.loginScreen);
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        Get.snackbar(
+          'Security Check',
+          'Please log out and log back in to verify your identity before deleting.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
+          icon: const Icon(Icons.lock_outline, color: Colors.white),
+        );
+      } else {
+        Get.snackbar(
+          'Error',
+          e.message ?? 'Failed to delete account.',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'An unknown error occurred.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   Future<void> pickImage() async {

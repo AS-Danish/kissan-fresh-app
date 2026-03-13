@@ -669,55 +669,64 @@ class CartScreen extends StatelessWidget {
           },
           borderRadius: BorderRadius.circular(28),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Left Side - Final Total
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'FINAL TOTAL',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white.withOpacity(0.85),
-                        letterSpacing: 1.2,
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'FINAL TOTAL',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white.withOpacity(0.8),
+                          letterSpacing: 1.2,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '₹${controller.total.toStringAsFixed(0)}',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: 0.5,
-                        height: 1.1,
+                      const SizedBox(height: 1),
+                      Text(
+                        '₹${controller.total.toStringAsFixed(0)}',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                          height: 1.2,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 // Right Side - Proceed to Pay
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'PROCEED TO PAY',
+                      'PROCEED',
                       style: GoogleFonts.montserrat(
-                        fontSize: 15,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
                         color: Colors.white,
                         letterSpacing: 1.2,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Icon(
-                      Icons.arrow_forward_ios,
-                      color: Colors.white,
-                      size: 18,
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.white,
+                        size: 14,
+                      ),
                     ),
                   ],
                 ),

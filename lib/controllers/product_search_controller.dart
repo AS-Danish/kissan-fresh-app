@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 import '../model/product_card_model.dart';
 import '../routes/AppRoutes.dart';
 import 'homepage_controller.dart';
@@ -33,6 +34,7 @@ class ProductSearchController extends GetxController {
   // Speech to Text
   var speechToText = stt.SpeechToText();
   RxBool isListening = false.obs;
+  Timer? _speechTimeoutTimer;
 
   // Recent Searches
   RxList<String> recentSearches = <String>[].obs;
@@ -125,18 +127,30 @@ class ProductSearchController extends GetxController {
       bool available = await speechToText.initialize();
       if (available) {
         isListening.value = true;
+        
+        // Start 3-second timeout timer
+        _speechTimeoutTimer?.cancel();
+        _speechTimeoutTimer = Timer(const Duration(seconds: 3), () {
+          if (isListening.value && searchQuery.value.isEmpty) {
+            stopListening();
+          }
+        });
+
         speechToText.listen(
           onResult: (result) {
+            // Cancel timeout once we get some words
+            _speechTimeoutTimer?.cancel();
+            
             searchQuery.value = result.recognizedWords;
-            // The ever() listener on searchQuery will trigger _performSearch via debounce automatically
           },
-          localeId: 'en_IN', // Good default for English/Hinglish
+          localeId: 'en_IN',
         );
       }
     }
   }
 
   void stopListening() async {
+    _speechTimeoutTimer?.cancel();
     await speechToText.stop();
     isListening.value = false;
   }
@@ -381,5 +395,12 @@ class ProductSearchController extends GetxController {
         onAddToCart: () {},
       ),
     );
+  }
+
+  @override
+  void onClose() {
+    _speechTimeoutTimer?.cancel();
+    speechToText.stop();
+    super.onClose();
   }
 }

@@ -15,12 +15,10 @@ import 'package:kissanfresh/services/location_service.dart';
 import 'package:kissanfresh/controllers/theme_controller.dart';
 import 'package:kissanfresh/utils/app_theme.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await Hive.initFlutter();
   await Hive.openBox('maps_cache');
   await Hive.openBox('cart_box');
@@ -40,16 +38,19 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeController themeController = Get.find<ThemeController>();
 
-    return Obx(() => GetMaterialApp(
-      title: 'Kissan Fresh',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: themeController.themeMode,
-      getPages: AppRoutes.pages,
-      initialBinding: BottomBarBinding(),
-      home: MainLayout(),
-      defaultTransition: Transition.cupertino,
-      transitionDuration: const Duration(milliseconds: 300),
-    ));
+    return Obx(
+      () => GetMaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Kissan Fresh',
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: themeController.themeMode,
+        getPages: AppRoutes.pages,
+        initialBinding: BottomBarBinding(),
+        home: MainLayout(),
+        defaultTransition: Transition.cupertino,
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
+    );
   }
 }

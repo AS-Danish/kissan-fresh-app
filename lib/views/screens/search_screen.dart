@@ -7,10 +7,25 @@ import '../widgets/selectable_category_card.dart';
 import '../widgets/empty_state_widget.dart';
 
 class SearchScreen extends StatelessWidget {
-  SearchScreen({super.key});
 
   final ProductSearchController controller = Get.find<ProductSearchController>();
-  final TextEditingController searchTextController = TextEditingController();
+  late final TextEditingController searchTextController;
+
+  SearchScreen({super.key}) {
+    searchTextController = TextEditingController(text: controller.searchQuery.value);
+    
+    // Listen to changes in the controller's search query to update the text field
+    // (Crucial for voice search results to appear in the bar)
+    ever(controller.searchQuery, (String query) {
+      if (searchTextController.text != query) {
+        searchTextController.text = query;
+        // Move cursor to end
+        searchTextController.selection = TextSelection.fromPosition(
+          TextPosition(offset: query.length),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -152,7 +167,7 @@ class SearchScreen extends StatelessWidget {
                           style: GoogleFonts.montserrat(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xFF2D3748),
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                         backgroundColor: Theme.of(context).colorScheme.surface,
