@@ -235,34 +235,45 @@ class SettingsScreen extends StatelessWidget {
               )
             );
           }
-          final String initial = profileController.name.value.isNotEmpty 
-            ? profileController.name.value[0].toUpperCase() 
-            : 'U';
-            
           return Row(
             children: [
               // Profile Avatar
               Container(
                 width: 64,
                 height: 64,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF0d9488), Color(0xFF14b8a6)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+                  color: profileController.profileImage.value.isEmpty 
+                      ? null 
+                      : Colors.transparent,
+                  gradient: profileController.profileImage.value.isEmpty
+                      ? const LinearGradient(
+                          colors: [Color(0xFF0d9488), Color(0xFF14b8a6)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
                 ),
-                child: Center(
-                  child: Text(
-                    initial,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+                child: profileController.profileImage.value.isEmpty
+                    ? Center(
+                        child: Text(
+                          profileController.initials.value,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      )
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(32),
+                        child: Image.network(
+                          profileController.profileImage.value,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(Icons.error),
+                        ),
+                      ),
               ),
               const SizedBox(width: 16),
 

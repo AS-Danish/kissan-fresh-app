@@ -10,6 +10,7 @@ class LocationService extends GetxService {
   var currentLocation = Rxn<LatLng>();
   var currentAddress = RxnString();
   var isLocationEnabled = false.obs;
+  var locationPermissionDenied = false.obs;
 
   @override
   void onInit() {
@@ -29,15 +30,18 @@ class LocationService extends GetxService {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         debugPrint('Location permissions are denied');
+        locationPermissionDenied.value = true;
         return;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
       debugPrint('Location permissions are permanently denied.');
+      locationPermissionDenied.value = true;
       return;
     }
 
+    locationPermissionDenied.value = false;
     isLocationEnabled.value = true;
     await fetchCurrentLocation();
   }

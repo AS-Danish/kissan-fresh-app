@@ -3,7 +3,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/homepage_controller.dart';
+import '../../controllers/profile_controller.dart';
 import '../../routes/AppRoutes.dart';
+import '../../services/location_service.dart';
 import '../screens/search_screen.dart';
 import 'home_tab_toggle.dart';
 
@@ -77,62 +79,117 @@ class HomeHeader extends StatelessWidget {
                             vertical: 4,
                             horizontal: 0,
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              const FaIcon(
-                                FontAwesomeIcons.locationDot,
-                                color: Colors.white,
-                                size: 13,
-                              ),
-                              const SizedBox(width: 8),
-                              Flexible(
-                                child: Obx(() => Text(
-                                  Get.find<HomepageController>().currentAddress.value ?? 'Fetching location...',
-                                  style: GoogleFonts.montserrat(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13,
-                                    letterSpacing: 0.2,
+                          child: Obx(() {
+                            final locationService = Get.find<LocationService>();
+                            final isDenied = locationService.locationPermissionDenied.value;
+                            
+                            if (isDenied) {
+                              return Row(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.cancel,
+                                    color: Colors.redAccent,
+                                    size: 16,
                                   ),
-                                  overflow: TextOverflow.ellipsis,
-                                )),
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(
-                                Icons.keyboard_arrow_down,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                            ],
-                          ),
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    child: Text(
+                                      'Location Disabled',
+                                      style: GoogleFonts.montserrat(
+                                        color: Colors.redAccent,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13,
+                                        letterSpacing: 0.2,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  const Icon(
+                                    Icons.keyboard_arrow_down,
+                                    color: Colors.redAccent,
+                                    size: 20,
+                                  ),
+                                ],
+                              );
+                            }
+                            
+                            return Row(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                const FaIcon(
+                                  FontAwesomeIcons.locationDot,
+                                  color: Colors.white,
+                                  size: 13,
+                                ),
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    Get.find<HomepageController>().currentAddress.value ?? 'Fetching location...',
+                                    style: GoogleFonts.montserrat(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                      letterSpacing: 0.2,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ],
+                            );
+                          }),
                         ),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(width: 12),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    onPressed: () {
-                      Get.toNamed(AppRoutes.profileRoute);
-                    },
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.15),
-                      shape: const CircleBorder(),
-                      fixedSize: const Size(48, 48),
-                    ),
-                    icon: const FaIcon(
-                      FontAwesomeIcons.user,
-                      size: 20,
-                      color: Colors.white,
-                    ),
-                  ),
+                GetBuilder<ProfileController>(
+                  init: ProfileController(),
+                  builder: (profileController) {
+                    return GestureDetector(
+                      onTap: () {
+                        Get.toNamed(AppRoutes.profileRoute);
+                      },
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: profileController.profileImage.value.isEmpty 
+                              ? Colors.white.withOpacity(0.2)
+                              : Colors.transparent,
+                          shape: BoxShape.circle,
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Obx(() => profileController.profileImage.value.isEmpty
+                            ? Center(
+                                child: Text(
+                                  profileController.initials.value.isNotEmpty ? profileController.initials.value : 'U',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              )
+                            : Image.network(
+                                profileController.profileImage.value,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(Icons.person, color: Colors.white),
+                              )),
+                      ),
+                    );
+                  }
                 ),
               ],
             ),

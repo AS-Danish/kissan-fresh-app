@@ -65,10 +65,10 @@ class ProfileScreen extends StatelessWidget {
                       ],
                     ),
                     child: Obx(() => controller.profileImage.value.isEmpty
-                        ? const Center(
+                        ? Center(
                             child: Text(
-                              'JD',
-                              style: TextStyle(
+                              controller.initials.value,
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 40,
                                 fontWeight: FontWeight.bold,
@@ -80,6 +80,8 @@ class ProfileScreen extends StatelessWidget {
                             child: Image.network(
                               controller.profileImage.value,
                               fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(Icons.error, color: Colors.white, size: 40),
                             ),
                           )),
                   ),
