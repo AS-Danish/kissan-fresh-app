@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/homepage_controller.dart';
+import '../../controllers/theme_controller.dart';
 
 class WelcomeSection extends StatelessWidget {
   const WelcomeSection({super.key});
@@ -10,6 +11,8 @@ class WelcomeSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Obx(() {
+        // Force rebuild on theme change
+        Get.find<ThemeController>().isDarkMode.value;
         final isGrocery =
             Get.find<HomepageController>().currentTab.value == 'Grocery';
         return Column(

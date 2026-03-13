@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/homepage_controller.dart';
+import '../../controllers/theme_controller.dart';
 import '../widgets/all_products_section.dart';
 import '../widgets/bestseller_section.dart';
 import '../widgets/categories_section.dart';
@@ -22,9 +23,11 @@ class ImprovedHomeScreen extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            const HomeHeader(),
+            HomeHeader(),
             const SizedBox(height: 24),
             Obx(() {
+              // Ensure real-time theme updates
+              Get.find<ThemeController>().isDarkMode.value;
               if (controller.currentTab.value == 'Grocery') {
                 final isAll = controller.categories[controller.selectedIndex.value].label == 'All';
                 return Column(
@@ -37,9 +40,9 @@ class ImprovedHomeScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 32),
                     if (isAll) ...[
-                      const WelcomeSection(),
+                      WelcomeSection(),
                       const SizedBox(height: 24),
-                      const OffersSection(),
+                      OffersSection(),
                       const SizedBox(height: 32),
                       BestsellersSection(),
                       const SizedBox(height: 32),

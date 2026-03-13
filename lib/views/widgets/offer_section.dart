@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/homepage_controller.dart';
+import '../../controllers/theme_controller.dart';
 
 class OffersSection extends StatelessWidget {
   const OffersSection({super.key});
@@ -11,6 +12,8 @@ class OffersSection extends StatelessWidget {
     return SizedBox(
       height: 105,
       child: Obx(() {
+        // Force rebuild on theme change for card/badge colors
+        Get.find<ThemeController>().isDarkMode.value;
         final isGrocery =
             Get.find<HomepageController>().currentTab.value == 'Grocery';
         return ListView.separated(
@@ -81,14 +84,16 @@ class OffersSection extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.5), width: 1),
+        boxShadow: Theme.of(context).brightness == Brightness.light 
+          ? [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ]
+          : [],
+        border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.2), width: 1),
       ),
       child: Row(
         children: [
@@ -133,7 +138,7 @@ class OffersSection extends StatelessWidget {
                   subtitle,
                   style: GoogleFonts.montserrat(
                     fontSize: 11.5,
-                    color: Colors.grey.shade600,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey.shade600,
                     fontWeight: FontWeight.w500,
                   ),
                   maxLines: 1,
@@ -144,7 +149,7 @@ class OffersSection extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           // Arrow icon
-          Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade400),
+          Icon(Icons.arrow_forward_ios, size: 16, color: Theme.of(context).dividerColor),
         ],
       ),
     );

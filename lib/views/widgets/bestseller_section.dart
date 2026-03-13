@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/best_seller_controller.dart';
 import '../../controllers/homepage_controller.dart';
+import '../../controllers/theme_controller.dart';
 import '../../model/bestseller_card_model.dart';
 
 class BestsellersSection extends StatelessWidget {
@@ -68,6 +69,8 @@ class BestsellersSection extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Obx(() {
+            // Force rebuild on theme change
+            Get.find<ThemeController>().isDarkMode.value;
             return GridView.builder(
               padding: EdgeInsets.zero,
               shrinkWrap: true,
@@ -198,7 +201,7 @@ class BestsellersSection extends StatelessWidget {
   Widget _buildImageContainer(BuildContext context, String imageUrl) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
       ),
       child: ClipRRect(
@@ -221,10 +224,10 @@ class BestsellersSection extends StatelessWidget {
           },
           errorBuilder: (context, error, stackTrace) {
             return Container(
-              color: Colors.grey.shade200,
-              child: const Icon(
+              color: Theme.of(context).colorScheme.surface,
+              child: Icon(
                 Icons.image_not_supported_outlined,
-                color: Colors.grey,
+                color: Theme.of(context).dividerColor,
                 size: 24,
               ),
             );
@@ -240,7 +243,7 @@ class BestsellersSection extends StatelessWidget {
         // Background Image
         Container(
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
           ),
           child: ClipRRect(
@@ -298,7 +301,7 @@ class BestsellersSection extends StatelessWidget {
                   style: GoogleFonts.montserrat(
                     fontSize: 18,
                     fontWeight: FontWeight.w900,
-                    color: Theme.of(context).primaryColor,
+                    color: Colors.white,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -307,7 +310,7 @@ class BestsellersSection extends StatelessWidget {
                   style: GoogleFonts.montserrat(
                     fontSize: 9,
                     fontWeight: FontWeight.w700,
-                    color: Theme.of(context).primaryColor,
+                    color: Colors.white.withOpacity(0.9),
                     letterSpacing: 1.2,
                   ),
                 ),

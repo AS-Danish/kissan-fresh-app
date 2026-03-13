@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kissanfresh/controllers/bottom_bar_controller.dart';
 import 'package:kissanfresh/controllers/cart_controller.dart';
+import 'package:kissanfresh/controllers/theme_controller.dart';
 import '../../routes/AppRoutes.dart';
 
 class MainLayout extends StatelessWidget {
@@ -96,6 +97,7 @@ class MainLayout extends StatelessWidget {
       ),
       // Use custom LazyTabBuilder to preserve state and lazy load with GetX routes
       body: Obx(() {
+        Get.find<ThemeController>().isDarkMode.value;
         return _LazyTabBuilder(
           currentIndex: barController.currentIndex.value,
           routes: routes,
@@ -237,13 +239,27 @@ class _LazyTabBuilderState extends State<_LazyTabBuilder> {
       widget.routes.length,
       (index) => index == widget.currentIndex,
     );
+    // Initialize initial page binding
+    _initializeBinding(widget.currentIndex);
+  }
+
+  void _initializeBinding(int index) {
+    final routeName = widget.routes[index];
+    final routeDecoded = Get.routeTree.matchRoute(routeName);
+    final page = routeDecoded.route;
+    if (page?.binding != null) {
+      page!.binding!.dependencies();
+    }
   }
 
   @override
   void didUpdateWidget(covariant _LazyTabBuilder oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.currentIndex != widget.currentIndex) {
-      _activatedPages[widget.currentIndex] = true;
+      if (!_activatedPages[widget.currentIndex]) {
+        _activatedPages[widget.currentIndex] = true;
+        _initializeBinding(widget.currentIndex);
+      }
     }
   }
 
@@ -253,24 +269,19 @@ class _LazyTabBuilderState extends State<_LazyTabBuilder> {
       index: widget.currentIndex,
       children: List.generate(widget.routes.length, (index) {
         if (_activatedPages[index]) {
-          return _buildPage(widget.routes[index]);
+          return _buildPage(widget.routes[index], index);
         }
         return const SizedBox.shrink();
       }),
     );
   }
 
-  Widget _buildPage(String routeName) {
+  Widget _buildPage(String routeName, int index) {
     final routeDecoded = Get.routeTree.matchRoute(routeName);
     final page = routeDecoded.route;
 
     if (page == null) {
       return Center(child: Text('Route not found: $routeName'));
-    }
-
-    // Initialize binding if it exists and hasn't been initialized yet
-    if (page.binding != null) {
-      page.binding!.dependencies();
     }
 
     return page.page?.call() ?? const SizedBox.shrink();

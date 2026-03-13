@@ -50,15 +50,17 @@ class CategorizedProductsController extends GetxController {
       final categoriesList = currentCategories;
       final origin = currentOrigin;
 
-      // For performance and limits, we might only fetch the first 5 categories that have products
-      // We'll run a query for each category in parallel
-      List<Future<void>> fetchTasks = [];
-
-      for (String category in categoriesList) {
-        fetchTasks.add(_fetchProductsForCategory(category, origin));
+      // For performance and limits, we process categories in chunks of 3
+      for (int i = 0; i < categoriesList.length; i += 3) {
+        final chunk = categoriesList.skip(i).take(3);
+        List<Future<void>> chunkTasks = [];
+        for (String category in chunk) {
+          chunkTasks.add(_fetchProductsForCategory(category, origin));
+        }
+        await Future.wait(chunkTasks);
+        // Small delay between chunks to keep main thread free
+        await Future.delayed(const Duration(milliseconds: 100));
       }
-
-      await Future.wait(fetchTasks);
 
     } catch (e) {
       debugPrint("Error fetching categorized products: $e");

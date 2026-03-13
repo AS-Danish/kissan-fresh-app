@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeController themeController = Get.find<ThemeController>();
 
-    return GetMaterialApp(
+    return Obx(() => GetMaterialApp(
       title: 'Kissan Fresh',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
@@ -50,6 +50,6 @@ class MyApp extends StatelessWidget {
       home: MainLayout(),
       defaultTransition: Transition.cupertino,
       transitionDuration: const Duration(milliseconds: 300),
-    );
+    ));
   }
 }
