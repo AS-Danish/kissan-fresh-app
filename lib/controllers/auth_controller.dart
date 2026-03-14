@@ -69,6 +69,8 @@ class AuthController extends GetxController {
 
   // Send OTP
   void sendOtp() async {
+    if (isLoading.value) return;
+
     String phone = phoneController.text.trim();
     if (phone.isEmpty || phone.length != 10) {
       Get.snackbar(
@@ -89,10 +91,12 @@ class AuthController extends GetxController {
           // Auto-resolution on Android devices
           await _authService.signInWithCredential(credential);
           isLoading.value = false;
+          if (Get.isDialogOpen ?? false) Get.back();
           _handleSuccess();
         },
         onVerificationFailed: (FirebaseAuthException e) {
           isLoading.value = false;
+          if (Get.isDialogOpen ?? false) Get.back();
           Get.snackbar(
             "Verification Failed",
             e.message ?? "An error occurred",
@@ -104,6 +108,7 @@ class AuthController extends GetxController {
         onCodeSent: (String vId, int? resendToken) {
           verificationId.value = vId;
           isLoading.value = false;
+          if (Get.isDialogOpen ?? false) Get.back();
           _startResendTimer();
           // Navigate to OTP Screen if not already there
           if (Get.currentRoute != AppRoutes.otpVerificationRoute) {
@@ -116,6 +121,7 @@ class AuthController extends GetxController {
       );
     } catch (e) {
       isLoading.value = false;
+      if (Get.isDialogOpen ?? false) Get.back();
       Get.snackbar(
         "Error",
         e.toString(),
@@ -146,6 +152,8 @@ class AuthController extends GetxController {
 
   // Verify OTP
   void verifyOtp(String smsCode) async {
+    if (isLoading.value) return;
+
     if (smsCode.isEmpty || smsCode.length != 6) {
        Get.snackbar(
         "Error",
@@ -164,9 +172,11 @@ class AuthController extends GetxController {
         smsCode: smsCode,
       );
       isLoading.value = false;
+      if (Get.isDialogOpen ?? false) Get.back(); 
       _handleSuccess();
     } catch (e) {
       isLoading.value = false;
+      if (Get.isDialogOpen ?? false) Get.back();
       Get.snackbar(
         "Invalid OTP",
         "The entered OTP is incorrect. Please try again.",

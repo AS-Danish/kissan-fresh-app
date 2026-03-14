@@ -89,7 +89,7 @@ class MainLayout extends StatelessWidget {
             ),
             // Floating Cart Button
             Positioned(
-              bottom: 25,
+              bottom: 25 + MediaQuery.of(context).padding.bottom,
               child: _buildCenterCartButton(context, barController),
             ),
           ],

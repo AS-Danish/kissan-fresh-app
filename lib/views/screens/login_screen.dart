@@ -281,7 +281,52 @@ class LoginScreen extends StatelessWidget {
                 : [],
           ),
           child: ElevatedButton(
-            onPressed: isButtonEnabled.value ? controller.sendOtp : null,
+            onPressed: isButtonEnabled.value ? () {
+              // Show loading dialog
+              Get.dialog(
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Sending OTP...',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurface,
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                barrierDismissible: false,
+              );
+              
+              controller.sendOtp();
+              
+              // We rely on controller to dismiss dialog via Get.back() if needed, 
+              // but since we navigate to OTP screen, it will handle it.
+              // Actually, better to handle it in controller directly.
+            } : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
               disabledBackgroundColor: Theme.of(context).dividerColor.withOpacity(0.3),
