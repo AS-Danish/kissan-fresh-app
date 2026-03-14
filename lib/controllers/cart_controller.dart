@@ -16,6 +16,9 @@ class CartController extends GetxController {
   
   final Box _cartBox = Hive.box('cart_box');
 
+  // Coupon State
+  RxString appliedCoupon = ''.obs;
+
   // Computed values
   double get subtotal {
     return cartItems.fold(0, (sum, item) => sum + (item.price * item.count));
@@ -27,7 +30,14 @@ class CartController extends GetxController {
   }
 
   double get discount {
-    // Example: 15% discount on orders above ₹499
+    // Priority: Applied Coupon (calculated dynamically)
+    if (appliedCoupon.value == 'KISSAN20') {
+      return subtotal * 0.20;
+    } else if (appliedCoupon.value == 'FRESH50') {
+      return (subtotal >= 50) ? 50.0 : subtotal;
+    }
+    
+    // Legacy auto-applied discount (15% off above ₹499)
     if (subtotal >= 499) {
       return subtotal * 0.15;
     }
@@ -40,6 +50,34 @@ class CartController extends GetxController {
 
   int get totalItemCount {
     return cartItems.length;
+  }
+
+  // Coupon Methods
+  void applyCoupon(String code) {
+    if (code.isEmpty) return;
+    
+    final normalizedCode = code.trim().toUpperCase();
+    
+    if (normalizedCode == 'KISSAN20') {
+      appliedCoupon.value = normalizedCode;
+      Get.snackbar('Coupon Applied', '20% discount applied successfully!', 
+        backgroundColor: Colors.green, colorText: Colors.white);
+    } else if (normalizedCode == 'FRESH50') {
+      appliedCoupon.value = normalizedCode;
+      Get.snackbar('Coupon Applied', '₹50 discount applied successfully!',
+        backgroundColor: Colors.green, colorText: Colors.white);
+    } else {
+      Get.snackbar('Invalid Coupon', 'The coupon code you entered is not valid.',
+        backgroundColor: Colors.red, colorText: Colors.white);
+    }
+    cartItems.refresh(); // Trigger total re-calc
+  }
+
+  void removeCoupon() {
+    appliedCoupon.value = '';
+    cartItems.refresh();
+    Get.snackbar('Coupon Removed', 'Coupon has been removed from your cart.',
+      backgroundColor: Colors.black87, colorText: Colors.white);
   }
 
   // Add product to cart from ProductCardModel
