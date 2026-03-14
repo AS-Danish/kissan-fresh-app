@@ -75,7 +75,10 @@ class CategorizedProductsSection extends StatelessWidget {
                   itemBuilder: (context, index) {
                     return SizedBox(
                       width: 160,
-                      child: ProductCardWidget(product: products[index]),
+                      child: ProductCardWidget(
+                        product: products[index],
+                        showAddButton: false,
+                      ),
                     );
                   },
                 ),

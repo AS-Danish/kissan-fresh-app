@@ -69,23 +69,21 @@ class LoginScreen extends StatelessWidget {
                 ),
 
                 // Bottom Section (White Card overlapping)
-                Expanded(
+                Container(
+                  color: Theme.of(context).primaryColor, // Match top so curve is smooth
                   child: Container(
-                    color: Theme.of(context).primaryColor, // Match top so curve is smooth
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(40),
-                          topRight: Radius.circular(40),
-                        ),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(40),
+                        topRight: Radius.circular(40),
                       ),
-                      child: SafeArea(
-                        top: false,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(32, 40, 32, 24),
-                          child: _buildLoginForm(context, controller, isButtonEnabled),
-                        ),
+                    ),
+                    child: SafeArea(
+                      top: false,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(32, 40, 32, 40),
+                        child: _buildLoginForm(context, controller, isButtonEnabled),
                       ),
                     ),
                   ),
@@ -360,7 +358,7 @@ class LoginScreen extends StatelessWidget {
           ),
         )),
         
-        const Spacer(),
+        const SizedBox(height: 60),
 
         // Bottom Footer (Sign Up & Terms)
         Center(

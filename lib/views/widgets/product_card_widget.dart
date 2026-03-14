@@ -5,10 +5,12 @@ import '../../model/product_card_model.dart';
 
 class ProductCardWidget extends StatelessWidget {
   final ProductCardModel product;
+  final bool showAddButton;
 
   const ProductCardWidget({
     super.key,
     required this.product,
+    this.showAddButton = true,
   });
 
   // Helper to determine if the image is a network URL
@@ -192,49 +194,51 @@ class ProductCardWidget extends StatelessWidget {
                         ),
                       ),
 
-                      const SizedBox(width: 8),
+                      if (showAddButton) ...[
+                        const SizedBox(width: 8),
 
-                      // Add to Cart Button
-                      GestureDetector(
-                        onTap: product.inStock ? product.onAddToCart : null,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: product.inStock ? Theme.of(context).primaryColor : Colors.grey.shade300,
-                            borderRadius: BorderRadius.circular(10),
-                            boxShadow: product.inStock ? [
-                              BoxShadow(
-                                color: Theme.of(context).primaryColor.withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 3),
-                              ),
-                            ] : [],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.shopping_cart_outlined,
-                                size: 14,
-                                color: product.inStock ? Colors.white : Colors.grey.shade500,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Add',
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: product.inStock ? Colors.white : Colors.grey.shade500,
-                                  letterSpacing: 0.3,
+                        // Add to Cart Button
+                        GestureDetector(
+                          onTap: product.inStock ? product.onAddToCart : null,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: product.inStock ? Theme.of(context).primaryColor : Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: product.inStock ? [
+                                BoxShadow(
+                                  color: Theme.of(context).primaryColor.withOpacity(0.3),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
                                 ),
-                              ),
-                            ],
+                              ] : [],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.shopping_cart_outlined,
+                                  size: 14,
+                                  color: product.inStock ? Colors.white : Colors.grey.shade500,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Add',
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: product.inStock ? Colors.white : Colors.grey.shade500,
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ],

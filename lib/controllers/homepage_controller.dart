@@ -59,73 +59,76 @@ class HomepageController extends GetxController {
         if (data['specials'] != null && data['specials'] is List) {
           final specialsList = data['specials'] as List;
           
-          List<ProductCardModel> fetchedSpecials = [];
-          
-          for (var specialItem in specialsList) {
+          // Fetch all product details in parallel
+          final List<Future<ProductCardModel?>> fetchPromises = specialsList.map((specialItem) async {
             if (specialItem is Map && specialItem['productId'] != null) {
               final productId = specialItem['productId'].toString();
-              
-              // Fetch full product details
-              final productDoc = await _firestore.collection('products').doc(productId).get();
-              if (productDoc.exists && productDoc.data() != null) {
-                final productData = productDoc.data()!;
-                
-                // Extract image logic similar to ProductsController
-                String imageUrl = '';
-                if (productData['image'] != null && productData['image'].toString().isNotEmpty) {
-                  imageUrl = productData['image'];
-                } else if (productData['images'] != null && productData['images'] is List && productData['images'].isNotEmpty) {
-                  imageUrl = productData['images'][0];
-                }
+              try {
+                final productDoc = await _firestore.collection('products').doc(productId).get();
+                if (productDoc.exists && productDoc.data() != null) {
+                  final productData = productDoc.data()!;
+                  
+                  String imageUrl = '';
+                  if (productData['image'] != null && productData['image'].toString().isNotEmpty) {
+                    imageUrl = productData['image'];
+                  } else if (productData['images'] != null && productData['images'] is List && productData['images'].isNotEmpty) {
+                    imageUrl = productData['images'][0];
+                  }
 
-                List<String>? imagesList;
-                if (productData['images'] != null && productData['images'] is List) {
-                  imagesList = List<String>.from(productData['images']);
-                }
+                  List<String>? imagesList;
+                  if (productData['images'] != null && productData['images'] is List) {
+                    imagesList = List<String>.from(productData['images']);
+                  }
 
-                final inStock = productData['inStock'] ?? true;
-                final category = productData['category'] ?? 'General';
-                
-                List<String> dynamicTags = [];
-                if (productData['tags'] != null && productData['tags'] is List) {
-                  dynamicTags = List<String>.from(productData['tags']);
+                  final inStock = productData['inStock'] ?? true;
+                  final category = productData['category'] ?? 'General';
+                  
+                  List<String> dynamicTags = [];
+                  if (productData['tags'] != null && productData['tags'] is List) {
+                    dynamicTags = List<String>.from(productData['tags']);
+                  }
+                  
+                  return ProductCardModel(
+                    id: productDoc.id,
+                    image: imageUrl,
+                    images: imagesList,
+                    title: productData['name'] ?? 'Unknown',
+                    description: productData['description'] ?? '',
+                    price: (productData['price'] ?? 0).toDouble(),
+                    unit: productData['unit'] ?? 'unit',
+                    category: category,
+                    tags: dynamicTags.isNotEmpty ? dynamicTags : null,
+                    inStock: inStock,
+                    onTap: () {
+                      Get.to(() => ProductDetailsScreen(
+                        product: ProductCardModel(
+                          id: productDoc.id,
+                          image: imageUrl,
+                          images: imagesList,
+                          title: productData['name'] ?? 'Unknown',
+                          description: productData['description'] ?? '',
+                          price: (productData['price'] ?? 0).toDouble(),
+                          unit: productData['unit'] ?? 'unit',
+                          category: category,
+                          tags: dynamicTags.isNotEmpty ? dynamicTags : null,
+                          inStock: inStock,
+                          onTap: () {},
+                          onAddToCart: () {},
+                        ),
+                      ));
+                    },
+                    onAddToCart: () {},
+                  );
                 }
-                
-                fetchedSpecials.add(ProductCardModel(
-                  id: productDoc.id,
-                  image: imageUrl,
-                  images: imagesList,
-                  title: productData['name'] ?? 'Unknown',
-                  description: productData['description'] ?? '',
-                  price: (productData['price'] ?? 0).toDouble(),
-                  unit: productData['unit'] ?? 'unit',
-                  category: category,
-                  tags: dynamicTags.isNotEmpty ? dynamicTags : null,
-                  inStock: inStock,
-                  onTap: () {
-                    // Navigate to product details
-                    Get.to(() => ProductDetailsScreen(
-                      product: ProductCardModel(
-                        id: productDoc.id,
-                        image: imageUrl,
-                        images: imagesList,
-                        title: productData['name'] ?? 'Unknown',
-                        description: productData['description'] ?? '',
-                        price: (productData['price'] ?? 0).toDouble(),
-                        unit: productData['unit'] ?? 'unit',
-                        category: category,
-                        tags: dynamicTags.isNotEmpty ? dynamicTags : null,
-                        inStock: inStock,
-                        onTap: () {},
-                        onAddToCart: () {},
-                      ),
-                    ));
-                  },
-                  onAddToCart: () {},
-                ));
+              } catch (e) {
+                debugPrint("Error fetching product details for $productId: $e");
               }
             }
-          }
+            return null;
+          }).toList();
+
+          final List<ProductCardModel?> results = await Future.wait(fetchPromises);
+          final List<ProductCardModel> fetchedSpecials = results.whereType<ProductCardModel>().toList();
           
           todaysSpecials.value = fetchedSpecials;
           

@@ -152,7 +152,10 @@ class AllProductsSection extends StatelessWidget {
                     ),
                     itemCount: controller.products.length,
                     itemBuilder: (context, index) {
-                      return ProductCardWidget(product: controller.products[index]);
+                      return ProductCardWidget(
+                        product: controller.products[index],
+                        showAddButton: false,
+                      );
                     },
                   ),
                   if (controller.isFetchingMore.value)

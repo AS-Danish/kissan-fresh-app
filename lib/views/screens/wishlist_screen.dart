@@ -124,7 +124,10 @@ class WishlistScreen extends StatelessWidget {
               },
             );
             
-            return ProductCardWidget(product: functionalProduct);
+            return ProductCardWidget(
+              product: functionalProduct,
+              showAddButton: false,
+            );
           },
         );
       }),

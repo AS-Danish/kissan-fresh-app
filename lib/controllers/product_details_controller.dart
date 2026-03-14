@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../model/product_card_model.dart';
@@ -5,10 +6,13 @@ import 'cart_controller.dart';
 import 'wishlist_controller.dart';
 import 'auth_controller.dart';
 import '../routes/AppRoutes.dart';
+import '../views/widgets/cart_success_popup.dart';
 
 class ProductDetailsController extends GetxController {
   // Observable quantity
   var quantity = 1.obs;
+  
+  Timer? _cartPopupTimer;
 
   // Observable for current image index
   var currentImageIndex = 0.obs;
@@ -112,16 +116,17 @@ class ProductDetailsController extends GetxController {
         cartController.cartItems.add(cartItem);
       }
 
-      Get.snackbar(
-        'Added to Cart',
-        '${product.title} (x${quantity.value}) added to cart',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFF10B981),
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-        margin: const EdgeInsets.all(16),
-        borderRadius: 12,
+      Get.dialog(
+        const CartSuccessPopup(),
+        barrierDismissible: true,
       );
+
+      // Automatically close after 2 seconds
+      _cartPopupTimer = Timer(const Duration(seconds: 2), () {
+        if (Get.isDialogOpen ?? false) {
+          Get.back();
+        }
+      });
 
       // Optionally reset quantity after adding to cart
       // quantity.value = 1;
@@ -145,7 +150,7 @@ class ProductDetailsController extends GetxController {
 
   @override
   void onClose() {
-    // Clean up if needed
+    _cartPopupTimer?.cancel();
     super.onClose();
   }
 }

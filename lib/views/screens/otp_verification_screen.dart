@@ -51,200 +51,204 @@ class OtpVerificationScreen extends StatelessWidget {
         ),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-             // Top Section
-            Expanded(
-              flex: 3,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Verification',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
+        child: CustomScrollView(
+          physics: const ClampingScrollPhysics(),
+          slivers: [
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Column(
+                children: [
+                   // Top Section
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(24, 40, 24, 40),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Verification',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'We sent a code to +91 $phoneNumber',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 16,
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'We sent a code to +91 $phoneNumber',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 16,
-                        color: Colors.white.withOpacity(0.9),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            
-            // Bottom Section
-            Expanded(
-              flex: 7,
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(32),
-                    topRight: Radius.circular(32),
                   ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                       const SizedBox(height: 32),
-                       Text(
-                        'Enter 6-digit code',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).textTheme.bodyMedium?.color,
+                  
+                  // Bottom Section
+                  Expanded(
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(32),
+                          topRight: Radius.circular(32),
                         ),
-                        textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 24),
-                      
-                      // Pinput for OTP
-                      Pinput(
-                        length: 6,
-                        defaultPinTheme: defaultPinTheme,
-                        focusedPinTheme: focusedPinTheme,
-                        submittedPinTheme: submittedPinTheme,
-                        controller: controller.otpController,
-                        pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
-                        showCursor: true,
-                        onCompleted: (pin) {
-                           controller.verifyOtp(pin);
-                        },
-                      ),
-                      
-                      const SizedBox(height: 40),
-                      
-                      // Verify Button
-                      Obx(() => SizedBox(
-                        height: 54,
-                        child: ElevatedButton(
-                          onPressed: controller.isLoading.value
-                              ? null
-                              : () {
-                                  // Show loading dialog
-                                  Get.dialog(
-                                    Center(
-                                      child: Container(
-                                        padding: const EdgeInsets.all(24),
-                                        decoration: BoxDecoration(
-                                          color: Theme.of(context).cardColor,
-                                          borderRadius: BorderRadius.circular(16),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black.withOpacity(0.1),
-                                              blurRadius: 10,
-                                              spreadRadius: 2,
-                                            ),
-                                          ],
-                                        ),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            CircularProgressIndicator(
-                                              valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
-                                            ),
-                                            const SizedBox(height: 16),
-                                            Text(
-                                              'Verifying OTP...',
-                                              style: GoogleFonts.montserrat(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                                color: Theme.of(context).colorScheme.onSurface,
-                                                decoration: TextDecoration.none,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    barrierDismissible: false,
-                                  );
-                                  controller.verifyOtp(controller.otpController.text);
-                                },
-                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).primaryColor,
-                            disabledBackgroundColor: Theme.of(context).primaryColor.withOpacity(0.6),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            elevation: 2,
-                          ),
-                          child: controller.isLoading.value
-                              ? const SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Text(
-                                  'Verify',
-                                  style: GoogleFonts.montserrat(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                        ),
-                      )),
-                      
-                      const SizedBox(height: 24),
-                      
-                      // Resend Code
-                      Obx(() => Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Didn't receive code? ",
-                            style: GoogleFonts.montserrat(
-                              color: Theme.of(context).textTheme.bodyMedium?.color,
-                              fontSize: 14,
-                            ),
-                          ),
-                          if (controller.resendTimer.value > 0)
-                            Text(
-                              "Resend in ${controller.resendTimer.value}s",
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 32, 24, 40),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                             const SizedBox(height: 32),
+                             Text(
+                              'Enter 6-digit code',
                               style: GoogleFonts.montserrat(
-                                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
+                                color: Theme.of(context).textTheme.bodyMedium?.color,
                               ),
-                            )
-                          else
-                            GestureDetector(
-                              onTap: () {
-                                controller.resendOtp(phoneNumber);
-                              },
-                              child: Text(
-                                "Resend",
-                                style: GoogleFonts.montserrat(
-                                  color: Theme.of(context).primaryColor,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
+                              textAlign: TextAlign.center,
                             ),
-                        ],
-                      )),
-                    ],
+                            const SizedBox(height: 24),
+                            
+                            // Pinput for OTP
+                            Pinput(
+                              length: 6,
+                              defaultPinTheme: defaultPinTheme,
+                              focusedPinTheme: focusedPinTheme,
+                              submittedPinTheme: submittedPinTheme,
+                              controller: controller.otpController,
+                              pinputAutovalidateMode: PinputAutovalidateMode.onSubmit,
+                              showCursor: true,
+                              onCompleted: (pin) {
+                                 controller.verifyOtp(pin);
+                              },
+                            ),
+                            
+                            const SizedBox(height: 48),
+                            
+                            // Verify Button
+                            Obx(() => SizedBox(
+                              height: 54,
+                              child: ElevatedButton(
+                                onPressed: controller.isLoading.value
+                                    ? null
+                                    : () {
+                                        // Show loading dialog
+                                        Get.dialog(
+                                          Center(
+                                            child: Container(
+                                              padding: const EdgeInsets.all(24),
+                                              decoration: BoxDecoration(
+                                                color: Theme.of(context).cardColor,
+                                                borderRadius: BorderRadius.circular(16),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.black.withOpacity(0.1),
+                                                    blurRadius: 10,
+                                                    spreadRadius: 2,
+                                                  ),
+                                                ],
+                                              ),
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  CircularProgressIndicator(
+                                                    valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+                                                  ),
+                                                  const SizedBox(height: 16),
+                                                  Text(
+                                                    'Verifying OTP...',
+                                                    style: GoogleFonts.montserrat(
+                                                      fontSize: 16,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: Theme.of(context).colorScheme.onSurface,
+                                                      decoration: TextDecoration.none,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          barrierDismissible: false,
+                                        );
+                                        controller.verifyOtp(controller.otpController.text);
+                                      },
+                                 style: ElevatedButton.styleFrom(
+                                  backgroundColor: Theme.of(context).primaryColor,
+                                  disabledBackgroundColor: Theme.of(context).primaryColor.withOpacity(0.6),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  elevation: 2,
+                                ),
+                                child: controller.isLoading.value
+                                    ? const SizedBox(
+                                        height: 24,
+                                        width: 24,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : Text(
+                                        'Verify',
+                                        style: GoogleFonts.montserrat(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                              ),
+                            )),
+                            
+                            const SizedBox(height: 32),
+                            
+                            // Resend Code
+                            Obx(() => Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Didn't receive code? ",
+                                  style: GoogleFonts.montserrat(
+                                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                if (controller.resendTimer.value > 0)
+                                  Text(
+                                    "Resend in ${controller.resendTimer.value}s",
+                                    style: GoogleFonts.montserrat(
+                                      color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  )
+                                else
+                                  GestureDetector(
+                                    onTap: () {
+                                      controller.resendOtp(phoneNumber);
+                                    },
+                                    child: Text(
+                                      "Resend",
+                                      style: GoogleFonts.montserrat(
+                                        color: Theme.of(context).primaryColor,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            )),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ],
