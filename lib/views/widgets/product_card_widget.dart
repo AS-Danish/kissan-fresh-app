@@ -156,7 +156,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
                             decoration: const BoxDecoration(color: Colors.red),
                             child: const Center(
                               child: Text(
-                                "OUT",
+                                "SOLD OUT",
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w900,
@@ -274,7 +274,8 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
                           // Modern Add Button
                           if (widget.showAddButton)
                             GestureDetector(
-                              onTap: widget.product.inStock ? widget.product.onAddToCart : null,
+                              onTap: widget.product.stockCount > 0 ? widget.product.onAddToCart : null,
+
                               child: Container(
                                 width: 34,
                                 height: 34,
@@ -290,10 +291,11 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
                                   ] : [],
                                 ),
                                 child: Icon(
-                                  Icons.add_rounded,
-                                  color: widget.product.inStock ? Colors.white : Colors.grey.shade500,
+                                  widget.product.stockCount > 0 ? Icons.add_rounded : Icons.block_rounded,
+                                  color: widget.product.stockCount > 0 ? Colors.white : Colors.grey.shade500,
                                   size: 20,
                                 ),
+
                               ),
                             ),
                         ],

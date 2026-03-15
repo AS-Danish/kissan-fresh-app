@@ -33,6 +33,7 @@ void main() async {
   await Hive.openBox('cart_box');
   await Hive.openBox('user_settings'); // Add this for location service
   await Hive.openBox('wishlist_box');
+  await Hive.openBox('orders_cache');
   Get.put(ThemeController()); // Initialize theme early
   Get.put(LocationService(), permanent: true); // Add LocationService
   Get.put(AuthController(), permanent: true);

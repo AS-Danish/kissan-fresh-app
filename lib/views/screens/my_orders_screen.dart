@@ -215,7 +215,7 @@ class MyOrdersScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              item.name,
+                              item.title,
                               style: GoogleFonts.montserrat(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -373,16 +373,6 @@ class MyOrdersScreen extends StatelessWidget {
     IconData icon;
 
     switch (status) {
-      case OrderStatus.pending:
-        backgroundColor = Colors.orange.withOpacity(0.1);
-        textColor = Colors.orange;
-        icon = Icons.schedule;
-        break;
-      case OrderStatus.confirmed:
-        backgroundColor = Colors.blue.withOpacity(0.1);
-        textColor = Colors.blue;
-        icon = Icons.check_circle_outline;
-        break;
       case OrderStatus.processing:
         backgroundColor = Colors.orange.withOpacity(0.1);
         textColor = Colors.orange;
@@ -432,10 +422,6 @@ class MyOrdersScreen extends StatelessWidget {
 
   String _getStatusText(OrderStatus status) {
     switch (status) {
-      case OrderStatus.pending:
-        return 'PENDING';
-      case OrderStatus.confirmed:
-        return 'CONFIRMED';
       case OrderStatus.processing:
         return 'PROCESSING';
       case OrderStatus.outForDelivery:
@@ -540,7 +526,7 @@ class MyOrdersScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              item.name,
+                              item.title,
                               style: GoogleFonts.montserrat(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,

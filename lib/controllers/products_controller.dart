@@ -205,7 +205,8 @@ class ProductsController extends GetxController {
       imagesList = List<String>.from(data['images']);
     }
 
-    final inStock = data['inStock'] ?? true;
+    final stockCount = (data['stockCount'] ?? 0).toInt();
+    final inStock = (data['inStock'] ?? true) && stockCount > 0;
     final category = data['category'] ?? 'General';
 
     // Parse existing tags from db if any
@@ -233,6 +234,7 @@ class ProductsController extends GetxController {
       category: category,
       tags: dynamicTags.isNotEmpty ? dynamicTags : null,
       inStock: inStock,
+      stockCount: stockCount,
       onTap: () => _navigateToProductDetails(
         id: doc.id,
         image: imageUrl,
@@ -244,11 +246,13 @@ class ProductsController extends GetxController {
         category: category,
         tags: dynamicTags.isNotEmpty ? dynamicTags : null,
         inStock: inStock,
+        stockCount: stockCount,
       ),
       onAddToCart: () {
-        debugPrint('Adding ${data['title']} to cart');
+        debugPrint('Adding ${data['name']} to cart');
       },
     );
+
   }
 
   // Helper method for navigation using named routes
@@ -263,7 +267,9 @@ class ProductsController extends GetxController {
     String? category,
     List<String>? tags,
     bool inStock = true,
+    int stockCount = 0,
   }) {
+
     Get.toNamed(
       AppRoutes.productDetailsRoute,
       arguments: ProductCardModel(
@@ -277,9 +283,11 @@ class ProductsController extends GetxController {
         category: category,
         tags: tags,
         inStock: inStock,
+        stockCount: stockCount,
         onTap: () {},
         onAddToCart: () {},
       ),
     );
+
   }
 }

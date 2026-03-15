@@ -1,8 +1,16 @@
+import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:hive/hive.dart';
 import '../model/order_model.dart';
+import 'auth_controller.dart';
 
 class OrdersController extends GetxController {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final AuthController _authController = Get.find<AuthController>();
+  late Box _ordersBox;
+  
   RxList<OrderModel> orders = <OrderModel>[].obs;
   RxBool isLoading = false.obs;
 
@@ -26,120 +34,81 @@ class OrdersController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _ordersBox = Hive.box('orders_cache');
+    _loadOrdersFromCache();
     loadOrders();
   }
 
-  void loadOrders() {
-    isLoading.value = true;
+  void _loadOrdersFromCache() {
+    final user = _authController.firebaseUser.value;
+    if (user == null) return;
 
-    // Sample orders data
-    orders.value = [
-      OrderModel(
-        id: '1',
-        orderNumber: 'ORD20240001',
-        items: [
-          OrderItem(
-            name: 'Fresh Organic Tomatoes',
-            image: 'https://images.unsplash.com/photo-1546094096-0df4bcaaa337?w=400',
-            quantity: 2,
-            price: 90.0,
-          ),
-          OrderItem(
-            name: 'Farm Fresh Spinach',
-            image: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=400',
-            quantity: 1,
-            price: 90.0,
-          ),
-        ],
-        totalAmount: 270.0,
-        orderDate: DateTime.now().subtract(const Duration(hours: 2)),
-        deliveredDate: null,
-        status: OrderStatus.outForDelivery,
-        deliveryAddress: 'Azam Colony, Roshan Gate',
-      ),
-      OrderModel(
-        id: '2',
-        orderNumber: 'ORD20240002',
-        items: [
-          OrderItem(
-            name: 'Organic Carrots',
-            image: 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?w=400',
-            quantity: 1,
-            price: 100.0,
-          ),
-          OrderItem(
-            name: 'Fresh Green Beans',
-            image: 'https://images.unsplash.com/photo-1587735243615-c03f25aaff15?w=400',
-            quantity: 2,
-            price: 60.0,
-          ),
-        ],
-        totalAmount: 220.0,
-        orderDate: DateTime.now().subtract(const Duration(days: 2)),
-        deliveredDate: DateTime.now().subtract(const Duration(days: 2)),
-        status: OrderStatus.delivered,
-        deliveryAddress: 'Azam Colony, Roshan Gate',
-      ),
-      OrderModel(
-        id: '3',
-        orderNumber: 'ORD20240003',
-        items: [
-          OrderItem(
-            name: 'Fresh Organic Potatoes',
-            image: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400',
-            quantity: 3,
-            price: 40.0,
-          ),
-        ],
-        totalAmount: 120.0,
-        orderDate: DateTime.now().subtract(const Duration(days: 5)),
-        deliveredDate: DateTime.now().subtract(const Duration(days: 5)),
-        status: OrderStatus.delivered,
-        deliveryAddress: 'Azam Colony, Roshan Gate',
-      ),
-      OrderModel(
-        id: '4',
-        orderNumber: 'ORD20240004',
-        items: [
-          OrderItem(
-            name: 'Fresh Bell Peppers',
-            image: 'https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?w=400',
-            quantity: 2,
-            price: 80.0,
-          ),
-          OrderItem(
-            name: 'Organic Cucumbers',
-            image: 'https://images.unsplash.com/photo-1589927986089-35812378d2a9?w=400',
-            quantity: 1,
-            price: 50.0,
-          ),
-        ],
-        totalAmount: 210.0,
-        orderDate: DateTime.now().subtract(const Duration(hours: 5)),
-        deliveredDate: null,
-        status: OrderStatus.processing,
-        deliveryAddress: 'Azam Colony, Roshan Gate',
-      ),
-      OrderModel(
-        id: '5',
-        orderNumber: 'ORD20240005',
-        items: [
-          OrderItem(
-            name: 'Fresh Broccoli',
-            image: 'https://images.unsplash.com/photo-1628773822990-202c9cf0e43e?w=400',
-            quantity: 1,
-            price: 120.0,
-          ),
-        ],
-        totalAmount: 120.0,
-        orderDate: DateTime.now().subtract(const Duration(days: 8)),
-        deliveredDate: DateTime.now().subtract(const Duration(days: 8)),
-        status: OrderStatus.delivered,
-        deliveryAddress: 'Azam Colony, Roshan Gate',
-      ),
-    ];
+    final cachedData = _ordersBox.get('orders_${user.uid}');
+    if (cachedData != null) {
+      try {
+        final List<dynamic> decoded = jsonDecode(cachedData);
+        orders.value = decoded.map((e) => OrderModel.fromJson(e)).toList();
+      } catch (e) {
+        debugPrint('Error loading cached orders: $e');
+      }
+    }
+  }
 
-    isLoading.value = false;
+  void _saveOrdersToCache() {
+    final user = _authController.firebaseUser.value;
+    if (user == null) return;
+
+    final encoded = jsonEncode(orders.map((e) => e.toJson()).toList());
+    _ordersBox.put('orders_${user.uid}', encoded);
+  }
+
+  Future<void> loadOrders() async {
+    final user = _authController.firebaseUser.value;
+    if (user == null) {
+      orders.clear();
+      return;
+    }
+
+    if (orders.isEmpty) {
+      isLoading.value = true;
+    }
+
+    try {
+      _firestore
+          .collection('orders')
+          .where('userId', isEqualTo: user.uid)
+          .orderBy('orderDate', descending: true)
+          .snapshots()
+          .listen((snapshot) {
+        orders.value = snapshot.docs
+            .map((doc) {
+              try {
+                return OrderModel.fromJson({...doc.data(), 'id': doc.id});
+              } catch (e) {
+                debugPrint('Error parsing order ${doc.id}: $e');
+                return null;
+              }
+            })
+            .whereType<OrderModel>()
+            .toList();
+        
+        _saveOrdersToCache();
+        isLoading.value = false;
+      }, onError: (e) {
+        debugPrint('Firestore Stream Error: $e');
+        isLoading.value = false;
+        if (e.toString().contains('failed-precondition')) {
+            Get.snackbar(
+              'Configuration Required',
+              'Firestore needs an index for orders. Please check debug console for the link.',
+              duration: const Duration(seconds: 10),
+            );
+        }
+      });
+    } catch (e) {
+      debugPrint('Error initiating order load: $e');
+      isLoading.value = false;
+    }
   }
 
   void reorderItems(OrderModel order) {
@@ -155,4 +124,4 @@ class OrdersController extends GetxController {
       borderRadius: 12,
     );
   }
-}
+}

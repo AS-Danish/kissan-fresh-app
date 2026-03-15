@@ -4,12 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:hive/hive.dart';
 import 'package:uuid/uuid.dart';
 import 'package:kissanfresh/services/maps_cache_service.dart';
 
 class AddressController extends GetxController {
   // Observables
-  var currentAddress = 'Move the map to select location'.obs;
+  var currentAddress = 'Select delivery address'.obs;
+  late Box _settingsBox;
+
   var selectedLocation = const LatLng(20.5937, 78.9629).obs;
   var isLoading = false.obs;
   var isLocationEnabled = false.obs;
@@ -31,8 +34,22 @@ class AddressController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _settingsBox = Hive.box('user_settings');
+    _loadAddressFromHive();
     _refreshSessionToken();
     _checkPermission();
+  }
+
+  void _loadAddressFromHive() {
+    final savedAddress = _settingsBox.get('current_address');
+    if (savedAddress != null) {
+      currentAddress.value = savedAddress;
+      searchController.text = savedAddress;
+    }
+  }
+
+  void _saveAddressToHive(String address) {
+    _settingsBox.put('current_address', address);
   }
 
   void _refreshSessionToken() {
@@ -215,11 +232,13 @@ class AddressController extends GetxController {
 
   void confirmLocation() {
     final address = currentAddress.value;
+    _saveAddressToHive(address);
     Get.back(result: {
       'address': address,
       'lat': selectedLocation.value.latitude,
       'lng': selectedLocation.value.longitude,
     });
+
     Future.delayed(const Duration(milliseconds: 300), () {
       Get.snackbar(
         'Location Updated',

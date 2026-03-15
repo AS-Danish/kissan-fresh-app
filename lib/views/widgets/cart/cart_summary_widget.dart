@@ -250,131 +250,122 @@ class CartSummaryWidget extends StatelessWidget {
   }
 
   Widget _buildCheckoutButton(BuildContext context, CartController controller) {
-    return Obx(() => Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: [Theme.of(context).primaryColor, Theme.of(context).primaryColor.withOpacity(0.8)],
-        ),
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).primaryColor.withOpacity(0.3),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            // Check if user is logged in
-            if (AuthController.instance.firebaseUser.value == null) {
-              Get.toNamed(AppRoutes.loginScreen);
-              Get.snackbar(
-                'Login Required',
-                'Please login to proceed with checkout',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: Colors.orange,
-                colorText: Colors.white,
-                duration: const Duration(seconds: 2),
-                margin: const EdgeInsets.all(16),
-                borderRadius: 12,
-              );
-              return;
-            } 
-            
-            // Validate if any items are out of stock
-            final outOfStockItems = controller.cartItems.where((item) => !item.inStock).toList();
-            if (outOfStockItems.isNotEmpty) {
-               Get.snackbar(
-                'Items Out of Stock',
-                'Please remove out-of-stock items before checking out.',
-                snackPosition: SnackPosition.BOTTOM,
-                backgroundColor: const Color(0xFFEF4444),
-                colorText: Colors.white,
-                duration: const Duration(seconds: 3),
-                margin: const EdgeInsets.all(16),
-                borderRadius: 12,
-                icon: const Icon(Icons.warning_amber_rounded, color: Colors.white),
-              );
-              return;
-            }
+    return Obx(() {
+        final outOfStockItems = controller.cartItems.where((item) => !item.inStock).toList();
+        final bool isCheckoutDisabled = outOfStockItems.isNotEmpty;
 
-            // Show Order Summary Instead of directly showing success
-            _showOrderSummaryPopup(context, controller);
-          },
-          borderRadius: BorderRadius.circular(28),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Left Side - Final Total
-                Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'FINAL TOTAL',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white.withOpacity(0.8),
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      const SizedBox(height: 1),
-                      Text(
-                        '₹${controller.total.toStringAsFixed(0)}',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                          letterSpacing: 0.5,
-                          height: 1.2,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Right Side - Proceed to Pay
-                Row(
-                  mainAxisSize: MainAxisSize.min,
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: isCheckoutDisabled 
+                ? [Colors.grey.shade400, Colors.grey.shade500]
+                : [Theme.of(context).primaryColor, Theme.of(context).primaryColor.withOpacity(0.8)],
+            ),
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: isCheckoutDisabled ? [] : [
+              BoxShadow(
+                color: Theme.of(context).primaryColor.withOpacity(0.3),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: isCheckoutDisabled ? null : () {
+                // Check if user is logged in
+                if (AuthController.instance.firebaseUser.value == null) {
+                  Get.toNamed(AppRoutes.loginScreen);
+                  Get.snackbar(
+                    'Login Required',
+                    'Please login to proceed with checkout',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: Colors.orange,
+                    colorText: Colors.white,
+                    duration: const Duration(seconds: 2),
+                    margin: const EdgeInsets.all(16),
+                    borderRadius: 12,
+                  );
+                  return;
+                } 
+                
+                // Show Order Summary
+                _showOrderSummaryPopup(context, controller);
+              },
+              borderRadius: BorderRadius.circular(28),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'PROCEED',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                        letterSpacing: 1.2,
+                    // Left Side - Final Total
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            isCheckoutDisabled ? 'ACTION REQUIRED' : 'FINAL TOTAL',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white.withOpacity(0.8),
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 1),
+                          Text(
+                            isCheckoutDisabled ? 'CHECK ITEMS' : '₹${controller.total.toStringAsFixed(0)}',
+                            style: GoogleFonts.montserrat(
+                              fontSize: isCheckoutDisabled ? 20 : 26,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                              height: 1.2,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.arrow_forward_ios,
-                        color: Colors.white,
-                        size: 14,
-                      ),
+                    // Right Side - Proceed to Pay
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          isCheckoutDisabled ? 'DISABLED' : 'PROCEED',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            isCheckoutDisabled ? Icons.lock_outline : Icons.arrow_forward_ios,
+                            color: Colors.white,
+                            size: 14,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
-    ));
+        );
+      });
+
   }
 
   void _showOrderSummaryPopup(BuildContext context, CartController controller) {

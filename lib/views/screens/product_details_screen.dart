@@ -238,9 +238,12 @@ class ProductDetailsScreen extends StatelessWidget {
                             context: context,
                             icon: Icons.inventory_2_outlined,
                             label: 'Stock Status',
-                            value: product.inStock ? 'In Stock' : 'Out of Stock',
-                            valueColor: product.inStock ? const Color(0xFF10B981) : Colors.red,
+                            value: product.stockCount > 0 
+                                ? (product.stockCount < 10 ? 'Only ${product.stockCount} left!' : 'In Stock (${product.stockCount})') 
+                                : 'Out of Stock',
+                            valueColor: product.stockCount > 0 ? const Color(0xFF10B981) : Colors.red,
                           ),
+
                           const SizedBox(height: 12),
                           Divider(color: Colors.grey.shade200, height: 1),
                           const SizedBox(height: 12),
@@ -470,9 +473,10 @@ class ProductDetailsScreen extends StatelessWidget {
                   _buildQuantityButton(
                     context: context,
                     icon: Icons.remove,
-                    onPressed: (product.inStock && controller.quantity.value > 1)
+                    onPressed: (product.stockCount > 0 && controller.quantity.value > 1)
                         ? controller.decreaseQuantity
                         : null,
+
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -488,7 +492,10 @@ class ProductDetailsScreen extends StatelessWidget {
                   _buildQuantityButton(
                     context: context,
                     icon: Icons.add,
-                    onPressed: product.inStock ? controller.increaseQuantity : null,
+                    onPressed: (product.stockCount > 0 && controller.quantity.value < product.stockCount) 
+                        ? controller.increaseQuantity 
+                        : null,
+
                   ),
                 ],
               ),

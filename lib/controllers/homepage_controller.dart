@@ -43,106 +43,105 @@ class HomepageController extends GetxController {
     }
   }
 
-  Future<void> fetchTodaysSpecials() async {
+  void fetchTodaysSpecials() {
     try {
       isLoadingSpecials.value = true;
-      todaysSpecials.clear();
 
-      // Get current date in yyyy-MM-dd format
+      // Get current date string
       final now = DateTime.now();
       final dateStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
 
-      final docSnapshot = await _firestore.collection('todays_specials').doc(dateStr).get();
-
-      if (docSnapshot.exists && docSnapshot.data() != null) {
-        final data = docSnapshot.data()!;
-        if (data['specials'] != null && data['specials'] is List) {
-          final specialsList = data['specials'] as List;
-          
-          // Fetch all product details in parallel
-          final List<Future<ProductCardModel?>> fetchPromises = specialsList.map((specialItem) async {
-            if (specialItem is Map && specialItem['productId'] != null) {
-              final productId = specialItem['productId'].toString();
-              try {
-                final productDoc = await _firestore.collection('products').doc(productId).get();
-                if (productDoc.exists && productDoc.data() != null) {
-                  final productData = productDoc.data()!;
-                  
-                  String imageUrl = '';
-                  if (productData['image'] != null && productData['image'].toString().isNotEmpty) {
-                    imageUrl = productData['image'];
-                  } else if (productData['images'] != null && productData['images'] is List && productData['images'].isNotEmpty) {
-                    imageUrl = productData['images'][0];
+      // Use a listener for the specials document itself
+      _firestore.collection('todays_specials').doc(dateStr).snapshots().listen((docSnapshot) async {
+        if (docSnapshot.exists && docSnapshot.data() != null) {
+          final data = docSnapshot.data()!;
+          if (data['specials'] != null && data['specials'] is List) {
+            final specialsList = data['specials'] as List;
+            
+            // For each special, we want real-time stock updates too.
+            // However, nested listeners can be complex. 
+            // We'll fetch them all and refresh whenever the specials list changes.
+            final List<Future<ProductCardModel?>> fetchPromises = specialsList.map((specialItem) async {
+              if (specialItem is Map && specialItem['productId'] != null) {
+                final productId = specialItem['productId'].toString();
+                try {
+                  final productDoc = await _firestore.collection('products').doc(productId).get();
+                  if (productDoc.exists && productDoc.data() != null) {
+                    return _mapDocToModel(productDoc);
                   }
-
-                  List<String>? imagesList;
-                  if (productData['images'] != null && productData['images'] is List) {
-                    imagesList = List<String>.from(productData['images']);
-                  }
-
-                  final inStock = productData['inStock'] ?? true;
-                  final category = productData['category'] ?? 'General';
-                  
-                  List<String> dynamicTags = [];
-                  if (productData['tags'] != null && productData['tags'] is List) {
-                    dynamicTags = List<String>.from(productData['tags']);
-                  }
-                  
-                  return ProductCardModel(
-                    id: productDoc.id,
-                    image: imageUrl,
-                    images: imagesList,
-                    title: productData['name'] ?? 'Unknown',
-                    description: productData['description'] ?? '',
-                    price: (productData['price'] ?? 0).toDouble(),
-                    unit: productData['unit'] ?? 'unit',
-                    category: category,
-                    tags: dynamicTags.isNotEmpty ? dynamicTags : null,
-                    inStock: inStock,
-                    onTap: () {
-                      Get.to(() => ProductDetailsScreen(
-                        product: ProductCardModel(
-                          id: productDoc.id,
-                          image: imageUrl,
-                          images: imagesList,
-                          title: productData['name'] ?? 'Unknown',
-                          description: productData['description'] ?? '',
-                          price: (productData['price'] ?? 0).toDouble(),
-                          unit: productData['unit'] ?? 'unit',
-                          category: category,
-                          tags: dynamicTags.isNotEmpty ? dynamicTags : null,
-                          inStock: inStock,
-                          onTap: () {},
-                          onAddToCart: () {},
-                        ),
-                      ));
-                    },
-                    onAddToCart: () {},
-                  );
+                } catch (e) {
+                  debugPrint("Error fetching product details for $productId: $e");
                 }
-              } catch (e) {
-                debugPrint("Error fetching product details for $productId: $e");
               }
-            }
-            return null;
-          }).toList();
+              return null;
+            }).toList();
 
-          final List<ProductCardModel?> results = await Future.wait(fetchPromises);
-          final List<ProductCardModel> fetchedSpecials = results.whereType<ProductCardModel>().toList();
-          
-          todaysSpecials.value = fetchedSpecials;
-          
-          // Save to cache
-          final cacheData = fetchedSpecials.map((e) => e.toJson()).toList();
-          await _cacheBox.put('todays_specials_cache', cacheData);
+            final List<ProductCardModel?> results = await Future.wait(fetchPromises);
+            final List<ProductCardModel> fetchedSpecials = results.whereType<ProductCardModel>().toList();
+            
+            todaysSpecials.assignAll(fetchedSpecials);
+            
+            // Save to cache
+            final cacheData = fetchedSpecials.map((e) => e.toJson()).toList();
+            _cacheBox.put('todays_specials_cache', cacheData);
+          }
         }
-      }
+        isLoadingSpecials.value = false;
+      }, onError: (e) {
+        debugPrint("Error in specials stream: $e");
+        isLoadingSpecials.value = false;
+      });
     } catch (e) {
-      debugPrint("Error fetching today's specials: $e");
-    } finally {
+      debugPrint("Error setting up today's specials stream: $e");
       isLoadingSpecials.value = false;
     }
   }
+
+  ProductCardModel _mapDocToModel(DocumentSnapshot productDoc) {
+    final productData = productDoc.data() as Map<String, dynamic>;
+    
+    String imageUrl = '';
+    if (productData['image'] != null && productData['image'].toString().isNotEmpty) {
+      imageUrl = productData['image'];
+    } else if (productData['images'] != null && productData['images'] is List && productData['images'].isNotEmpty) {
+      imageUrl = productData['images'][0];
+    }
+
+    List<String>? imagesList;
+    if (productData['images'] != null && productData['images'] is List) {
+      imagesList = List<String>.from(productData['images']);
+    }
+
+    final stockCount = (productData['stockCount'] ?? 0).toInt();
+    final inStock = (productData['inStock'] ?? true) && stockCount > 0;
+    final category = productData['category'] ?? 'General';
+    
+    List<String> dynamicTags = [];
+    if (productData['tags'] != null && productData['tags'] is List) {
+      dynamicTags = List<String>.from(productData['tags']);
+    }
+    
+    return ProductCardModel(
+      id: productDoc.id,
+      image: imageUrl,
+      images: imagesList,
+      title: productData['name'] ?? 'Unknown',
+      description: productData['description'] ?? '',
+      price: (productData['price'] ?? 0).toDouble(),
+      unit: productData['unit'] ?? 'unit',
+      category: category,
+      tags: dynamicTags.isNotEmpty ? dynamicTags : null,
+      inStock: inStock,
+      stockCount: stockCount,
+      onTap: () {
+        Get.to(() => ProductDetailsScreen(
+          product: _mapDocToModel(productDoc), // Re-map to ensure fresh data
+        ));
+      },
+      onAddToCart: () {},
+    );
+  }
+
   void switchTab(String tab) {
     currentTab.value = tab;
   }

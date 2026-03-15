@@ -14,6 +14,8 @@ class ProductCardModel {
   final VoidCallback onAddToCart;
 
   final bool inStock; // Stock status
+  final int stockCount; // Exact stock quantity
+
 
   ProductCardModel({
     this.id,
@@ -26,9 +28,11 @@ class ProductCardModel {
     this.category,
     this.tags,
     this.inStock = true,
+    this.stockCount = 0,
     required this.onTap,
     required this.onAddToCart,
   });
+
 
   Map<String, dynamic> toJson() {
     return {
@@ -42,7 +46,9 @@ class ProductCardModel {
       'category': category,
       'tags': tags,
       'inStock': inStock,
+      'stockCount': stockCount,
     };
+
   }
 
   factory ProductCardModel.fromJson(Map<String, dynamic> json, {VoidCallback? onTap, VoidCallback? onAddToCart}) {
@@ -57,8 +63,10 @@ class ProductCardModel {
       category: json['category'],
       tags: json['tags'] != null ? List<String>.from(json['tags']) : null,
       inStock: json['inStock'] ?? true,
+      stockCount: (json['stockCount'] ?? 0).toInt(),
       onTap: onTap ?? () {},
       onAddToCart: onAddToCart ?? () {},
     );
+
   }
 }
