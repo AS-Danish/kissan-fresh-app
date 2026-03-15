@@ -3,6 +3,8 @@ import 'package:hive/hive.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../model/product_card_model.dart';
 import '../routes/AppRoutes.dart';
 import 'auth_controller.dart';
@@ -10,6 +12,7 @@ import 'auth_controller.dart';
 class CartController extends GetxController {
   final AuthController _authController = Get.find<AuthController>();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  late Razorpay _razorpay;
 
   // Observable list of cart items
   RxList<CartItem> cartItems = <CartItem>[].obs;
@@ -194,6 +197,81 @@ class CartController extends GetxController {
     super.onInit();
     _loadFromHive();
     validateCartItems();
+    _initializeRazorpay();
+  }
+
+  void _initializeRazorpay() {
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  @override
+  void onClose() {
+    _razorpay.clear();
+    super.onClose();
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    Get.snackbar(
+      'Payment Successful',
+      'Transaction ID: ${response.paymentId}',
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+      duration: const Duration(seconds: 5),
+    );
+    clearCart();
+    Get.offAllNamed(AppRoutes.homepageRoute); // Go back to home after success
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) {
+    Get.snackbar(
+      'Payment Failed',
+      'Error: ${response.message}',
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+      duration: const Duration(seconds: 5),
+    );
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    Get.snackbar(
+      'External Wallet',
+      'Wallet: ${response.walletName}',
+      backgroundColor: Colors.blue,
+      colorText: Colors.white,
+    );
+  }
+
+  void processPayment() {
+    final razorpayKey = dotenv.env['RAZORPAY_API_KEY'];
+    if (razorpayKey == null || razorpayKey.isEmpty) {
+      Get.snackbar('Config Error', 'Razorpay API Key not found in .env');
+      return;
+    }
+
+    var options = {
+      'key': razorpayKey,
+      'amount': (total * 100).toInt(), // Amount in paise
+      'name': 'Kissan Fresh',
+      'description': 'Order Payment',
+      'retry': {'enabled': true, 'max_count': 1},
+      'send_sms_hash': true,
+      'prefill': {
+        'contact': _authController.firebaseUser.value?.phoneNumber ?? '',
+        'email': _authController.firebaseUser.value?.email ?? ''
+      },
+      'external': {
+        'wallets': ['paytm']
+      }
+    };
+
+    try {
+      _razorpay.open(options);
+    } catch (e) {
+      debugPrint('Error: e');
+    }
   }
 
   // Ensures exact stock status and price maps directly from Firestore.

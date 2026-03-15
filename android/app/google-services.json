@@ -7,28 +7,12 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:191097124850:android:857ee154b07aec080f9d6b",
+        "mobilesdk_app_id": "1:191097124850:android:395334bbebc013c10f9d6b",
         "android_client_info": {
-          "package_name": "com.example.kissanfresh"
+          "package_name": "com.kissanfresh.app"
         }
       },
       "oauth_client": [
-        {
-          "client_id": "191097124850-gofonjgu1lad5cfbvdekav69havj82n4.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.kissanfresh",
-            "certificate_hash": "168970c676556498b37876043985d07ad42ee0dc"
-          }
-        },
-        {
-          "client_id": "191097124850-hksh88fccgdb9354pn45ghtpmq4tdm9b.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.example.kissanfresh",
-            "certificate_hash": "6f4186a81db496fe43b3c52f84b1d339eb6030a9"
-          }
-        },
         {
           "client_id": "191097124850-499vf1gogoqadseg7gprd6o096ri5vfb.apps.googleusercontent.com",
           "client_type": 3
@@ -36,7 +20,7 @@
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyALlrytQESENsGehcPoUqmIhepHgLGw4qI"
+          "current_key": "AIzaSyANCJixSe64wz3FHK8mlaDu9UFMnMrdSZo"
         }
       ],
       "services": {
@@ -47,10 +31,10 @@
               "client_type": 3
             },
             {
-              "client_id": "191097124850-ecpjkuuqubuvhqccjcc3afipssi8aait.apps.googleusercontent.com",
+              "client_id": "191097124850-1t40h931es62l3fut64aund0427k0e3h.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.kissanfresh"
+                "bundle_id": "com.kissanfresh.app"
               }
             }
           ]
