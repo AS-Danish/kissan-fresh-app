@@ -214,6 +214,7 @@ class CartController extends GetxController {
   }
 
   void _handlePaymentSuccess(PaymentSuccessResponse response) {
+    if (Get.isDialogOpen ?? false) Get.back();
     Get.snackbar(
       'Payment Successful',
       'Transaction ID: ${response.paymentId}',
@@ -222,10 +223,12 @@ class CartController extends GetxController {
       duration: const Duration(seconds: 5),
     );
     clearCart();
-    Get.offAllNamed(AppRoutes.homepageRoute); // Go back to home after success
+    // Return to main layout (which includes bottom bar) and reset to home tab
+    Get.offAllNamed(AppRoutes.mainLayout);
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
+    if (Get.isDialogOpen ?? false) Get.back();
     Get.snackbar(
       'Payment Failed',
       'Error: ${response.message}',
@@ -236,6 +239,7 @@ class CartController extends GetxController {
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
+    if (Get.isDialogOpen ?? false) Get.back();
     Get.snackbar(
       'External Wallet',
       'Wallet: ${response.walletName}',
@@ -250,6 +254,16 @@ class CartController extends GetxController {
       Get.snackbar('Config Error', 'Razorpay API Key not found in .env');
       return;
     }
+
+    // Show loading dialog while Razorpay is opening
+    Get.dialog(
+      const Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFF0d9488),
+        ),
+      ),
+      barrierDismissible: false,
+    );
 
     var options = {
       'key': razorpayKey,
@@ -269,8 +283,14 @@ class CartController extends GetxController {
 
     try {
       _razorpay.open(options);
+      
+      // Auto-close dialog after 2 seconds (Razorpay UI should be up by then)
+      Future.delayed(const Duration(seconds: 2), () {
+        if (Get.isDialogOpen ?? false) Get.back();
+      });
     } catch (e) {
-      debugPrint('Error: e');
+      if (Get.isDialogOpen ?? false) Get.back();
+      debugPrint('Error: $e');
     }
   }
 
