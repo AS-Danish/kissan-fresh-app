@@ -144,7 +144,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
                       ),
 
                     // Sold Out Ribbon
-                    if (!widget.product.inStock)
+                    if (!widget.product.inStock || widget.product.stockCount <= 0)
                        Positioned(
                         top: 15,
                         left: -25,
@@ -226,7 +226,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
                               child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: widget.product.inStock 
+                                  color: (widget.product.inStock && widget.product.stockCount > 0)
                                       ? primaryColor.withOpacity(0.1) 
                                       : Colors.grey.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(10),
@@ -241,7 +241,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
                                       style: GoogleFonts.outfit(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w600,
-                                        color: widget.product.inStock ? primaryColor : Colors.grey,
+                                        color: (widget.product.inStock && widget.product.stockCount > 0) ? primaryColor : Colors.grey,
                                       ),
                                     ),
                                     Text(
@@ -249,7 +249,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
                                       style: GoogleFonts.outfit(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w800,
-                                        color: widget.product.inStock ? primaryColor : Colors.grey,
+                                        color: (widget.product.inStock && widget.product.stockCount > 0) ? primaryColor : Colors.grey,
                                       ),
                                     ),
                                     const SizedBox(width: 1),
@@ -258,7 +258,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
                                       style: GoogleFonts.outfit(
                                         fontSize: 8,
                                         fontWeight: FontWeight.w500,
-                                        color: widget.product.inStock 
+                                        color: (widget.product.inStock && widget.product.stockCount > 0) 
                                             ? primaryColor.withOpacity(0.7) 
                                             : Colors.grey.shade500,
                                       ),
@@ -280,7 +280,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
                                 width: 34,
                                 height: 34,
                                 decoration: BoxDecoration(
-                                  color: widget.product.inStock ? primaryColor : Colors.grey.shade300,
+                                  color: (widget.product.inStock && widget.product.stockCount > 0) ? primaryColor : Colors.grey.shade300,
                                   borderRadius: BorderRadius.circular(10),
                                   boxShadow: widget.product.inStock ? [
                                     BoxShadow(

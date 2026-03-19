@@ -96,6 +96,7 @@ class WishlistScreen extends StatelessWidget {
               unit: product.unit,
               category: product.category,
               inStock: product.inStock,
+              stockCount: product.stockCount,
               onTap: () {
                 Get.toNamed(
                   AppRoutes.productDetailsRoute,
@@ -126,7 +127,7 @@ class WishlistScreen extends StatelessWidget {
             
             return ProductCardWidget(
               product: functionalProduct,
-              showAddButton: false,
+              showAddButton: true,
             );
           },
         );

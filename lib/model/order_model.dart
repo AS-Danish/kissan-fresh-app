@@ -11,12 +11,16 @@ class OrderModel {
   final DateTime orderDate;
   final DateTime? deliveredDate;
   final OrderStatus status;
+  final String? paymentId;
   final String deliveryAddress;
+  final String paymentStatus;
+  final String orderType;
 
   OrderModel({
     required this.id,
     required this.userId,
     required this.orderNumber,
+    this.paymentId,
     required this.items,
     required this.totalAmount,
     required this.subtotal,
@@ -27,6 +31,8 @@ class OrderModel {
     this.deliveredDate,
     required this.status,
     required this.deliveryAddress,
+    this.paymentStatus = 'paid',
+    this.orderType = 'Online',
   });
 
   bool get isDelivered => status == OrderStatus.delivered;
@@ -62,6 +68,7 @@ class OrderModel {
       'id': id,
       'userId': userId,
       'orderNumber': orderNumber,
+      'paymentId': paymentId,
       'items': items.map((i) => i.toJson()).toList(),
       'totalAmount': totalAmount,
       'subtotal': subtotal,
@@ -72,6 +79,8 @@ class OrderModel {
       'deliveredDate': deliveredDate?.toIso8601String(),
       'status': status.name.toUpperCase(),
       'deliveryAddress': deliveryAddress,
+      'paymentStatus': paymentStatus,
+      'orderType': orderType,
     };
   }
 
@@ -80,6 +89,7 @@ class OrderModel {
       id: json['id'] ?? '',
       userId: json['userId'] ?? '',
       orderNumber: json['orderNumber'] ?? '',
+      paymentId: json['paymentId'],
       items: (json['items'] as List?)?.map((i) => OrderItem.fromJson(i)).toList() ?? [],
       totalAmount: (json['totalAmount'] ?? 0.0).toDouble(),
       subtotal: (json['subtotal'] ?? 0.0).toDouble(),
@@ -93,6 +103,8 @@ class OrderModel {
         orElse: () => OrderStatus.processing,
       ),
       deliveryAddress: json['deliveryAddress'] ?? '',
+      paymentStatus: json['paymentStatus'] ?? 'paid',
+      orderType: json['orderType'] ?? 'Online',
     );
   }
 }

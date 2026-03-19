@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -13,11 +14,70 @@ class WishlistController extends GetxController {
   RxList<ProductCardModel> wishlistItems = <ProductCardModel>[].obs;
   final AuthController _authController = Get.find<AuthController>();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  StreamSubscription? _productsSubscription;
 
   @override
   void onInit() {
     super.onInit();
     _fetchWishlist();
+    _startProductsListener();
+  }
+
+  @override
+  void onClose() {
+    _productsSubscription?.cancel();
+    super.onClose();
+  }
+
+  void _startProductsListener() {
+    _productsSubscription = _firestore.collection('products').snapshots().listen((snapshot) {
+      _syncWishlistWithSnapshot(snapshot);
+    });
+  }
+
+  void _syncWishlistWithSnapshot(QuerySnapshot snapshot) {
+    if (wishlistItems.isEmpty) return;
+
+    bool changed = false;
+    final productDataMap = {for (var doc in snapshot.docs) doc.id: doc.data()};
+
+      for (int i = 0; i < wishlistItems.length; i++) {
+        final item = wishlistItems[i];
+        final productId = item.id ?? item.title;
+        
+        if (productDataMap.containsKey(productId)) {
+          final data = productDataMap[productId]! as Map<String, dynamic>;
+          final double freshPrice = (data['price'] ?? 0).toDouble();
+          final int freshStockCount = (data['stockCount'] ?? 0).toInt();
+          final bool freshStockStatus = (data['inStock'] ?? true) && freshStockCount > 0;
+
+          if (item.price != freshPrice || 
+              item.inStock != freshStockStatus || 
+              item.stockCount != freshStockCount) {
+            
+            wishlistItems[i] = ProductCardModel(
+              id: item.id,
+              title: item.title,
+              description: item.description,
+              price: freshPrice,
+              image: item.image,
+              images: item.images,
+              unit: item.unit,
+              category: item.category,
+              inStock: freshStockStatus,
+              stockCount: freshStockCount,
+              tags: item.tags,
+              onTap: item.onTap,
+              onAddToCart: item.onAddToCart,
+            );
+            changed = true;
+          }
+        }
+      }
+
+      if (changed) {
+        wishlistItems.refresh();
+      }
   }
 
   void _fetchWishlist() async {
@@ -58,12 +118,20 @@ class WishlistController extends GetxController {
         }
       }
       wishlistItems.value = loadedItems;
+      
+      // Manually trigger a sync with the latest product data once loaded
+      _firestore.collection('products').get().then((snapshot) {
+        _syncWishlistWithSnapshot(snapshot);
+      });
     } catch (e) {
       print("Error fetching wishlist from network: $e");
     }
   }
 
   ProductCardModel _mapToProductCardModel(Map<String, dynamic> data) {
+    final int stockCount = (data['stockCount'] ?? 0).toInt();
+    final bool inStock = (data['inStock'] ?? true) && stockCount > 0;
+    
     return ProductCardModel(
       id: data['id'] ?? data['title'],
       title: data['title'] ?? 'Unknown',
@@ -73,7 +141,8 @@ class WishlistController extends GetxController {
       images: data['images'] != null ? List<String>.from(data['images']) : null,
       unit: data['unit'] ?? 'unit',
       category: data['category'],
-      inStock: data['inStock'] ?? true,
+      inStock: inStock,
+      stockCount: stockCount,
       tags: data['tags'] != null ? List<String>.from(data['tags']) : null,
       onTap: () {},
       onAddToCart: () {},

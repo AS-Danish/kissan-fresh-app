@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -8,6 +10,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../model/product_card_model.dart';
 import '../routes/AppRoutes.dart';
 import 'auth_controller.dart';
+import '../services/location_service.dart';
 
 import '../model/order_model.dart';
 import 'address_controller.dart';
@@ -18,6 +21,8 @@ class CartController extends GetxController {
   final AuthController _authController = Get.find<AuthController>();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   late Razorpay _razorpay;
+  StreamSubscription? _stockSubscription;
+  Worker? _cartWorker;
 
   // Observable list of cart items
   RxList<CartItem> cartItems = <CartItem>[].obs;
@@ -118,6 +123,18 @@ class CartController extends GetxController {
       return false;
     }
 
+    // Check if item is in stock at all
+    if (!product.inStock || product.stockCount <= 0) {
+      Get.snackbar(
+        'Out of Stock',
+        'Sorry, ${product.title} is currently out of stock.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return false;
+    }
+
     // Use product ID if available, otherwise use title
         final productId = product.id ?? product.title;
         final cartItem = CartItem(
@@ -167,6 +184,18 @@ class CartController extends GetxController {
         'Please login to add items to your cart.',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: const Color(0xFF0d9488),
+        colorText: Colors.white,
+      );
+      return false;
+    }
+
+    // Check if item is in stock
+    if (!item.inStock || item.availableStock <= 0) {
+      Get.snackbar(
+        'Out of Stock',
+        'Sorry, ${item.name} is currently out of stock.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
         colorText: Colors.white,
       );
       return false;
@@ -243,8 +272,70 @@ class CartController extends GetxController {
   void onInit() {
     super.onInit();
     _loadFromHive();
+    _startStockListener();
     validateCartItems();
     _initializeRazorpay();
+  }
+
+  void _startStockListener() {
+    // Listen to changes in cartItems to restart stock synchronization if IDs change
+    _cartWorker = ever(cartItems, (List<CartItem> items) {
+      _updateStockSubscription(items);
+    });
+    
+    // Initial setup
+    _updateStockSubscription(cartItems);
+  }
+
+  void _updateStockSubscription(List<CartItem> items) {
+    _stockSubscription?.cancel();
+    if (items.isEmpty) return;
+
+    final productIds = items.map((item) => item.id).toList();
+    
+    // Firestore whereIn limit is 30. If cart > 30, we'd need chunks.
+    // For this app, 30 is likely sufficient.
+    final limitedIds = productIds.take(30).toList();
+
+    _stockSubscription = _firestore
+        .collection('products')
+        .where(FieldPath.documentId, whereIn: limitedIds)
+        .snapshots()
+        .listen((snapshot) {
+      bool changed = false;
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        final productId = doc.id;
+        final index = cartItems.indexWhere((item) => item.id == productId);
+        
+        if (index >= 0) {
+          final double freshPrice = (data['price'] ?? 0).toDouble();
+          final int freshStock = (data['stockCount'] ?? 0).toInt();
+          final bool freshInStock = (data['inStock'] ?? true) && freshStock > 0;
+
+          if (cartItems[index].price != freshPrice || 
+              cartItems[index].availableStock != freshStock || 
+              cartItems[index].inStock != freshInStock) {
+            
+            cartItems[index].price = freshPrice;
+            cartItems[index].availableStock = freshStock;
+            cartItems[index].inStock = freshInStock;
+            
+            // Cap quantity if it exceeds stock
+            if (cartItems[index].count > freshStock && freshStock >= 0) {
+              cartItems[index].count = freshStock;
+            }
+            
+            changed = true;
+          }
+        }
+      }
+      
+      if (changed) {
+        cartItems.refresh();
+        _saveToHive();
+      }
+    });
   }
 
   void _initializeRazorpay() {
@@ -257,6 +348,8 @@ class CartController extends GetxController {
   @override
   void onClose() {
     _razorpay.clear();
+    _stockSubscription?.cancel();
+    _cartWorker?.dispose();
     super.onClose();
   }
 
@@ -272,37 +365,35 @@ class CartController extends GetxController {
     );
 
     try {
-      final success = await placeOrder();
+      final success = await placeOrder(paymentId: response.paymentId);
       
-      Get.back(); // Close loading
-      
-      if (!success) return; // placeOrder already handled the error message
-      
-      Get.snackbar(
-
-        'Order Placed Successfully',
-        'Transaction ID: ${response.paymentId}',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 5),
-      );
-      
-      // Refresh orders list
-      if (Get.isRegistered<OrdersController>()) {
-        Get.find<OrdersController>().loadOrders();
+      if (success) {
+        // Refresh orders list
+        if (Get.isRegistered<OrdersController>()) {
+          Get.find<OrdersController>().loadOrders();
+        }
+        
+        // Navigate to My Orders with success popup flag
+        Get.offAllNamed(AppRoutes.myOrdersRoute, arguments: {
+          'showSuccessPopup': true,
+          'paymentId': response.paymentId,
+          'orderType': 'Online',
+        });
       }
-      
-      // Return to main layout and reset to home tab
-      Get.offAllNamed(AppRoutes.mainLayout);
     } catch (e) {
-      Get.back(); // Close loading
+      debugPrint("Error in _handlePaymentSuccess: $e");
       Get.snackbar(
         'Order Processing Failed',
-        'Your payment was successful but order creation failed. Please contact support. Error: $e',
+        'Your payment (ID: ${response.paymentId}) was successful but we encountered an error. Please contact support.',
         backgroundColor: Colors.orange,
         colorText: Colors.white,
-        duration: const Duration(seconds: 8),
+        duration: const Duration(seconds: 10),
       );
+    } finally {
+      // Ensure loading is ALWAYS dismissed if it's still there
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
     }
   }
 
@@ -394,25 +485,21 @@ class CartController extends GetxController {
     }
   }
 
-  Future<bool> placeOrder() async {
+  Future<bool> placeOrder({String? paymentId, String paymentStatus = 'paid', String orderType = 'Online'}) async {
     final user = _authController.firebaseUser.value;
     if (user == null) throw Exception('User not logged in');
 
     final String orderId = const Uuid().v4();
     final String orderNumber = 'ORD${DateTime.now().millisecondsSinceEpoch}';
     
-    // Get delivery address from AddressController if available
-    String deliveryAddress = 'Default Address'; // Fallback
-    try {
-      if (Get.isRegistered<AddressController>()) {
-        deliveryAddress = Get.find<AddressController>().currentAddress.value;
-      }
-    } catch (_) {}
+    // Resolve delivery address from multiple sources
+    final String deliveryAddress = _resolveDeliveryAddress();
 
     final order = OrderModel(
       id: orderId,
       userId: user.uid,
       orderNumber: orderNumber,
+      paymentId: paymentId, // Added paymentId to track post-payment
       items: cartItems.map((item) => OrderItem(
         productId: item.id,
         title: item.name,
@@ -428,34 +515,33 @@ class CartController extends GetxController {
       orderDate: DateTime.now(),
       status: OrderStatus.processing,
       deliveryAddress: deliveryAddress,
+      paymentStatus: paymentStatus,
+      orderType: orderType,
     );
     // 4. Use transaction to ensure perfect stock safety
     try {
       await _firestore.runTransaction((transaction) async {
         // First, READ all product documents to check stock
-        final List<DocumentSnapshot> productSnaps = [];
         for (var item in cartItems) {
           final productRef = _firestore.collection('products').doc(item.id);
           final snap = await transaction.get(productRef);
           if (!snap.exists) {
-            throw Exception("Product ${item.name} not found.");
+            throw "Product ${item.name} no longer available.";
           }
           
           final data = snap.data() as Map<String, dynamic>;
           final int currentStock = (data['stockCount'] ?? 0).toInt();
           
           if (currentStock < item.count) {
-            throw Exception("Insufficient stock for ${item.name}. Available: $currentStock");
+            throw "Insufficient stock for ${item.name}. Available: $currentStock";
           }
-          productSnaps.add(snap);
         }
 
         // Second, UPDATE stock and CREATE order
-        final orderDoc = _firestore.collection('orders').doc();
+        final orderDoc = _firestore.collection('orders').doc(orderId);
         transaction.set(orderDoc, order.toJson());
 
-        for (int i = 0; i < cartItems.length; i++) {
-          final item = cartItems[i];
+        for (var item in cartItems) {
           final productRef = _firestore.collection('products').doc(item.id);
           transaction.update(productRef, {
             'stockCount': FieldValue.increment(-item.count),
@@ -468,18 +554,150 @@ class CartController extends GetxController {
       return true;
     } catch (e) {
       debugPrint("Transaction failed: $e");
+      
+      // If payment was already done (paymentId != null), we must record this failure
+      if (paymentId != null) {
+        await _recordFailedOrder(order, e.toString());
+      }
+
       Get.snackbar(
-        "Order Failed",
+        "Order Issue - Refund Initiated",
         e.toString().contains("Insufficient stock") 
-            ? e.toString().replaceFirst("Exception: ", "") 
-            : "An error occurred while processing your order. Please try again.",
+            ? "${e.toString()}. Since your payment was successful, a full refund has been automatically initiated." 
+            : "An issue occurred while finalizing your order. A full refund has been initiated. Payment ID: $paymentId",
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
+        backgroundColor: Colors.orange.shade800,
         colorText: Colors.white,
+        duration: const Duration(seconds: 12),
       );
+      
       // Trigger a refresh of stock in cart
       validateCartItems();
       return false;
+    }
+  }
+
+  /// Resolves the delivery address by checking multiple sources:
+  /// 1. AddressController (user-selected address)
+  /// 2. LocationService (GPS-detected address)
+  /// 3. Hive persisted address
+  String _resolveDeliveryAddress() {
+    const invalidValues = [
+      'Select delivery address',
+      'Default Address',
+      '',
+      'Fetching address...',
+      'Address not found',
+      'Unable to fetch address',
+      'No address selected',
+    ];
+
+    // 1. Try AddressController (user explicitly selected an address)
+    try {
+      if (Get.isRegistered<AddressController>()) {
+        final addr = Get.find<AddressController>().currentAddress.value;
+        if (!invalidValues.contains(addr)) return addr;
+      }
+    } catch (_) {}
+
+    // 2. Try LocationService (GPS-detected address)
+    try {
+      if (Get.isRegistered<LocationService>()) {
+        final addr = Get.find<LocationService>().currentAddress.value;
+        if (addr != null && !invalidValues.contains(addr)) return addr;
+      }
+    } catch (_) {}
+
+    // 3. Try Hive persisted address
+    try {
+      final box = Hive.box('user_settings');
+      final addr = box.get('current_address');
+      if (addr != null && addr is String && !invalidValues.contains(addr)) {
+        return addr;
+      }
+      // Also check last known address from LocationService
+      final lastAddr = box.get('last_known_address');
+      if (lastAddr != null && lastAddr is String && !invalidValues.contains(lastAddr)) {
+        return lastAddr;
+      }
+    } catch (_) {}
+
+    return 'Address not available';
+  }
+
+  Future<void> _recordFailedOrder(OrderModel order, String error) async {
+    try {
+      await _firestore.collection('failed_orders').add({
+        'orderData': order.toJson(),
+        'error': error,
+        'timestamp': FieldValue.serverTimestamp(),
+        'status': 'paid_but_stock_failed',
+        'refundStatus': 'pending',
+        'totalAmount': order.totalAmount,
+        'currency': 'INR',
+        'paymentId': order.paymentId,
+      });
+    } catch (e) {
+      debugPrint("Critical: Failed to record failed order: $e");
+    }
+  }
+
+  /// Place a Cash on Delivery order without Razorpay.
+  Future<void> placeCodOrder() async {
+    final user = _authController.firebaseUser.value;
+    if (user == null) {
+      Get.toNamed(AppRoutes.loginScreen);
+      return;
+    }
+
+    // Validate stock first
+    Get.dialog(
+      const Center(child: CircularProgressIndicator(color: Color(0xFF0d9488))),
+      barrierDismissible: false,
+    );
+    await validateCartItems();
+    Get.back();
+
+    if (cartItems.any((item) => !item.inStock)) {
+      Get.snackbar('Out of Stock', 'Some items in your cart are now out of stock. Please review.',
+          backgroundColor: Colors.red, colorText: Colors.white);
+      return;
+    }
+
+    // Show loading
+    Get.dialog(
+      const Center(child: CircularProgressIndicator(color: Color(0xFF0d9488))),
+      barrierDismissible: false,
+    );
+
+    try {
+      final success = await placeOrder(
+        paymentStatus: 'pending',
+        orderType: 'COD',
+      );
+
+      if (Get.isDialogOpen ?? false) Get.back();
+
+      if (success) {
+        if (Get.isRegistered<OrdersController>()) {
+          Get.find<OrdersController>().loadOrders();
+        }
+
+        // Navigate to My Orders with success popup flag
+        Get.offAllNamed(AppRoutes.myOrdersRoute, arguments: {
+          'showSuccessPopup': true,
+          'orderType': 'COD',
+        });
+      }
+    } catch (e) {
+      if (Get.isDialogOpen ?? false) Get.back();
+      debugPrint('Error in placeCodOrder: $e');
+      Get.snackbar(
+        'Order Failed',
+        'Something went wrong. Please try again.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 

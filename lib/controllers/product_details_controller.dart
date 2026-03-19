@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/product_card_model.dart';
 import 'cart_controller.dart';
 import 'wishlist_controller.dart';
@@ -21,13 +22,48 @@ class ProductDetailsController extends GetxController {
     currentImageIndex.value = index;
   }
 
-  late ProductCardModel product;
+  Rxn<ProductCardModel> observableProduct = Rxn<ProductCardModel>();
+  StreamSubscription? _productSubscription;
 
   // Initialize with product passed as parameter
   void initializeProduct(ProductCardModel productData) {
-    product = productData;
+    observableProduct.value = productData;
+    _startProductListener();
     // Check if product is already in wishlist using safe Get.put
     Get.put(WishlistController());
+  }
+
+  void _startProductListener() {
+    final productId = observableProduct.value?.id ?? observableProduct.value?.title;
+    if (productId == null) return;
+
+    _productSubscription?.cancel();
+    _productSubscription = FirebaseFirestore.instance
+        .collection('products')
+        .doc(productId)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.exists && snapshot.data() != null) {
+        final data = snapshot.data()!;
+        final current = observableProduct.value!;
+        
+        observableProduct.value = ProductCardModel(
+          id: current.id,
+          title: current.title,
+          description: current.description,
+          price: (data['price'] ?? 0).toDouble(),
+          image: current.image,
+          images: current.images,
+          unit: current.unit,
+          category: current.category,
+          stockCount: (data['stockCount'] ?? 0).toInt(),
+          inStock: (data['inStock'] ?? true) && (data['stockCount'] ?? 0) > 0,
+          tags: current.tags,
+          onTap: current.onTap,
+          onAddToCart: current.onAddToCart,
+        );
+      }
+    });
   }
 
   /// Increase quantity
@@ -58,15 +94,17 @@ class ProductDetailsController extends GetxController {
     }
 
     final wishlistController = Get.find<WishlistController>();
-    wishlistController.toggleWishlist(product);
+    if (observableProduct.value != null) {
+      wishlistController.toggleWishlist(observableProduct.value!);
+    }
     
-    final isFav = wishlistController.isInWishlist(product);
+    final isFav = observableProduct.value != null && wishlistController.isInWishlist(observableProduct.value!);
 
     Get.snackbar(
       isFav ? 'Added to Favorites' : 'Removed from Favorites',
       isFav
-          ? '${product.title} added to your favorites'
-          : '${product.title} removed from favorites',
+          ? '${observableProduct.value?.title} added to your favorites'
+          : '${observableProduct.value?.title} removed from favorites',
       snackPosition: SnackPosition.BOTTOM,
       backgroundColor: isFav ? const Color(0xFF10B981) : Colors.grey,
       colorText: Colors.white,
@@ -92,44 +130,27 @@ class ProductDetailsController extends GetxController {
     }
 
     try {
-      final cartController = Get.put(CartController());
-      final productId = product.id ?? product.title;
+      final cartController = Get.find<CartController>();
+      final p = observableProduct.value;
+      if (p == null) return;
+      
+      // Use the centralized addToCart for strict stock enforcement
+      bool added = cartController.addToCart(p, quantity.value);
+      
+      if (added) {
+        Get.dialog(
+          const CartSuccessPopup(),
+          barrierDismissible: true,
+        );
 
-      // Ensure local state mapped logic runs directly here
-      final cartItem = CartItem(
-        id: productId,
-        name: product.title,
-        quantity: product.unit,
-        price: product.price,
-        image: product.image,
-        count: quantity.value,
-      );
-
-      final existingIndex = cartController.cartItems.indexWhere((i) => i.id == productId);
-
-      if (existingIndex >= 0) {
-        // Item already exists, increase count
-        cartController.cartItems[existingIndex].count += quantity.value;
-        cartController.cartItems.refresh();
-      } else {
-        // New item, add to cart
-        cartController.cartItems.add(cartItem);
+        // Automatically close after 2 seconds
+        _cartPopupTimer?.cancel();
+        _cartPopupTimer = Timer(const Duration(seconds: 2), () {
+          if (Get.isDialogOpen ?? false) {
+            Get.back();
+          }
+        });
       }
-
-      Get.dialog(
-        const CartSuccessPopup(),
-        barrierDismissible: true,
-      );
-
-      // Automatically close after 2 seconds
-      _cartPopupTimer = Timer(const Duration(seconds: 2), () {
-        if (Get.isDialogOpen ?? false) {
-          Get.back();
-        }
-      });
-
-      // Optionally reset quantity after adding to cart
-      // quantity.value = 1;
     } catch (e) {
       debugPrint('Error adding to cart: $e');
       Get.snackbar(
@@ -146,11 +167,12 @@ class ProductDetailsController extends GetxController {
   }
 
   /// Calculate total price
-  double get totalPrice => product.price * quantity.value;
+  double get totalPrice => (observableProduct.value?.price ?? 0) * quantity.value;
 
   @override
   void onClose() {
     _cartPopupTimer?.cancel();
+    _productSubscription?.cancel();
     super.onClose();
   }
 }

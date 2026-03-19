@@ -142,42 +142,45 @@ class ProductDetailsScreen extends StatelessWidget {
                   // Product Title and Price
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          product.title,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w900,
-                            color: Theme.of(context).colorScheme.onSurface,
-                            letterSpacing: 0.3,
+                    child: Obx(() {
+                      final p = controller.observableProduct.value ?? product;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            p.title,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w900,
+                              color: Theme.of(context).colorScheme.onSurface,
+                              letterSpacing: 0.3,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Text(
-                              '₹${product.price.toStringAsFixed(0)}',
-                              style: GoogleFonts.montserrat(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w900,
-                                color: Theme.of(context).primaryColor,
-                                letterSpacing: 0.5,
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Text(
+                                '₹${p.price.toStringAsFixed(0)}',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w900,
+                                  color: Theme.of(context).primaryColor,
+                                  letterSpacing: 0.5,
+                                ),
                               ),
-                            ),
-                            Text(
-                              ' /${product.unit}',
-                              style: GoogleFonts.montserrat(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey.shade600,
+                              Text(
+                                ' /${p.unit}',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey.shade600,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                            ],
+                          ),
+                        ],
+                      );
+                    }),
                   ),
 
                   const SizedBox(height: 24),
@@ -187,31 +190,34 @@ class ProductDetailsScreen extends StatelessWidget {
                   // Description
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'About Product',
-                          style: GoogleFonts.montserrat(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            color: Theme.of(context).colorScheme.onSurface,
-                            letterSpacing: 0.3,
+                    child: Obx(() {
+                      final p = controller.observableProduct.value ?? product;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'About Product',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Theme.of(context).colorScheme.onSurface,
+                              letterSpacing: 0.3,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          product.description,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: Theme.of(context).textTheme.bodyMedium?.color,
-                            height: 1.6,
-                            letterSpacing: 0.2,
+                          const SizedBox(height: 12),
+                          Text(
+                            p.description,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: Theme.of(context).textTheme.bodyMedium?.color,
+                              height: 1.6,
+                              letterSpacing: 0.2,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      );
+                    }),
                   ),
 
                   const SizedBox(height: 24),
@@ -234,26 +240,32 @@ class ProductDetailsScreen extends StatelessWidget {
                       ),
                       child: Column(
                         children: [
-                          _buildDetailRow(
-                            context: context,
-                            icon: Icons.inventory_2_outlined,
-                            label: 'Stock Status',
-                            value: product.stockCount > 0 
-                                ? (product.stockCount < 10 ? 'Only ${product.stockCount} left!' : 'In Stock (${product.stockCount})') 
-                                : 'Out of Stock',
-                            valueColor: product.stockCount > 0 ? const Color(0xFF10B981) : Colors.red,
-                          ),
+                          Obx(() {
+                            final p = controller.observableProduct.value ?? product;
+                            return _buildDetailRow(
+                              context: context,
+                              icon: Icons.inventory_2_outlined,
+                              label: 'Stock Status',
+                              value: p.stockCount > 0 
+                                  ? (p.stockCount < 10 ? 'Only ${p.stockCount} left!' : 'In Stock (${p.stockCount})') 
+                                  : 'Out of Stock',
+                              valueColor: p.stockCount > 0 ? const Color(0xFF10B981) : Colors.red,
+                            );
+                          }),
 
                           const SizedBox(height: 12),
                           Divider(color: Colors.grey.shade200, height: 1),
                           const SizedBox(height: 12),
-                          _buildDetailRow(
-                            context: context,
-                            icon: Icons.local_offer_outlined,
-                            label: 'Category',
-                            value: product.category ?? 'Fresh Vegetables',
-                            valueColor: Colors.grey.shade700,
-                          ),
+                          Obx(() {
+                            final p = controller.observableProduct.value ?? product;
+                            return _buildDetailRow(
+                              context: context,
+                              icon: Icons.local_offer_outlined,
+                              label: 'Category',
+                              value: p.category ?? 'Fresh Vegetables',
+                              valueColor: Colors.grey.shade700,
+                            );
+                          }),
                         ],
                       ),
                     ),
@@ -262,8 +274,11 @@ class ProductDetailsScreen extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // Tags Section (Dynamic as Info Cards)
-                  if (product.tags != null && product.tags!.isNotEmpty)
-                    Padding(
+                  Obx(() {
+                    final p = controller.observableProduct.value ?? product;
+                    if (p.tags == null || p.tags!.isEmpty) return const SizedBox.shrink();
+                    
+                    return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -283,7 +298,7 @@ class ProductDetailsScreen extends StatelessWidget {
                             child: ListView.separated(
                               clipBehavior: Clip.none,
                               scrollDirection: Axis.horizontal,
-                              itemCount: product.tags!.length,
+                              itemCount: p.tags!.length,
                               separatorBuilder: (context, index) => const SizedBox(width: 16),
                               itemBuilder: (context, index) {
                                 return SizedBox(
@@ -292,7 +307,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                     context: context,
                                     icon: Icons.verified_outlined,
                                     title: 'Feature',
-                                    subtitle: product.tags![index],
+                                    subtitle: p.tags![index],
                                     color: const Color(0xFF10B981),
                                   ),
                                 );
@@ -301,7 +316,8 @@ class ProductDetailsScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-                    ),
+                    );
+                  }),
 
                   const SizedBox(height: 120), // Space for bottom bar
                 ],
@@ -455,114 +471,115 @@ class ProductDetailsScreen extends StatelessWidget {
         ],
       ),
       child: SafeArea(
-        child: Obx(() => Row(
-          children: [
-            // Quantity Controls
-            Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: Theme.of(context).primaryColor.withOpacity(0.3),
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildQuantityButton(
-                    context: context,
-                    icon: Icons.remove,
-                    onPressed: (product.stockCount > 0 && controller.quantity.value > 1)
-                        ? controller.decreaseQuantity
-                        : null,
-
+        child: Obx(() {
+          final p = controller.observableProduct.value ?? product;
+          return Row(
+            children: [
+              // Quantity Controls
+              Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Theme.of(context).primaryColor.withOpacity(0.3),
+                    width: 1,
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      '${controller.quantity.value}',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: Theme.of(context).primaryColor,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildQuantityButton(
+                      context: context,
+                      icon: Icons.remove,
+                      onPressed: (p.stockCount > 0 && controller.quantity.value > 1)
+                          ? controller.decreaseQuantity
+                          : null,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        '${controller.quantity.value}',
+                        style: GoogleFonts.montserrat(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: Theme.of(context).primaryColor,
+                        ),
                       ),
                     ),
-                  ),
-                  _buildQuantityButton(
-                    context: context,
-                    icon: Icons.add,
-                    onPressed: (product.stockCount > 0 && controller.quantity.value < product.stockCount) 
-                        ? controller.increaseQuantity 
-                        : null,
-
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(width: 16),
-
-            // Add to Cart Button (Flexible to prevent overflow)
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: product.inStock 
-                        ? [Theme.of(context).primaryColor, Theme.of(context).primaryColor.withOpacity(0.8)]
-                        : [Theme.of(context).dividerColor.withOpacity(0.3), Theme.of(context).dividerColor.withOpacity(0.5)],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: product.inStock ? [
-                    BoxShadow(
-                      color: Theme.of(context).primaryColor.withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
+                    _buildQuantityButton(
+                      context: context,
+                      icon: Icons.add,
+                      onPressed: (p.stockCount > 0 && controller.quantity.value < p.stockCount) 
+                          ? controller.increaseQuantity 
+                          : null,
                     ),
-                  ] : [],
+                  ],
                 ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: product.inStock ? controller.addToCart : null,
+              ),
+
+              const SizedBox(width: 16),
+
+              // Add to Cart Button (Flexible to prevent overflow)
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: p.inStock 
+                          ? [Theme.of(context).primaryColor, Theme.of(context).primaryColor.withOpacity(0.8)]
+                          : [Theme.of(context).dividerColor.withOpacity(0.3), Theme.of(context).dividerColor.withOpacity(0.5)],
+                    ),
                     borderRadius: BorderRadius.circular(16),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            product.inStock 
-                                ? Icons.shopping_cart_outlined 
-                                : Icons.remove_shopping_cart_outlined,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              product.inStock ? 'Add to Cart' : 'Out of Stock',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.montserrat(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                                letterSpacing: 0.5,
+                    boxShadow: p.inStock ? [
+                      BoxShadow(
+                        color: Theme.of(context).primaryColor.withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ] : [],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: p.inStock ? controller.addToCart : null,
+                      borderRadius: BorderRadius.circular(16),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              p.inStock 
+                                  ? Icons.shopping_cart_outlined 
+                                  : Icons.remove_shopping_cart_outlined,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                p.inStock ? 'Add to Cart' : 'Out of Stock',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                  letterSpacing: 0.5,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
-        )),
+            ],
+          );
+        }),
       ),
     );
   }

@@ -289,7 +289,8 @@ class ProductSearchController extends GetxController {
       imagesList = List<String>.from(data['images']);
     }
 
-    final inStock = data['inStock'] ?? true;
+    final stockCount = (data['stockCount'] ?? 0).toInt();
+    final inStock = (data['inStock'] ?? true) && stockCount > 0;
     final category = data['category'] ?? 'General';
 
     List<String> dynamicTags = [];
@@ -315,6 +316,7 @@ class ProductSearchController extends GetxController {
       category: category,
       tags: dynamicTags.isNotEmpty ? dynamicTags : null,
       inStock: inStock,
+      stockCount: stockCount,
       onTap: () => _navigateToProductDetails(
         id: doc.id,
         image: imageUrl,
@@ -326,27 +328,13 @@ class ProductSearchController extends GetxController {
         category: category,
         tags: dynamicTags.isNotEmpty ? dynamicTags : null,
         inStock: inStock,
+        stockCount: stockCount,
       ),
       onAddToCart: () {
         try {
           final cartController = Get.find<CartController>();
-          bool added = cartController.addToCart(
-            ProductCardModel(
-              id: doc.id,
-              image: imageUrl,
-              images: imagesList,
-              title: data['name'] ?? 'Unknown',
-              description: data['description'] ?? '',
-              price: (data['price'] ?? 0).toDouble(),
-              unit: data['unit'] ?? 'unit',
-              category: category,
-              tags: dynamicTags.isNotEmpty ? dynamicTags : null,
-              inStock: inStock,
-              onTap: () {},
-              onAddToCart: () {},
-            ),
-            1
-          );
+          final productModel = _mapToProductCardModel(doc);
+          bool added = cartController.addToCart(productModel, 1);
           if (added) {
             Get.snackbar(
               'Added to Cart',
@@ -377,6 +365,7 @@ class ProductSearchController extends GetxController {
     String? category,
     List<String>? tags,
     bool inStock = true,
+    int stockCount = 0,
   }) {
     Get.toNamed(
       AppRoutes.productDetailsRoute,
@@ -391,6 +380,7 @@ class ProductSearchController extends GetxController {
         category: category,
         tags: tags,
         inStock: inStock,
+        stockCount: stockCount,
         onTap: () {},
         onAddToCart: () {},
       ),

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/product_card_model.dart';
 import '../routes/AppRoutes.dart';
+import 'cart_controller.dart';
 import 'homepage_controller.dart';
 
 class CategorizedProductsController extends GetxController {
@@ -104,7 +105,8 @@ class CategorizedProductsController extends GetxController {
       imagesList = List<String>.from(data['images']);
     }
 
-    final inStock = data['inStock'] ?? true;
+    final stockCount = (data['stockCount'] ?? 0).toInt();
+    final inStock = (data['inStock'] ?? true) && stockCount > 0;
     final category = data['category'] ?? 'General';
 
     // Parse existing tags from db if any
@@ -132,6 +134,7 @@ class CategorizedProductsController extends GetxController {
       category: category,
       tags: dynamicTags.isNotEmpty ? dynamicTags : null,
       inStock: inStock,
+      stockCount: stockCount,
       onTap: () => _navigateToProductDetails(
         id: doc.id,
         image: imageUrl,
@@ -143,9 +146,28 @@ class CategorizedProductsController extends GetxController {
         category: category,
         tags: dynamicTags.isNotEmpty ? dynamicTags : null,
         inStock: inStock,
+        stockCount: stockCount,
       ),
       onAddToCart: () {
-        debugPrint('Adding ${data['title']} to cart');
+        try {
+          final cartController = Get.find<CartController>();
+          final productModel = _mapToProductCardModel(doc);
+          bool added = cartController.addToCart(productModel, 1);
+          if (added) {
+            Get.snackbar(
+              'Added to Cart',
+              '${data['title'] ?? 'Product'} added to cart',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFF10B981),
+              colorText: Colors.white,
+              duration: const Duration(seconds: 2),
+              margin: const EdgeInsets.all(16),
+              borderRadius: 12,
+            );
+          }
+        } catch (e) {
+          debugPrint("CartController not found: $e");
+        }
       },
     );
   }
@@ -161,6 +183,7 @@ class CategorizedProductsController extends GetxController {
     String? category,
     List<String>? tags,
     bool inStock = true,
+    int stockCount = 0,
   }) {
     Get.toNamed(
       AppRoutes.productDetailsRoute,
@@ -175,6 +198,7 @@ class CategorizedProductsController extends GetxController {
         category: category,
         tags: tags,
         inStock: inStock,
+        stockCount: stockCount,
         onTap: () {},
         onAddToCart: () {},
       ),

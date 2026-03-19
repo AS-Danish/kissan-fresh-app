@@ -252,7 +252,15 @@ class CartSummaryWidget extends StatelessWidget {
   Widget _buildCheckoutButton(BuildContext context, CartController controller) {
     return Obx(() {
         final outOfStockItems = controller.cartItems.where((item) => !item.inStock).toList();
-        final bool isCheckoutDisabled = outOfStockItems.isNotEmpty;
+        final insufficientStockItems = controller.cartItems.where((item) => item.count > item.availableStock).toList();
+        final bool isCheckoutDisabled = outOfStockItems.isNotEmpty || insufficientStockItems.isNotEmpty;
+
+        String errorMessage = 'FINAL TOTAL';
+        if (outOfStockItems.isNotEmpty) {
+          errorMessage = 'ITEMS OUT OF STOCK';
+        } else if (insufficientStockItems.isNotEmpty) {
+          errorMessage = 'INSUFFICIENT STOCK';
+        }
 
         return Container(
           decoration: BoxDecoration(
@@ -308,7 +316,7 @@ class CartSummaryWidget extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            isCheckoutDisabled ? 'ACTION REQUIRED' : 'FINAL TOTAL',
+                            isCheckoutDisabled ? errorMessage : 'FINAL TOTAL',
                             style: GoogleFonts.montserrat(
                               fontSize: 10,
                               fontWeight: FontWeight.w700,
@@ -320,7 +328,7 @@ class CartSummaryWidget extends StatelessWidget {
                           Text(
                             isCheckoutDisabled ? 'CHECK ITEMS' : '₹${controller.total.toStringAsFixed(0)}',
                             style: GoogleFonts.montserrat(
-                              fontSize: isCheckoutDisabled ? 20 : 26,
+                              fontSize: isCheckoutDisabled ? 18 : 26,
                               fontWeight: FontWeight.w900,
                               color: Colors.white,
                               letterSpacing: 0.5,
@@ -591,7 +599,7 @@ class CartSummaryWidget extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () {
                   Get.back(); // Close bottom sheet
-                  controller.processPayment();
+                  Get.toNamed(AppRoutes.paymentMethodRoute);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).primaryColor,

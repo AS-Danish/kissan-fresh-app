@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/product_card_model.dart';
 import '../routes/AppRoutes.dart';
+import 'cart_controller.dart';
 import 'homepage_controller.dart';
 
 class ProductsController extends GetxController {
@@ -249,7 +250,25 @@ class ProductsController extends GetxController {
         stockCount: stockCount,
       ),
       onAddToCart: () {
-        debugPrint('Adding ${data['name']} to cart');
+        try {
+          final cartController = Get.find<CartController>();
+          final productModel = _mapToProductCardModel(doc);
+          bool added = cartController.addToCart(productModel, 1);
+          if (added) {
+            Get.snackbar(
+              'Added to Cart',
+              '${data['name'] ?? 'Product'} added to cart',
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: const Color(0xFF10B981),
+              colorText: Colors.white,
+              duration: const Duration(seconds: 2),
+              margin: const EdgeInsets.all(16),
+              borderRadius: 12,
+            );
+          }
+        } catch (e) {
+          debugPrint("CartController not found: $e");
+        }
       },
     );
 
