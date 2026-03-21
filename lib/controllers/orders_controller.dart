@@ -78,6 +78,7 @@ class OrdersController extends GetxController {
           .collection('orders')
           .where('userId', isEqualTo: user.uid)
           .orderBy('orderDate', descending: true)
+          .limit(20)
           .snapshots()
           .listen((snapshot) {
         orders.value = snapshot.docs

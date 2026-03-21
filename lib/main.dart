@@ -15,6 +15,7 @@ import 'package:kissanfresh/controllers/auth_controller.dart';
 import 'package:kissanfresh/controllers/cart_controller.dart';
 import 'package:kissanfresh/services/location_service.dart';
 import 'package:kissanfresh/controllers/theme_controller.dart';
+import 'package:kissanfresh/services/cache_service.dart';
 import 'package:kissanfresh/utils/app_theme.dart';
 
 void main() async {
@@ -34,7 +35,9 @@ void main() async {
   await Hive.openBox('user_settings'); // Add this for location service
   await Hive.openBox('wishlist_box');
   await Hive.openBox('orders_cache');
+  await Hive.openBox('products_cache');
   Get.put(ThemeController()); // Initialize theme early
+  Get.put(CacheService(), permanent: true); // Register CacheService
   Get.put(LocationService(), permanent: true); // Add LocationService
   Get.put(AuthController(), permanent: true);
   Get.put(CartController(), permanent: true);

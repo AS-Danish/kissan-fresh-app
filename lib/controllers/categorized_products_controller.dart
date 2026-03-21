@@ -5,10 +5,12 @@ import '../model/product_card_model.dart';
 import '../routes/AppRoutes.dart';
 import 'cart_controller.dart';
 import 'homepage_controller.dart';
+import '../services/cache_service.dart';
 
 class CategorizedProductsController extends GetxController {
   final HomepageController homepageController = Get.find<HomepageController>();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final CacheService _cacheService = Get.find<CacheService>();
 
   // Map of category name to list of products
   final RxMap<String, List<ProductCardModel>> categorizedProducts = <String, List<ProductCardModel>>{}.obs;
@@ -45,11 +47,19 @@ class CategorizedProductsController extends GetxController {
 
   Future<void> fetchCategorizedProducts() async {
     try {
-      isLoading.value = true;
-      categorizedProducts.clear();
-
       final categoriesList = currentCategories;
       final origin = currentOrigin;
+
+      // Load from cache first
+      final cachedData = _cacheService.getCategorizedProducts(origin);
+      if (cachedData.isNotEmpty) {
+        categorizedProducts.assignAll(cachedData);
+        // Skip Firestore fetch to massively reduce reads on startup
+        return; 
+      } else {
+        isLoading.value = true;
+        categorizedProducts.clear();
+      }
 
       // For performance and limits, we process categories in chunks of 3
       for (int i = 0; i < categoriesList.length; i += 3) {
@@ -82,6 +92,8 @@ class CategorizedProductsController extends GetxController {
       if (querySnapshot.docs.isNotEmpty) {
         List<ProductCardModel> products = querySnapshot.docs.map((doc) => _mapToProductCardModel(doc)).toList();
         categorizedProducts[category] = products;
+        // Save to persistent cache
+        _cacheService.saveCategorizedProducts(origin, categorizedProducts);
       }
     } catch (e) {
       debugPrint("Error fetching category $category: $e");

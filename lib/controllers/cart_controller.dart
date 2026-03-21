@@ -273,7 +273,6 @@ class CartController extends GetxController {
     super.onInit();
     _loadFromHive();
     _startStockListener();
-    validateCartItems();
     _initializeRazorpay();
   }
 
@@ -701,56 +700,60 @@ class CartController extends GetxController {
     }
   }
 
-  // Ensures exact stock status and price maps directly from Firestore.
   Future<void> validateCartItems() async {
-
     if (cartItems.isEmpty) return;
 
     bool needsUpdate = false;
-    for (int i = 0; i < cartItems.length; i++) {
-        try {
-          final docSnap = await _firestore.collection('products').doc(cartItems[i].id).get();
-          if (docSnap.exists) {
-            final data = docSnap.data();
-            if (data != null) {
-               final double freshPrice = (data['price'] ?? 0).toDouble();
-               final bool freshStockStatus = data['inStock'] ?? true;
-               final int freshStockCount = (data['stockCount'] ?? 0).toInt(); // Default to 0 if not specified
-               
-               if (cartItems[i].price != freshPrice || 
-                   cartItems[i].inStock != freshStockStatus || 
-                   cartItems[i].availableStock != freshStockCount) {
-                 cartItems[i].price = freshPrice;
-                 cartItems[i].inStock = freshStockStatus;
-                 cartItems[i].availableStock = freshStockCount;
-                 
-                 // If current count exceeds new stock, cap it
-                 if (cartItems[i].count > freshStockCount) {
-                   cartItems[i].count = freshStockCount;
-                 }
-                 // If product is now out of stock, set inStock to false
-                 if (freshStockCount <= 0) {
-                   cartItems[i].inStock = false;
-                 } else {
-                   cartItems[i].inStock = true;
-                 }
-                 
-                 needsUpdate = true;
-               }
-            }
-          } else {
-             // Product deleted from db, forcefully flag out of stock
-             if (cartItems[i].inStock != false || cartItems[i].availableStock != 0 || cartItems[i].count != 0) {
-                 cartItems[i].inStock = false;
-                 cartItems[i].availableStock = 0;
-                 cartItems[i].count = 0; // Set count to 0 if product is gone
-                 needsUpdate = true;
-             }
-          }
+    try {
+      final List<String> itemIds = cartItems.map((e) => e.id).toList();
+      
+      // Process in chunks of 30 due to whereIn limits
+      for (int i = 0; i < itemIds.length; i += 30) {
+        final chunk = itemIds.skip(i).take(30).toList();
+        
+        final querySnap = await _firestore.collection('products').where(FieldPath.documentId, whereIn: chunk).get();
+        final docMap = {for (var doc in querySnap.docs) doc.id: doc};
 
-        } catch (e) {
-          print("Error validating cart item ${cartItems[i].id}: $e");
+        for (int j = 0; j < cartItems.length; j++) {
+           var cartItem = cartItems[j];
+           if (!chunk.contains(cartItem.id)) continue;
+
+           if (docMap.containsKey(cartItem.id)) {
+              final data = docMap[cartItem.id]!.data() as Map<String, dynamic>;
+              final double freshPrice = (data['price'] ?? 0).toDouble();
+              final int freshStockCount = (data['stockCount'] ?? 0).toInt();
+              final bool freshStockStatus = (data['inStock'] ?? true) && freshStockCount > 0;
+
+              if (cartItem.price != freshPrice || 
+                  cartItem.inStock != freshStockStatus || 
+                  cartItem.availableStock != freshStockCount) {
+                cartItem.price = freshPrice;
+                cartItem.inStock = freshStockStatus;
+                cartItem.availableStock = freshStockCount;
+                
+                if (cartItem.count > freshStockCount) {
+                  cartItem.count = freshStockCount;
+                }
+                if (freshStockCount <= 0) {
+                  cartItem.inStock = false;
+                } else {
+                  cartItem.inStock = true;
+                }
+                needsUpdate = true;
+              }
+           } else {
+              // Product deleted from db
+              if (cartItem.inStock != false || cartItem.availableStock != 0 || cartItem.count != 0) {
+                  cartItem.inStock = false;
+                  cartItem.availableStock = 0;
+                  cartItem.count = 0;
+                  needsUpdate = true;
+              }
+           }
         }
+      }
+    } catch (e) {
+      print("Error validating cart items: $e");
     }
 
     if (needsUpdate) {

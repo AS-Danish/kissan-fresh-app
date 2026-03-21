@@ -7,7 +7,7 @@ import 'package:kissanfresh/model/product_card_model.dart';
 import 'package:kissanfresh/controllers/cart_controller.dart';
 import '../model/category_item_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:hive/hive.dart';
+import '../services/cache_service.dart';
 
 class HomepageController extends GetxController {
   RxInt selectedIndex = 0.obs;
@@ -18,12 +18,9 @@ class HomepageController extends GetxController {
 
   // Today's Specials observables
   RxList<ProductCardModel> todaysSpecials = <ProductCardModel>[].obs;
-  RxBool isLoadingSpecials = false.obs;
+  final RxBool isLoadingSpecials = false.obs;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final Box _cacheBox = Hive.box('user_settings'); // Reusing existing box or creating new one
-  // Actually, implementation plan said 'cached_specials', let's use that if it exists or just user_settings if simpler.
-  // Given user_settings is already used for theme, I'll use it for specials too to avoid needing more openBox calls in main.
-  // Or I can open it here. Let's stick to the plan and open 'cached_specials'.
+  final CacheService _cacheService = Get.find<CacheService>();
 
   @override
   void onInit() {
@@ -34,9 +31,9 @@ class HomepageController extends GetxController {
 
   void _loadCachedSpecials() {
     try {
-      final cachedData = _cacheBox.get('todays_specials_cache');
+      final cachedData = _cacheService.getRaw('todays_specials_cache');
       if (cachedData != null && cachedData is List) {
-        todaysSpecials.value = cachedData.map((e) => ProductCardModel.fromJson(Map<String, dynamic>.from(e))).toList();
+        todaysSpecials.assignAll(cachedData.map((e) => ProductCardModel.fromJson(Map<String, dynamic>.from(e))).toList());
       }
     } catch (e) {
       debugPrint("Error loading cached specials: $e");
@@ -61,29 +58,48 @@ class HomepageController extends GetxController {
             // For each special, we want real-time stock updates too.
             // However, nested listeners can be complex. 
             // We'll fetch them all and refresh whenever the specials list changes.
-            final List<Future<ProductCardModel?>> fetchPromises = specialsList.map((specialItem) async {
+            // Collect all product IDs
+            final List<String> productIds = [];
+            for (var specialItem in specialsList) {
               if (specialItem is Map && specialItem['productId'] != null) {
-                final productId = specialItem['productId'].toString();
-                try {
-                  final productDoc = await _firestore.collection('products').doc(productId).get();
-                  if (productDoc.exists && productDoc.data() != null) {
-                    return _mapDocToModel(productDoc);
-                  }
-                } catch (e) {
-                  debugPrint("Error fetching product details for $productId: $e");
-                }
+                productIds.add(specialItem['productId'].toString());
               }
-              return null;
-            }).toList();
+            }
 
-            final List<ProductCardModel?> results = await Future.wait(fetchPromises);
-            final List<ProductCardModel> fetchedSpecials = results.whereType<ProductCardModel>().toList();
+            final List<ProductCardModel> fetchedSpecials = [];
+            
+            if (productIds.isNotEmpty) {
+              try {
+                // Limit to 30 for whereIn clause. In realistic scenarios, specials are < 30.
+                final limitedIds = productIds.take(30).toList();
+                final productsSnapshot = await _firestore
+                    .collection('products')
+                    .where(FieldPath.documentId, whereIn: limitedIds)
+                    .get();
+
+                for (var doc in productsSnapshot.docs) {
+                  if (doc.data() != null) {
+                    fetchedSpecials.add(_mapDocToModel(doc));
+                  }
+                }
+                
+                // Keep the original order sorted from specialsList
+                fetchedSpecials.sort((a, b) {
+                  final indexA = productIds.indexOf(a.id!);
+                  final indexB = productIds.indexOf(b.id!);
+                  return indexA.compareTo(indexB);
+                });
+
+              } catch (e) {
+                debugPrint("Error fetching batched products for specials: $e");
+              }
+            }
             
             todaysSpecials.assignAll(fetchedSpecials);
             
             // Save to cache
             final cacheData = fetchedSpecials.map((e) => e.toJson()).toList();
-            _cacheBox.put('todays_specials_cache', cacheData);
+            _cacheService.saveRaw('todays_specials_cache', cacheData);
           }
         }
         isLoadingSpecials.value = false;

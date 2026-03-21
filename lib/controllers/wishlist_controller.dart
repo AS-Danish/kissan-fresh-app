@@ -30,9 +30,9 @@ class WishlistController extends GetxController {
   }
 
   void _startProductsListener() {
-    _productsSubscription = _firestore.collection('products').snapshots().listen((snapshot) {
-      _syncWishlistWithSnapshot(snapshot);
-    });
+    // Optimization: Don't listen to the entire products collection.
+    // Instead, we could listen to specific products if needed, but for now
+    // let's rely on manual sync or explicit product fetches.
   }
 
   void _syncWishlistWithSnapshot(QuerySnapshot snapshot) {
@@ -119,12 +119,12 @@ class WishlistController extends GetxController {
       }
       wishlistItems.value = loadedItems;
       
-      // Manually trigger a sync with the latest product data once loaded
-      _firestore.collection('products').get().then((snapshot) {
-        _syncWishlistWithSnapshot(snapshot);
-      });
+      wishlistItems.value = loadedItems;
+      
+      // Optimization: Removed full collection fetch for sync.
+      // Syncing should be done per-item when needed or when a product is viewed.
     } catch (e) {
-      print("Error fetching wishlist from network: $e");
+      debugPrint("Error fetching wishlist from network: $e");
     }
   }
 

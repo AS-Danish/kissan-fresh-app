@@ -6,18 +6,17 @@ import '../model/product_card_model.dart';
 import '../routes/AppRoutes.dart';
 import 'cart_controller.dart';
 import 'homepage_controller.dart';
+import '../services/cache_service.dart';
 
 class ProductsController extends GetxController {
   final HomepageController homepageController = Get.find<HomepageController>();
   final RxList<ProductCardModel> products = <ProductCardModel>[].obs;
   
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final CacheService _cacheService = Get.find<CacheService>();
   
   // Real-time stream subscription for caching
   StreamSubscription<QuerySnapshot>? _productsSubscription;
-
-  // Cache to store products per tab/category avoiding re-fetching
-  final Map<String, List<ProductCardModel>> _cachedProducts = {};
 
   // Pagination observables
   RxBool isLoadingProducts = false.obs;
@@ -78,8 +77,9 @@ class ProductsController extends GetxController {
     final cacheKey = currentCacheKey;
 
     // Load from cache instantly if available to prevent loading spinners
-    if (_cachedProducts.containsKey(cacheKey) && _cachedProducts[cacheKey]!.isNotEmpty) {
-      products.value = _cachedProducts[cacheKey]!;
+    final cached = _cacheService.getProducts(cacheKey);
+    if (cached.isNotEmpty) {
+      products.assignAll(cached);
       // NOTE: We don't hide the loading indicator here because the UI is already populated.
     } else {
       isLoadingProducts.value = true;
@@ -109,7 +109,7 @@ class ProductsController extends GetxController {
         if (snapshot.docs.isEmpty) {
           hasMoreProducts.value = false;
           products.value = [];
-          _cachedProducts[cacheKey] = [];
+          _cacheService.saveProducts(cacheKey, []);
           isLoadingProducts.value = false;
           return;
         }
@@ -121,7 +121,7 @@ class ProductsController extends GetxController {
         
         // Only update if there's actually new or changed data. Stream triggers on initial load as well.
         products.value = mappedProducts;
-        _cachedProducts[cacheKey] = mappedProducts;
+        _cacheService.saveProducts(cacheKey, mappedProducts);
 
         if (snapshot.docs.length < limit) {
           hasMoreProducts.value = false;
@@ -176,8 +176,8 @@ class ProductsController extends GetxController {
       final newProducts = querySnapshot.docs.map((doc) => _mapToProductCardModel(doc)).toList();
       
       products.addAll(newProducts);
-      _cachedProducts[cacheKey] ??= [];
-      _cachedProducts[cacheKey]!.addAll(newProducts); // Update cache with paginated data
+      // Update persistent cache with combined products
+      _cacheService.saveProducts(cacheKey, products.toList());
 
       if (querySnapshot.docs.length < limit) {
         hasMoreProducts.value = false;
