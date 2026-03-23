@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
@@ -28,6 +29,9 @@ class CartController extends GetxController {
   RxList<CartItem> cartItems = <CartItem>[].obs;
   
   final Box _cartBox = Hive.box('cart_box');
+
+  // Processing state to prevent double taps
+  RxBool isProcessingOrder = false.obs;
 
   // Coupon State
   RxString appliedCoupon = ''.obs;
@@ -389,6 +393,7 @@ class CartController extends GetxController {
         duration: const Duration(seconds: 10),
       );
     } finally {
+      isProcessingOrder.value = false;
       // Ensure loading is ALWAYS dismissed if it's still there
       if (Get.isDialogOpen ?? false) {
         Get.back();
@@ -397,6 +402,7 @@ class CartController extends GetxController {
   }
 
   void _handlePaymentError(PaymentFailureResponse response) {
+    isProcessingOrder.value = false;
     if (Get.isDialogOpen ?? false) Get.back();
     Get.snackbar(
       'Payment Failed',
@@ -408,6 +414,7 @@ class CartController extends GetxController {
   }
 
   void _handleExternalWallet(ExternalWalletResponse response) {
+    isProcessingOrder.value = false;
     if (Get.isDialogOpen ?? false) Get.back();
     Get.snackbar(
       'External Wallet',
@@ -418,8 +425,12 @@ class CartController extends GetxController {
   }
 
   Future<void> processPayment() async {
+    if (isProcessingOrder.value) return;
+    isProcessingOrder.value = true;
+
     final user = _authController.firebaseUser.value;
     if (user == null) {
+      isProcessingOrder.value = false;
       Get.toNamed(AppRoutes.loginScreen);
       return;
     }
@@ -436,12 +447,14 @@ class CartController extends GetxController {
     if (cartItems.any((item) => !item.inStock)) {
       Get.snackbar('Out of Stock', 'Some items in your cart are now out of stock. Please review.',
           backgroundColor: Colors.red, colorText: Colors.white);
+      isProcessingOrder.value = false;
       return;
     }
 
     final razorpayKey = dotenv.env['RAZORPAY_API_KEY'];
     if (razorpayKey == null || razorpayKey.isEmpty) {
       Get.snackbar('Config Error', 'Razorpay API Key not found in .env');
+      isProcessingOrder.value = false;
       return;
     }
 
@@ -474,13 +487,20 @@ class CartController extends GetxController {
     try {
       _razorpay.open(options);
       
-      // Auto-close dialog after 2 seconds (Razorpay UI should be up by then)
-      Future.delayed(const Duration(seconds: 2), () {
+      // Auto-close loading dialog after a short delay
+      // The Razorpay UI should replace it
+      Future.delayed(const Duration(milliseconds: 1500), () {
         if (Get.isDialogOpen ?? false) Get.back();
       });
     } catch (e) {
       if (Get.isDialogOpen ?? false) Get.back();
-      debugPrint('Error: $e');
+      debugPrint('Exception opening Razorpay: $e');
+      Get.snackbar(
+        'Payment Initialization Failed',
+        'Could not open payment gateway. Please try again.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 
@@ -517,57 +537,52 @@ class CartController extends GetxController {
       paymentStatus: paymentStatus,
       orderType: orderType,
     );
-    // 4. Use transaction to ensure perfect stock safety
+    // 4. Call Cloud Function to process order creation and assignment transactionally
     try {
-      await _firestore.runTransaction((transaction) async {
-        // First, READ all product documents to check stock
-        for (var item in cartItems) {
-          final productRef = _firestore.collection('products').doc(item.id);
-          final snap = await transaction.get(productRef);
-          if (!snap.exists) {
-            throw "Product ${item.name} no longer available.";
-          }
-          
-          final data = snap.data() as Map<String, dynamic>;
-          final int currentStock = (data['stockCount'] ?? 0).toInt();
-          
-          if (currentStock < item.count) {
-            throw "Insufficient stock for ${item.name}. Available: $currentStock";
-          }
-        }
-
-        // Second, UPDATE stock and CREATE order
-        final orderDoc = _firestore.collection('orders').doc(orderId);
-        transaction.set(orderDoc, order.toJson());
-
-        for (var item in cartItems) {
-          final productRef = _firestore.collection('products').doc(item.id);
-          transaction.update(productRef, {
-            'stockCount': FieldValue.increment(-item.count),
-          });
-        }
+      final httpsCallable = FirebaseFunctions.instance.httpsCallable('createOrder');
+      
+      // We pass the order data. The CF expects {'order': orderMap}
+      await httpsCallable.call({
+        'order': order.toJson(),
       });
 
-      // Transaction successful
+      // Function execution successful
       clearCart();
       return true;
     } catch (e) {
-      debugPrint("Transaction failed: $e");
+      debugPrint("Order processing failed: $e");
       
       // If payment was already done (paymentId != null), we must record this failure
       if (paymentId != null) {
         await _recordFailedOrder(order, e.toString());
       }
 
+      // Close the loading dialog BEFORE pushing a snackbar.
+      // Otherwise, the caller's Get.back() will mistakenly pop the snackbar instead of the dialog.
+      if (Get.isDialogOpen ?? false) {
+        Get.back();
+      }
+
+      String title = paymentId != null ? "Order Issue - Refund Initiated" : "Order Failed";
+      String message = "";
+      if (e.toString().contains("Insufficient stock")) {
+          message = "Insufficient stock for some items.";
+          if (paymentId != null) message += " A full refund has been automatically initiated.";
+      } else if (e.toString().contains("no_slots_available") || e.toString().contains("failed-precondition") || e.toString().contains("active slots")) {
+          message = "No delivery slots are currently available. Please try again later.";
+          if (paymentId != null) message += " Your payment will be fully refunded automatically.";
+      } else {
+          message = "An issue occurred while finalizing your order.";
+          if (paymentId != null) message += " A full refund has been initiated. Payment ID: $paymentId";
+      }
+
       Get.snackbar(
-        "Order Issue - Refund Initiated",
-        e.toString().contains("Insufficient stock") 
-            ? "${e.toString()}. Since your payment was successful, a full refund has been automatically initiated." 
-            : "An issue occurred while finalizing your order. A full refund has been initiated. Payment ID: $paymentId",
+        title,
+        message,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.orange.shade800,
         colorText: Colors.white,
-        duration: const Duration(seconds: 12),
+        duration: const Duration(seconds: 10),
       );
       
       // Trigger a refresh of stock in cart
@@ -643,8 +658,12 @@ class CartController extends GetxController {
 
   /// Place a Cash on Delivery order without Razorpay.
   Future<void> placeCodOrder() async {
+    if (isProcessingOrder.value) return;
+    isProcessingOrder.value = true;
+
     final user = _authController.firebaseUser.value;
     if (user == null) {
+      isProcessingOrder.value = false;
       Get.toNamed(AppRoutes.loginScreen);
       return;
     }
@@ -660,6 +679,7 @@ class CartController extends GetxController {
     if (cartItems.any((item) => !item.inStock)) {
       Get.snackbar('Out of Stock', 'Some items in your cart are now out of stock. Please review.',
           backgroundColor: Colors.red, colorText: Colors.white);
+      isProcessingOrder.value = false;
       return;
     }
 
@@ -697,6 +717,8 @@ class CartController extends GetxController {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+    } finally {
+      isProcessingOrder.value = false;
     }
   }
 

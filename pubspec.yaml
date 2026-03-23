@@ -62,6 +62,7 @@ dependencies:
   pdf: any
   printing: any
   intl: ^0.19.0
+  cloud_functions: ^6.0.7
 
 dev_dependencies:
   flutter_test:

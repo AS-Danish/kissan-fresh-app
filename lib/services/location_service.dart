@@ -33,6 +33,8 @@ class LocationService extends GetxService {
         locationPermissionDenied.value = true;
         return;
       }
+      // Add a small delay for the system to settle after dialog is dismissed
+      await Future.delayed(const Duration(milliseconds: 500));
     }
 
     if (permission == LocationPermission.deniedForever) {
@@ -48,15 +50,34 @@ class LocationService extends GetxService {
 
   Future<void> fetchCurrentLocation() async {
     try {
+      // Re-check if service is still enabled
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        debugPrint('Location services are disabled before fetching.');
+        return;
+      }
+
       final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 10),
+        ),
+      ).catchError((e) {
+        debugPrint('Fused Location Provider failed, trying balanced accuracy: $e');
+        return Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.medium,
+            timeLimit: Duration(seconds: 10),
+          ),
+        );
+      });
 
       final latLng = LatLng(position.latitude, position.longitude);
       currentLocation.value = latLng;
 
       // Reverse geocode to get the address
       final address = await _mapsCacheService.reverseGeocode(latLng);
+
       if (address != null) {
         currentAddress.value = address;
         

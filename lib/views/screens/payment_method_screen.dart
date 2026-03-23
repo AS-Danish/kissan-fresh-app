@@ -378,7 +378,7 @@ class PaymentMethodScreen extends StatelessWidget {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: cartController.isProcessingOrder.value ? null : () {
                   if (isCod) {
                     cartController.placeCodOrder();
                   } else {
@@ -398,7 +398,13 @@ class PaymentMethodScreen extends StatelessWidget {
                       ? const Color(0xFF10B981).withOpacity(0.3)
                       : const Color(0xFF6366F1).withOpacity(0.3),
                 ),
-                child: Row(
+                child: cartController.isProcessingOrder.value
+                  ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                    )
+                  : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
