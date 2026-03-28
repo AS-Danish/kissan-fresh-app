@@ -7,6 +7,8 @@ import 'package:printing/printing.dart';
 import 'package:intl/intl.dart';
 import '../../controllers/orders_controller.dart';
 import '../../model/order_model.dart';
+import '../../model/rider_model.dart';
+import '../../model/slot_model.dart';
 import '../../routes/AppRoutes.dart';
 
 class MyOrdersScreen extends StatefulWidget {
@@ -320,6 +322,39 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
 
                 const SizedBox(height: 12),
 
+                // Delivery Slot Info
+                if (order.slot != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.orange.withOpacity(0.1)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.access_time_rounded, 
+                            size: 16, 
+                            color: Colors.orange.shade700
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Arriving between ${DateFormat('hh:mm a').format(order.slot!.startTime)} and ${DateFormat('hh:mm a').format(order.slot!.endTime)}',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.orange.shade800,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
                 // Total and Delivery Status
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -602,6 +637,96 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                     context, 'Delivery Address', order.deliveryAddress),
                 _buildDetailRow(context, 'Total Amount',
                     '₹${order.totalAmount.toStringAsFixed(0)}'),
+
+                // Rider Information
+                if (order.rider != null) ...[
+                  const SizedBox(height: 20),
+                  Text(
+                    'Rider Information',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Theme.of(context).colorScheme.onSurface,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Theme.of(context).primaryColor.withOpacity(0.1),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).primaryColor.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: ClipOval(
+                            child: Image.network(
+                              order.rider!.avatarUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Icon(Icons.person, color: Theme.of(context).primaryColor),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                order.rider!.name,
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Icon(Icons.phone_rounded, 
+                                    size: 14, 
+                                    color: Colors.grey.shade600
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    order.rider!.phone,
+                                    style: GoogleFonts.montserrat(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            // Implement call functionality if needed
+                          },
+                          icon: const Icon(Icons.call_rounded),
+                          color: Theme.of(context).primaryColor,
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            padding: const EdgeInsets.all(8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
 
                 // Payment Method row
                 Padding(

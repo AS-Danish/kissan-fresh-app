@@ -1,3 +1,6 @@
+import 'rider_model.dart';
+import 'slot_model.dart';
+
 class OrderModel {
   final String id;
   final String userId;
@@ -15,6 +18,10 @@ class OrderModel {
   final String deliveryAddress;
   final String paymentStatus;
   final String orderType;
+  final String? riderId;
+  final String? slotId;
+  final RiderModel? rider;
+  final SlotModel? slot;
 
   OrderModel({
     required this.id,
@@ -33,6 +40,10 @@ class OrderModel {
     required this.deliveryAddress,
     this.paymentStatus = 'paid',
     this.orderType = 'Online',
+    this.riderId,
+    this.slotId,
+    this.rider,
+    this.slot,
   });
 
   bool get isDelivered => status == OrderStatus.delivered;
@@ -63,6 +74,52 @@ class OrderModel {
     return '${deliveredDate!.day} ${months[deliveredDate!.month - 1]}, ${deliveredDate!.year}';
   }
 
+  OrderModel copyWith({
+    String? id,
+    String? userId,
+    String? orderNumber,
+    List<OrderItem>? items,
+    double? totalAmount,
+    double? subtotal,
+    double? discount,
+    double? couponDiscount,
+    double? deliveryFee,
+    DateTime? orderDate,
+    DateTime? deliveredDate,
+    OrderStatus? status,
+    String? paymentId,
+    String? deliveryAddress,
+    String? paymentStatus,
+    String? orderType,
+    String? riderId,
+    String? slotId,
+    RiderModel? rider,
+    SlotModel? slot,
+  }) {
+    return OrderModel(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      orderNumber: orderNumber ?? this.orderNumber,
+      items: items ?? this.items,
+      totalAmount: totalAmount ?? this.totalAmount,
+      subtotal: subtotal ?? this.subtotal,
+      discount: discount ?? this.discount,
+      couponDiscount: couponDiscount ?? this.couponDiscount,
+      deliveryFee: deliveryFee ?? this.deliveryFee,
+      orderDate: orderDate ?? this.orderDate,
+      deliveredDate: deliveredDate ?? this.deliveredDate,
+      status: status ?? this.status,
+      paymentId: paymentId ?? this.paymentId,
+      deliveryAddress: deliveryAddress ?? this.deliveryAddress,
+      paymentStatus: paymentStatus ?? this.paymentStatus,
+      orderType: orderType ?? this.orderType,
+      riderId: riderId ?? this.riderId,
+      slotId: slotId ?? this.slotId,
+      rider: rider ?? this.rider,
+      slot: slot ?? this.slot,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -81,6 +138,10 @@ class OrderModel {
       'deliveryAddress': deliveryAddress,
       'paymentStatus': paymentStatus,
       'orderType': orderType,
+      'riderId': riderId,
+      'slotId': slotId,
+      'rider': rider?.toJson(),
+      'slot': slot?.toJson(),
     };
   }
 
@@ -105,6 +166,10 @@ class OrderModel {
       deliveryAddress: json['deliveryAddress'] ?? '',
       paymentStatus: json['paymentStatus'] ?? 'paid',
       orderType: json['orderType'] ?? 'Online',
+      riderId: json['riderId'],
+      slotId: json['slotId'],
+      rider: json['rider'] != null ? RiderModel.fromJson(json['rider']) : null,
+      slot: json['slot'] != null ? SlotModel.fromJson(json['slot']) : null,
     );
   }
 }

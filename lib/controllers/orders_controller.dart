@@ -4,6 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import '../model/order_model.dart';
+import '../model/rider_model.dart';
+import '../model/slot_model.dart';
 import 'auth_controller.dart';
 
 class OrdersController extends GetxController {
@@ -13,6 +15,10 @@ class OrdersController extends GetxController {
   
   RxList<OrderModel> orders = <OrderModel>[].obs;
   RxBool isLoading = false.obs;
+
+  // Caches to avoid redundant Firestore reads
+  final Map<String, RiderModel> _riderCache = {};
+  final Map<String, SlotModel> _slotCache = {};
 
   // Filter orders
   RxList<OrderModel> get activeOrders => orders
@@ -80,18 +86,32 @@ class OrdersController extends GetxController {
           .orderBy('orderDate', descending: true)
           .limit(20)
           .snapshots()
-          .listen((snapshot) {
-        orders.value = snapshot.docs
-            .map((doc) {
-              try {
-                return OrderModel.fromJson({...doc.data(), 'id': doc.id});
-              } catch (e) {
-                debugPrint('Error parsing order ${doc.id}: $e');
-                return null;
-              }
-            })
-            .whereType<OrderModel>()
-            .toList();
+          .listen((snapshot) async {
+        final List<OrderModel> fetchedOrders = [];
+        
+        for (var doc in snapshot.docs) {
+          try {
+            final data = doc.data();
+            final orderId = doc.id;
+            OrderModel order = OrderModel.fromJson({...data, 'id': orderId});
+            
+            // Fetch rider details if available
+            if (order.riderId != null && order.riderId!.isNotEmpty) {
+              order = order.copyWith(rider: await _fetchRiderDetails(order.riderId!));
+            }
+            
+            // Fetch slot details if available
+            if (order.slotId != null && order.slotId!.isNotEmpty) {
+              order = order.copyWith(slot: await _fetchSlotDetails(order.slotId!));
+            }
+            
+            fetchedOrders.add(order);
+          } catch (e) {
+            debugPrint('Error parsing order ${doc.id}: $e');
+          }
+        }
+
+        orders.value = fetchedOrders;
         
         _saveOrdersToCache();
         isLoading.value = false;
@@ -125,4 +145,40 @@ class OrdersController extends GetxController {
       borderRadius: 12,
     );
   }
-}
+
+  Future<RiderModel?> _fetchRiderDetails(String riderId) async {
+    if (_riderCache.containsKey(riderId)) {
+      return _riderCache[riderId];
+    }
+
+    try {
+      final doc = await _firestore.collection('riders').doc(riderId).get();
+      if (doc.exists && doc.data() != null) {
+        final rider = RiderModel.fromJson(doc.data()!);
+        _riderCache[riderId] = rider;
+        return rider;
+      }
+    } catch (e) {
+      debugPrint('Error fetching rider $riderId: $e');
+    }
+    return null;
+  }
+
+  Future<SlotModel?> _fetchSlotDetails(String slotId) async {
+    if (_slotCache.containsKey(slotId)) {
+      return _slotCache[slotId];
+    }
+
+    try {
+      final doc = await _firestore.collection('slots').doc(slotId).get();
+      if (doc.exists && doc.data() != null) {
+        final slot = SlotModel.fromJson(doc.data()!, id: doc.id);
+        _slotCache[slotId] = slot;
+        return slot;
+      }
+    } catch (e) {
+      debugPrint('Error fetching slot $slotId: $e');
+    }
+    return null;
+  }
+}
