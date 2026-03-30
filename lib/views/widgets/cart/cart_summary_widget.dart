@@ -599,7 +599,7 @@ class CartSummaryWidget extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () {
                   Get.back(); // Close bottom sheet
-                  Get.toNamed(AppRoutes.paymentMethodRoute);
+                  Get.toNamed(AppRoutes.slotSelectionRoute);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).primaryColor,

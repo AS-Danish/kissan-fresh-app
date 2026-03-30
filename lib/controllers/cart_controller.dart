@@ -17,6 +17,7 @@ import '../model/order_model.dart';
 import 'address_controller.dart';
 import 'orders_controller.dart';
 import 'package:uuid/uuid.dart';
+import 'slot_selection_controller.dart';
 
 class CartController extends GetxController {
   final AuthController _authController = Get.find<AuthController>();
@@ -536,6 +537,7 @@ class CartController extends GetxController {
       deliveryAddress: deliveryAddress,
       paymentStatus: paymentStatus,
       orderType: orderType,
+      slotId: Get.find<SlotSelectionController>().selectedSlotId.value,
     );
     // 4. Call Cloud Function to process order creation and assignment transactionally
     try {
