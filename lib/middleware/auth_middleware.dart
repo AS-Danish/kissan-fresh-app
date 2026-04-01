@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kissanfresh/controllers/auth_controller.dart';
-import 'package:kissanfresh/routes/AppRoutes.dart';
+import 'package:kissanfresh/routes/app_routes.dart';
 
 class AuthMiddleware extends GetMiddleware {
   @override
@@ -13,7 +13,8 @@ class AuthMiddleware extends GetMiddleware {
     // If the user already has a valid Firebase Session
     if (AuthController.instance.firebaseUser.value != null) {
       // Prevent them from going explicitly back to the login or OTP screen
-      if (route == AppRoutes.loginScreen || route == AppRoutes.otpVerificationRoute) {
+      if (route == AppRoutes.loginScreen ||
+          route == AppRoutes.otpVerificationRoute) {
         // Reroute them silently back to the Home Layout
         return const RouteSettings(name: AppRoutes.mainLayout);
       }

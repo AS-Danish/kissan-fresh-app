@@ -26,17 +26,19 @@ class BestsellersSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Obx(() => Text(
-                    Get.find<HomepageController>().currentTab.value == 'Grocery'
-                        ? "Bestsellers"
-                        : "Popular Dishes",
-                    style: GoogleFonts.montserrat(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      color: Theme.of(context).colorScheme.onSurface,
-                      letterSpacing: 0.3,
-                    ),
-                  )),
+              Obx(
+                () => Text(
+                  Get.find<HomepageController>().currentTab.value == 'Grocery'
+                      ? "Bestsellers"
+                      : "Popular Dishes",
+                  style: GoogleFonts.montserrat(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ),
               TextButton(
                 onPressed: () {
                   debugPrint('See all bestsellers');
@@ -83,7 +85,10 @@ class BestsellersSection extends StatelessWidget {
               ),
               itemCount: controller.bestsellers.length,
               itemBuilder: (context, index) {
-                return _buildBestsellerCard(context, controller.bestsellers[index]);
+                return _buildBestsellerCard(
+                  context,
+                  controller.bestsellers[index],
+                );
               },
             );
           }),
@@ -101,12 +106,15 @@ class BestsellersSection extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 16,
               offset: const Offset(0, 4),
             ),
           ],
-          border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.5), width: 1),
+          border: Border.all(
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
+            width: 1,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,7 +188,9 @@ class BestsellersSection extends StatelessWidget {
                     width: 28,
                     height: 28,
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                      color: Theme.of(
+                        context,
+                      ).primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
@@ -215,7 +225,7 @@ class BestsellersSection extends StatelessWidget {
               child: CircularProgressIndicator(
                 value: loadingProgress.expectedTotalBytes != null
                     ? loadingProgress.cumulativeBytesLoaded /
-                    loadingProgress.expectedTotalBytes!
+                          loadingProgress.expectedTotalBytes!
                     : null,
                 strokeWidth: 2,
                 color: Theme.of(context).primaryColor,
@@ -237,7 +247,11 @@ class BestsellersSection extends StatelessWidget {
     );
   }
 
-  Widget _buildMoreContainer(BuildContext context, String imageUrl, String count) {
+  Widget _buildMoreContainer(
+    BuildContext context,
+    String imageUrl,
+    String count,
+  ) {
     return Stack(
       children: [
         // Background Image
@@ -259,7 +273,7 @@ class BestsellersSection extends StatelessWidget {
                   child: CircularProgressIndicator(
                     value: loadingProgress.expectedTotalBytes != null
                         ? loadingProgress.cumulativeBytesLoaded /
-                        loadingProgress.expectedTotalBytes!
+                              loadingProgress.expectedTotalBytes!
                         : null,
                     strokeWidth: 2,
                     color: Theme.of(context).primaryColor,
@@ -287,8 +301,8 @@ class BestsellersSection extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Theme.of(context).primaryColor.withOpacity(0.85),
-                Theme.of(context).primaryColor.withOpacity(0.95),
+                Theme.of(context).primaryColor.withValues(alpha: 0.85),
+                Theme.of(context).primaryColor.withValues(alpha: 0.95),
               ],
             ),
           ),
@@ -310,7 +324,7 @@ class BestsellersSection extends StatelessWidget {
                   style: GoogleFonts.montserrat(
                     fontSize: 9,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     letterSpacing: 1.2,
                   ),
                 ),

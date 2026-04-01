@@ -3,16 +3,16 @@ import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:kissanfresh/model/user_model.dart';
 import 'package:kissanfresh/services/user_service.dart';
-import 'package:kissanfresh/routes/AppRoutes.dart';
+import 'package:kissanfresh/routes/app_routes.dart';
 import 'package:kissanfresh/services/location_service.dart';
 
 class OnboardingController extends GetxController {
   final UserService _userService = UserService();
-  
+
   final nameController = TextEditingController();
   final addressController = TextEditingController();
   final emailController = TextEditingController();
-  
+
   var isLoading = false.obs;
 
   @override
@@ -41,7 +41,11 @@ class OnboardingController extends GetxController {
 
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
-      Get.snackbar('Error', 'User not authenticated', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'User not authenticated',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
 
@@ -53,19 +57,19 @@ class OnboardingController extends GetxController {
         phoneNumber: currentUser.phoneNumber ?? '',
         email: email.isNotEmpty ? email : null,
         address: address,
-        imageUrl: null, 
+        imageUrl: null,
         role: 'user',
         onboardingCompleted: true,
         createdAt: DateTime.now(),
       );
 
       await _userService.createUser(userModel);
-      
+
       // Sync address globally to LocationService for immediate use
       Get.find<LocationService>().currentAddress.value = address;
 
       isLoading.value = false;
-      
+
       Get.offAllNamed(AppRoutes.mainLayout);
       Get.snackbar(
         'Welcome!',

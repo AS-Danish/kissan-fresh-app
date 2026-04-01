@@ -16,7 +16,6 @@ class ProductCardModel {
   final bool inStock; // Stock status
   final int stockCount; // Exact stock quantity
 
-
   ProductCardModel({
     this.id,
     required this.image,
@@ -33,7 +32,6 @@ class ProductCardModel {
     required this.onAddToCart,
   });
 
-
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -48,10 +46,13 @@ class ProductCardModel {
       'inStock': inStock,
       'stockCount': stockCount,
     };
-
   }
 
-  factory ProductCardModel.fromJson(Map<String, dynamic> json, {VoidCallback? onTap, VoidCallback? onAddToCart}) {
+  factory ProductCardModel.fromJson(
+    Map<String, dynamic> json, {
+    VoidCallback? onTap,
+    VoidCallback? onAddToCart,
+  }) {
     return ProductCardModel(
       id: json['id'],
       image: json['image'] ?? '',
@@ -67,6 +68,5 @@ class ProductCardModel {
       onTap: onTap ?? () {},
       onAddToCart: onAddToCart ?? () {},
     );
-
   }
 }

@@ -7,13 +7,15 @@ import '../widgets/selectable_category_card.dart';
 import '../widgets/empty_state_widget.dart';
 
 class SearchScreen extends StatelessWidget {
-
-  final ProductSearchController controller = Get.find<ProductSearchController>();
+  final ProductSearchController controller =
+      Get.find<ProductSearchController>();
   late final TextEditingController searchTextController;
 
   SearchScreen({super.key}) {
-    searchTextController = TextEditingController(text: controller.searchQuery.value);
-    
+    searchTextController = TextEditingController(
+      text: controller.searchQuery.value,
+    );
+
     // Listen to changes in the controller's search query to update the text field
     // (Crucial for voice search results to appear in the bar)
     ever(controller.searchQuery, (String query) {
@@ -57,7 +59,7 @@ class SearchScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.08),
                       blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),
@@ -73,7 +75,9 @@ class SearchScreen extends StatelessWidget {
                     hintText: 'Search for products...',
                     hintStyle: GoogleFonts.montserrat(
                       fontSize: 14,
-                      color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
+                      color: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
                       fontWeight: FontWeight.w500,
                     ),
                     border: InputBorder.none,
@@ -138,100 +142,121 @@ class SearchScreen extends StatelessWidget {
             ),
 
             // Categories Section
-            Obx(() => controller.searchQuery.value.isEmpty
-                ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (controller.recentSearches.isNotEmpty) ...[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Text(
-                      'Recent Searches',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        color: Theme.of(context).colorScheme.onSurface,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: controller.recentSearches.map((query) => InputChip(
-                        label: Text(
-                          query,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: Theme.of(context).colorScheme.onSurface,
+            Obx(
+              () => controller.searchQuery.value.isEmpty
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (controller.recentSearches.isNotEmpty) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Text(
+                              'Recent Searches',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: Theme.of(context).colorScheme.onSurface,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: controller.recentSearches
+                                  .map(
+                                    (query) => InputChip(
+                                      label: Text(
+                                        query,
+                                        style: GoogleFonts.montserrat(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
+                                        ),
+                                      ),
+                                      backgroundColor: Theme.of(
+                                        context,
+                                      ).colorScheme.surface,
+                                      deleteIconColor: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.color
+                                          ?.withValues(alpha: 0.6),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        side: BorderSide(
+                                          color: Theme.of(context).dividerColor,
+                                        ),
+                                      ),
+                                      onSelected: (_) {
+                                        searchTextController.text = query;
+                                        controller.searchQuery.value = query;
+                                      },
+                                      onDeleted: () {
+                                        controller.removeRecentSearch(query);
+                                      },
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Text(
+                            'Categories',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Theme.of(context).colorScheme.onSurface,
+                              letterSpacing: 0.3,
+                            ),
                           ),
                         ),
-                        backgroundColor: Theme.of(context).colorScheme.surface,
-                        deleteIconColor: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          side: BorderSide(color: Theme.of(context).dividerColor),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          height: 90,
+                          child: ListView.separated(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            scrollDirection: Axis.horizontal,
+                            itemCount: controller.categories.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(width: 12),
+                            itemBuilder: (context, index) {
+                              final category = controller.categories[index];
+                              return Obx(
+                                () => SelectableCategoryCard(
+                                  icon: category['icon'] as IconData,
+                                  label: category['name'] as String,
+                                  isSelected:
+                                      controller.selectedCategory.value ==
+                                      category['name'],
+                                  iconColor: category['color'] as Color,
+                                  onTap: () {
+                                    if (controller.selectedCategory.value ==
+                                        category['name']) {
+                                      controller.selectedCategory.value = 'All';
+                                    } else {
+                                      controller.selectedCategory.value =
+                                          category['name'] as String;
+                                    }
+                                  },
+                                ),
+                              );
+                            },
+                          ),
                         ),
-                        onSelected: (_) {
-                          searchTextController.text = query;
-                          controller.searchQuery.value = query;
-                        },
-                        onDeleted: () {
-                          controller.removeRecentSearch(query);
-                        },
-                      )).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Text(
-                    'Categories',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: Theme.of(context).colorScheme.onSurface,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  height: 90,
-                  child: ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: controller.categories.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
-                    itemBuilder: (context, index) {
-                      final category = controller.categories[index];
-                      return Obx(() => SelectableCategoryCard(
-                        icon: category['icon'] as IconData,
-                        label: category['name'] as String,
-                        isSelected: controller.selectedCategory.value == category['name'],
-                        iconColor: category['color'] as Color,
-                        onTap: () {
-                          if (controller.selectedCategory.value ==
-                              category['name']) {
-                            controller.selectedCategory.value = 'All';
-                          } else {
-                            controller.selectedCategory.value =
-                            category['name'] as String;
-                          }
-                        },
-                      ));
-                    },
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
-            )
-                : const SizedBox.shrink()),
+                        const SizedBox(height: 24),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
+            ),
 
             // Results Section
             Obx(() {
@@ -251,7 +276,8 @@ class SearchScreen extends StatelessWidget {
               if (products.isEmpty) {
                 return const EmptyStateWidget(
                   title: 'No products found',
-                  message: 'Try searching with different keywords or browse categories',
+                  message:
+                      'Try searching with different keywords or browse categories',
                   icon: Icons.search_off,
                 );
               }
@@ -295,12 +321,13 @@ class SearchScreen extends StatelessWidget {
                     child: GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 200,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: 0.68,
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 200,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 0.68,
+                          ),
                       itemCount: products.length,
                       itemBuilder: (context, index) {
                         return ProductCardWidget(product: products[index]);
@@ -316,7 +343,8 @@ class SearchScreen extends StatelessWidget {
                         ),
                       ),
                     )
-                  else if (controller.hasMoreProducts.value && products.isNotEmpty)
+                  else if (controller.hasMoreProducts.value &&
+                      products.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 24.0),
                       child: Center(
@@ -324,8 +352,13 @@ class SearchScreen extends StatelessWidget {
                           onPressed: () => controller.fetchNextPage(),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Theme.of(context).primaryColor,
-                            side: BorderSide(color: Theme.of(context).primaryColor),
-                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                            side: BorderSide(
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 32,
+                              vertical: 12,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),

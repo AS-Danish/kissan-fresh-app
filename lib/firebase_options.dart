@@ -63,8 +63,10 @@ class DefaultFirebaseOptions {
     messagingSenderId: '191097124850',
     projectId: 'kissanfresh-a72c1',
     storageBucket: 'kissanfresh-a72c1.firebasestorage.app',
-    androidClientId: '191097124850-gofonjgu1lad5cfbvdekav69havj82n4.apps.googleusercontent.com',
-    iosClientId: '191097124850-1t40h931es62l3fut64aund0427k0e3h.apps.googleusercontent.com',
+    androidClientId:
+        '191097124850-gofonjgu1lad5cfbvdekav69havj82n4.apps.googleusercontent.com',
+    iosClientId:
+        '191097124850-1t40h931es62l3fut64aund0427k0e3h.apps.googleusercontent.com',
     iosBundleId: 'com.kissanfresh.app',
   );
 }

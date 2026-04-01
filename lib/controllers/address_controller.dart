@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
@@ -119,7 +119,9 @@ class AddressController extends GetxController {
     isLoading.value = true;
     try {
       final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
 
       final latLng = LatLng(position.latitude, position.longitude);
@@ -171,17 +173,17 @@ class AddressController extends GetxController {
       _refreshSessionToken(); // Treat a clear as a new session start
       return;
     }
-    
+
     // Set searching to true and refresh the observers
     isSearching.value = true;
-    
+
     _autocompleteDebounce?.cancel();
     _autocompleteDebounce = Timer(const Duration(milliseconds: 800), () async {
-       final results = await _mapsCacheService.getAutocompletePredictions(
-         query, 
-         sessionToken: _sessionToken,
-       );
-       predictions.value = results;
+      final results = await _mapsCacheService.getAutocompletePredictions(
+        query,
+        sessionToken: _sessionToken,
+      );
+      predictions.value = results;
     });
   }
 
@@ -194,15 +196,15 @@ class AddressController extends GetxController {
 
     try {
       Map<String, dynamic>? resultData;
-      
+
       if (placeId != null && placeId.isNotEmpty) {
         // High quality selection using Place Details (Efficient session usage)
         resultData = await _mapsCacheService.getPlaceDetails(
-          placeId, 
+          placeId,
           sessionToken: _sessionToken,
         );
         // Session successfully "consumed" by a details call
-        _refreshSessionToken(); 
+        _refreshSessionToken();
       } else {
         // Fallback to basic geocoding for raw string searches
         resultData = await _mapsCacheService.searchAddress(trimmed);
@@ -217,7 +219,7 @@ class AddressController extends GetxController {
         searchController.text = address; // Update text field
         predictions.clear();
         isSearching.value = false;
-        
+
         await _moveMap(latLng);
       } else {
         Get.snackbar('Not Found', 'No results for "$trimmed"');
@@ -233,11 +235,13 @@ class AddressController extends GetxController {
   void confirmLocation() {
     final address = currentAddress.value;
     _saveAddressToHive(address);
-    Get.back(result: {
-      'address': address,
-      'lat': selectedLocation.value.latitude,
-      'lng': selectedLocation.value.longitude,
-    });
+    Get.back(
+      result: {
+        'address': address,
+        'lat': selectedLocation.value.latitude,
+        'lng': selectedLocation.value.longitude,
+      },
+    );
 
     Future.delayed(const Duration(milliseconds: 300), () {
       Get.snackbar(

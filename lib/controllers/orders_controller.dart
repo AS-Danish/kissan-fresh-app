@@ -12,7 +12,7 @@ class OrdersController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final AuthController _authController = Get.find<AuthController>();
   late Box _ordersBox;
-  
+
   RxList<OrderModel> orders = <OrderModel>[].obs;
   RxBool isLoading = false.obs;
 
@@ -22,8 +22,11 @@ class OrdersController extends GetxController {
 
   // Filter orders
   RxList<OrderModel> get activeOrders => orders
-      .where((order) => order.status != OrderStatus.delivered &&
-      order.status != OrderStatus.cancelled)
+      .where(
+        (order) =>
+            order.status != OrderStatus.delivered &&
+            order.status != OrderStatus.cancelled,
+      )
       .toList()
       .obs;
 
@@ -86,46 +89,56 @@ class OrdersController extends GetxController {
           .orderBy('orderDate', descending: true)
           .limit(20)
           .snapshots()
-          .listen((snapshot) async {
-        final List<OrderModel> fetchedOrders = [];
-        
-        for (var doc in snapshot.docs) {
-          try {
-            final data = doc.data();
-            final orderId = doc.id;
-            OrderModel order = OrderModel.fromJson({...data, 'id': orderId});
-            
-            // Fetch rider details if available
-            if (order.riderId != null && order.riderId!.isNotEmpty) {
-              order = order.copyWith(rider: await _fetchRiderDetails(order.riderId!));
-            }
-            
-            // Fetch slot details if available
-            if (order.slotId != null && order.slotId!.isNotEmpty) {
-              order = order.copyWith(slot: await _fetchSlotDetails(order.slotId!));
-            }
-            
-            fetchedOrders.add(order);
-          } catch (e) {
-            debugPrint('Error parsing order ${doc.id}: $e');
-          }
-        }
+          .listen(
+            (snapshot) async {
+              final List<OrderModel> fetchedOrders = [];
 
-        orders.value = fetchedOrders;
-        
-        _saveOrdersToCache();
-        isLoading.value = false;
-      }, onError: (e) {
-        debugPrint('Firestore Stream Error: $e');
-        isLoading.value = false;
-        if (e.toString().contains('failed-precondition')) {
-            Get.snackbar(
-              'Configuration Required',
-              'Firestore needs an index for orders. Please check debug console for the link.',
-              duration: const Duration(seconds: 10),
-            );
-        }
-      });
+              for (var doc in snapshot.docs) {
+                try {
+                  final data = doc.data();
+                  final orderId = doc.id;
+                  OrderModel order = OrderModel.fromJson({
+                    ...data,
+                    'id': orderId,
+                  });
+
+                  // Fetch rider details if available
+                  if (order.riderId != null && order.riderId!.isNotEmpty) {
+                    order = order.copyWith(
+                      rider: await _fetchRiderDetails(order.riderId!),
+                    );
+                  }
+
+                  // Fetch slot details if available
+                  if (order.slotId != null && order.slotId!.isNotEmpty) {
+                    order = order.copyWith(
+                      slot: await _fetchSlotDetails(order.slotId!),
+                    );
+                  }
+
+                  fetchedOrders.add(order);
+                } catch (e) {
+                  debugPrint('Error parsing order ${doc.id}: $e');
+                }
+              }
+
+              orders.value = fetchedOrders;
+
+              _saveOrdersToCache();
+              isLoading.value = false;
+            },
+            onError: (e) {
+              debugPrint('Firestore Stream Error: $e');
+              isLoading.value = false;
+              if (e.toString().contains('failed-precondition')) {
+                Get.snackbar(
+                  'Configuration Required',
+                  'Firestore needs an index for orders. Please check debug console for the link.',
+                  duration: const Duration(seconds: 10),
+                );
+              }
+            },
+          );
     } catch (e) {
       debugPrint('Error initiating order load: $e');
       isLoading.value = false;

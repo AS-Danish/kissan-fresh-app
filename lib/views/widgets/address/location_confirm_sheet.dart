@@ -30,7 +30,7 @@ class LocationConfirmSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-           Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
@@ -42,46 +42,58 @@ class LocationConfirmSheet extends StatelessWidget {
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.my_location, color: Theme.of(context).primaryColor),
+                icon: Icon(
+                  Icons.my_location,
+                  color: Theme.of(context).primaryColor,
+                ),
                 onPressed: controller.getCurrentLocation,
                 tooltip: 'Use Current Location',
               ),
             ],
           ),
           const SizedBox(height: 12),
-          Obx(() => Text(
-            controller.currentAddress.value,
-            style: GoogleFonts.montserrat(
-              fontSize: 14,
-              color: Theme.of(context).textTheme.bodyMedium?.color,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          )),
-          const SizedBox(height: 20),
-          Obx(() => ElevatedButton(
-            onPressed: controller.isLoading.value ? null : controller.confirmLocation,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          Obx(
+            () => Text(
+              controller.currentAddress.value,
+              style: GoogleFonts.montserrat(
+                fontSize: 14,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            child: controller.isLoading.value 
-                ? const SizedBox(
-                    height: 20, 
-                    width: 20, 
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                  )
-                : Text(
-                    'Confirm Location',
-                    style: GoogleFonts.montserrat(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+          ),
+          const SizedBox(height: 20),
+          Obx(
+            () => ElevatedButton(
+              onPressed: controller.isLoading.value
+                  ? null
+                  : controller.confirmLocation,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: controller.isLoading.value
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Text(
+                      'Confirm Location',
+                      style: GoogleFonts.montserrat(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-          )),
+            ),
+          ),
         ],
       ),
     );

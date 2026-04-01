@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kissanfresh/model/promotional_card_model.dart';
 
-
 class PromotionalCardWidget extends StatelessWidget {
   final PromotionalCardModel promotionCard;
   const PromotionalCardWidget({super.key, required this.promotionCard});
@@ -42,7 +41,9 @@ class PromotionalCardWidget extends StatelessWidget {
                 ),
                 child: Text(
                   promotionCard.btnText,
-                  style: GoogleFonts.poppins(color: Theme.of(context).primaryColor),
+                  style: GoogleFonts.poppins(
+                    color: Theme.of(context).primaryColor,
+                  ),
                 ),
               ),
             ),

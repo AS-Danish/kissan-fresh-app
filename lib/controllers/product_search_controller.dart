@@ -5,7 +5,7 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import '../model/product_card_model.dart';
-import '../routes/AppRoutes.dart';
+import '../routes/app_routes.dart';
 import 'homepage_controller.dart';
 import 'cart_controller.dart';
 
@@ -15,13 +15,13 @@ class ProductSearchController extends GetxController {
 
   RxString searchQuery = ''.obs;
   RxString selectedCategory = 'All'.obs;
-  
+
   RxList<Map<String, dynamic>> categories = <Map<String, dynamic>>[].obs;
-  
+
   RxList<ProductCardModel> searchResults = <ProductCardModel>[].obs;
   RxBool isLoading = false.obs;
   int _searchToken = 0;
-  
+
   // Pagination
   RxBool isFetchingMore = false.obs;
   RxBool hasMoreProducts = true.obs;
@@ -45,24 +45,28 @@ class ProductSearchController extends GetxController {
     super.onInit();
     _loadRecentSearches();
     _setCategories();
-    
+
     if (Get.arguments != null && Get.arguments['category'] != null) {
       selectedCategory.value = Get.arguments['category'];
     }
 
     // Setup debouncing for search query
-    debounce(searchQuery, (_) => _performSearch(), time: const Duration(milliseconds: 500));
-    
+    debounce(
+      searchQuery,
+      (_) => _performSearch(),
+      time: const Duration(milliseconds: 500),
+    );
+
     // Listen to category changes
     ever(selectedCategory, (_) => _performSearch());
     ever(homepageController.currentTab, (_) {
       _setCategories();
       selectedCategory.value = 'All'; // Will trigger search
     });
-    
+
     _initSpeech();
     _performSearch();
-    
+
     // Automatically start listening if navigated here with arguments
     if (Get.arguments?['startSpeech'] == true) {
       // Small delay to allow transition before triggering mic popup
@@ -79,16 +83,16 @@ class ProductSearchController extends GetxController {
   Future<void> _saveRecentSearch(String query) async {
     String trimmed = query.trim();
     if (trimmed.isEmpty) return;
-    
+
     final prefs = await SharedPreferences.getInstance();
     List<String> searches = prefs.getStringList(recentSearchesKey) ?? [];
-    
+
     searches.remove(trimmed);
     searches.insert(0, trimmed);
     if (searches.length > 5) {
       searches = searches.sublist(0, 5);
     }
-    
+
     await prefs.setStringList(recentSearchesKey, searches);
     recentSearches.assignAll(searches);
   }
@@ -127,7 +131,7 @@ class ProductSearchController extends GetxController {
       bool available = await speechToText.initialize();
       if (available) {
         isListening.value = true;
-        
+
         // Start 3-second timeout timer
         _speechTimeoutTimer?.cancel();
         _speechTimeoutTimer = Timer(const Duration(seconds: 3), () {
@@ -140,7 +144,7 @@ class ProductSearchController extends GetxController {
           onResult: (result) {
             // Cancel timeout once we get some words
             _speechTimeoutTimer?.cancel();
-            
+
             searchQuery.value = result.recognizedWords;
           },
           localeId: 'en_IN',
@@ -160,18 +164,26 @@ class ProductSearchController extends GetxController {
 
   void _setCategories() {
     final isHomeFood = homepageController.currentTab.value == 'HomeFood';
-    final sourceCategories = isHomeFood 
-        ? homepageController.homeFoodCategories 
+    final sourceCategories = isHomeFood
+        ? homepageController.homeFoodCategories
         : homepageController.categories;
-        
-    categories.assignAll(sourceCategories.map((c) => {
-      'name': c.label,
-      'icon': c.icon,
-      'color': const Color(0xFF0d9488),
-    }).toList());
+
+    categories.assignAll(
+      sourceCategories
+          .map(
+            (c) => {
+              'name': c.label,
+              'icon': c.icon,
+              'color': const Color(0xFF0d9488),
+            },
+          )
+          .toList(),
+    );
   }
-  
-  String get _currentOrigin => homepageController.currentTab.value == 'Grocery' ? 'kissan-fresh' : 'home-food';
+
+  String get _currentOrigin => homepageController.currentTab.value == 'Grocery'
+      ? 'kissan-fresh'
+      : 'home-food';
 
   String _getCacheKey() {
     return '${_currentOrigin}_${selectedCategory.value}_${searchQuery.value.trim().toLowerCase()}';
@@ -180,7 +192,7 @@ class ProductSearchController extends GetxController {
   void _performSearch() async {
     final int currentToken = ++_searchToken;
     final cacheKey = _getCacheKey();
-    
+
     if (_cache.containsKey(cacheKey)) {
       searchResults.assignAll(_cache[cacheKey]!);
       hasMoreProducts.value = false; // Simplified caching
@@ -191,14 +203,14 @@ class ProductSearchController extends GetxController {
     isLoading.value = true;
     _lastDocument = null;
     hasMoreProducts.value = true;
-    
+
     // Only clear if we are starting a fresh search matching the current token
     if (currentToken == _searchToken) {
       searchResults.clear();
     }
 
     await _fetchData(currentToken);
-    
+
     if (currentToken == _searchToken) {
       if (searchResults.isNotEmpty && _lastDocument != null) {
         _cache[cacheKey] = List.from(searchResults);
@@ -211,11 +223,13 @@ class ProductSearchController extends GetxController {
   }
 
   Future<void> fetchNextPage() async {
-    if (isFetchingMore.value || !hasMoreProducts.value || _lastDocument == null) return;
-    
+    if (isFetchingMore.value || !hasMoreProducts.value || _lastDocument == null) {
+      return;
+    }
+
     isFetchingMore.value = true;
     await _fetchData(_searchToken);
-    
+
     // Check if the search wasn't cancelled while we fetched
     if (isFetchingMore.value) {
       isFetchingMore.value = false;
@@ -224,45 +238,50 @@ class ProductSearchController extends GetxController {
 
   Future<void> _fetchData(int token) async {
     try {
-      Query query = _firestore.collection('products').where('productOrigin', isEqualTo: _currentOrigin);
-      
+      Query query = _firestore
+          .collection('products')
+          .where('productOrigin', isEqualTo: _currentOrigin);
+
       if (selectedCategory.value != 'All') {
         query = query.where('category', isEqualTo: selectedCategory.value);
       }
-      
+
       final sq = searchQuery.value.trim();
       if (sq.isNotEmpty) {
-         String prefix = sq;
-         if (sq.length > 1) {
-           prefix = sq[0].toUpperCase() + sq.substring(1).toLowerCase();
-         } else {
-           prefix = sq.toUpperCase();
-         }
-         
-         query = query.where('name', isGreaterThanOrEqualTo: prefix)
-                      .where('name', isLessThan: prefix + '\u{f8ff}');
+        String prefix = sq;
+        if (sq.length > 1) {
+          prefix = sq[0].toUpperCase() + sq.substring(1).toLowerCase();
+        } else {
+          prefix = sq.toUpperCase();
+        }
+
+        query = query
+            .where('name', isGreaterThanOrEqualTo: prefix)
+            .where('name', isLessThan: '$prefix\u{f8ff}');
       }
 
       query = query.limit(limit);
-      
+
       if (_lastDocument != null) {
         query = query.startAfterDocument(_lastDocument!);
       }
 
       final snapshot = await query.get();
-      
+
       if (token != _searchToken) return;
-      
+
       if (snapshot.docs.isEmpty) {
         hasMoreProducts.value = false;
         return;
       }
-      
+
       _lastDocument = snapshot.docs.last;
-      
-      final mappedProducts = snapshot.docs.map((doc) => _mapToProductCardModel(doc)).toList();
+
+      final mappedProducts = snapshot.docs
+          .map((doc) => _mapToProductCardModel(doc))
+          .toList();
       searchResults.addAll(mappedProducts);
-      
+
       if (snapshot.docs.length < limit) {
         hasMoreProducts.value = false;
       }
@@ -276,14 +295,16 @@ class ProductSearchController extends GetxController {
 
   ProductCardModel _mapToProductCardModel(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    
+
     String imageUrl = '';
     if (data['image'] != null && data['image'].toString().isNotEmpty) {
       imageUrl = data['image'];
-    } else if (data['images'] != null && data['images'] is List && data['images'].isNotEmpty) {
+    } else if (data['images'] != null &&
+        data['images'] is List &&
+        data['images'].isNotEmpty) {
       imageUrl = data['images'][0];
     }
-    
+
     List<String>? imagesList;
     if (data['images'] != null && data['images'] is List) {
       imagesList = List<String>.from(data['images']);
@@ -297,7 +318,7 @@ class ProductSearchController extends GetxController {
     if (data['tags'] != null && data['tags'] is List) {
       dynamicTags = List<String>.from(data['tags']);
     }
-    
+
     if (category != 'General' && !dynamicTags.contains(category)) {
       dynamicTags.add(category);
     }

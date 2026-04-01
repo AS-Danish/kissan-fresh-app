@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/product_card_model.dart';
-import '../routes/AppRoutes.dart';
+import '../routes/app_routes.dart';
 import 'cart_controller.dart';
 import 'homepage_controller.dart';
 import '../services/cache_service.dart';
@@ -11,10 +11,10 @@ import '../services/cache_service.dart';
 class ProductsController extends GetxController {
   final HomepageController homepageController = Get.find<HomepageController>();
   final RxList<ProductCardModel> products = <ProductCardModel>[].obs;
-  
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final CacheService _cacheService = Get.find<CacheService>();
-  
+
   // Real-time stream subscription for caching
   StreamSubscription<QuerySnapshot>? _productsSubscription;
 
@@ -22,10 +22,10 @@ class ProductsController extends GetxController {
   RxBool isLoadingProducts = false.obs;
   RxBool isFetchingMore = false.obs;
   RxBool hasMoreProducts = true.obs;
-  
+
   // Variables to hold the last document for each tab/category for pagination
   final Map<String, DocumentSnapshot?> _lastDocuments = {};
-  
+
   final int limit = 10;
 
   @override
@@ -34,16 +34,22 @@ class ProductsController extends GetxController {
     // Listen to tab and category changes
     ever(homepageController.currentTab, (_) => fetchInitialProducts());
     ever(homepageController.selectedIndex, (_) {
-      if (homepageController.currentTab.value == 'Grocery') fetchInitialProducts();
+      if (homepageController.currentTab.value == 'Grocery') {
+        fetchInitialProducts();
+      }
     });
     ever(homepageController.selectedHomeFoodIndex, (_) {
-      if (homepageController.currentTab.value == 'HomeFood') fetchInitialProducts();
+      if (homepageController.currentTab.value == 'HomeFood') {
+        fetchInitialProducts();
+      }
     });
     fetchInitialProducts();
   }
 
   String get currentOrigin {
-    return homepageController.currentTab.value == 'Grocery' ? 'kissan-fresh' : 'home-food';
+    return homepageController.currentTab.value == 'Grocery'
+        ? 'kissan-fresh'
+        : 'home-food';
   }
 
   String get currentCategory {
@@ -88,7 +94,7 @@ class ProductsController extends GetxController {
 
     try {
       hasMoreProducts.value = true;
-      
+
       // Cancel previous subscription if switching tabs
       await _productsSubscription?.cancel();
 
@@ -96,45 +102,50 @@ class ProductsController extends GetxController {
       Query query = _firestore
           .collection('products')
           .where('productOrigin', isEqualTo: origin);
-          
+
       if (category != 'All') {
         query = query.where('category', isEqualTo: category);
       }
-          
+
       _productsSubscription = query
           .limit(limit)
-          .snapshots(includeMetadataChanges: true) // Allows observing cache vs server states
-          .listen((QuerySnapshot snapshot) {
-            
-        if (snapshot.docs.isEmpty) {
-          hasMoreProducts.value = false;
-          products.value = [];
-          _cacheService.saveProducts(cacheKey, []);
-          isLoadingProducts.value = false;
-          return;
-        }
+          .snapshots(
+            includeMetadataChanges: true,
+          ) // Allows observing cache vs server states
+          .listen(
+            (QuerySnapshot snapshot) {
+              if (snapshot.docs.isEmpty) {
+                hasMoreProducts.value = false;
+                products.value = [];
+                _cacheService.saveProducts(cacheKey, []);
+                isLoadingProducts.value = false;
+                return;
+              }
 
-        // Store the last document of the initial load for pagination
-        _lastDocuments[cacheKey] = snapshot.docs.last;
-        
-        final mappedProducts = snapshot.docs.map((doc) => _mapToProductCardModel(doc)).toList();
-        
-        // Only update if there's actually new or changed data. Stream triggers on initial load as well.
-        products.value = mappedProducts;
-        _cacheService.saveProducts(cacheKey, mappedProducts);
+              // Store the last document of the initial load for pagination
+              _lastDocuments[cacheKey] = snapshot.docs.last;
 
-        if (snapshot.docs.length < limit) {
-          hasMoreProducts.value = false;
-        } else {
-          hasMoreProducts.value = true;
-        }
-        
-        isLoadingProducts.value = false;
-      }, onError: (error) {
-        debugPrint("Error in products stream: $error");
-        isLoadingProducts.value = false;
-      });
+              final mappedProducts = snapshot.docs
+                  .map((doc) => _mapToProductCardModel(doc))
+                  .toList();
 
+              // Only update if there's actually new or changed data. Stream triggers on initial load as well.
+              products.value = mappedProducts;
+              _cacheService.saveProducts(cacheKey, mappedProducts);
+
+              if (snapshot.docs.length < limit) {
+                hasMoreProducts.value = false;
+              } else {
+                hasMoreProducts.value = true;
+              }
+
+              isLoadingProducts.value = false;
+            },
+            onError: (error) {
+              debugPrint("Error in products stream: $error");
+              isLoadingProducts.value = false;
+            },
+          );
     } catch (e) {
       debugPrint("Error setting up initial products stream: $e");
       isLoadingProducts.value = false;
@@ -147,7 +158,9 @@ class ProductsController extends GetxController {
     final cacheKey = currentCacheKey;
     final lastDoc = _lastDocuments[cacheKey];
 
-    if (isFetchingMore.value || !hasMoreProducts.value || lastDoc == null) return;
+    if (isFetchingMore.value || !hasMoreProducts.value || lastDoc == null) {
+      return;
+    }
 
     try {
       isFetchingMore.value = true;
@@ -155,7 +168,7 @@ class ProductsController extends GetxController {
       Query query = _firestore
           .collection('products')
           .where('productOrigin', isEqualTo: origin);
-          
+
       if (category != 'All') {
         query = query.where('category', isEqualTo: category);
       }
@@ -172,9 +185,11 @@ class ProductsController extends GetxController {
       }
 
       _lastDocuments[cacheKey] = querySnapshot.docs.last;
-      
-      final newProducts = querySnapshot.docs.map((doc) => _mapToProductCardModel(doc)).toList();
-      
+
+      final newProducts = querySnapshot.docs
+          .map((doc) => _mapToProductCardModel(doc))
+          .toList();
+
       products.addAll(newProducts);
       // Update persistent cache with combined products
       _cacheService.saveProducts(cacheKey, products.toList());
@@ -191,15 +206,17 @@ class ProductsController extends GetxController {
 
   ProductCardModel _mapToProductCardModel(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    
+
     // Extract a single image logic
     String imageUrl = '';
     if (data['image'] != null && data['image'].toString().isNotEmpty) {
       imageUrl = data['image'];
-    } else if (data['images'] != null && data['images'] is List && data['images'].isNotEmpty) {
+    } else if (data['images'] != null &&
+        data['images'] is List &&
+        data['images'].isNotEmpty) {
       imageUrl = data['images'][0];
     }
-    
+
     // Parse list of images if any (optional based on your model)
     List<String>? imagesList;
     if (data['images'] != null && data['images'] is List) {
@@ -215,7 +232,7 @@ class ProductsController extends GetxController {
     if (data['tags'] != null && data['tags'] is List) {
       dynamicTags = List<String>.from(data['tags']);
     }
-    
+
     // Add implicit tags
     if (category != 'General' && !dynamicTags.contains(category)) {
       dynamicTags.add(category);
@@ -271,7 +288,6 @@ class ProductsController extends GetxController {
         }
       },
     );
-
   }
 
   // Helper method for navigation using named routes
@@ -288,7 +304,6 @@ class ProductsController extends GetxController {
     bool inStock = true,
     int stockCount = 0,
   }) {
-
     Get.toNamed(
       AppRoutes.productDetailsRoute,
       arguments: ProductCardModel(
@@ -307,6 +322,5 @@ class ProductsController extends GetxController {
         onAddToCart: () {},
       ),
     );
-
   }
 }

@@ -22,7 +22,7 @@ class AboutUsScreen extends StatelessWidget {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -36,9 +36,9 @@ class AboutUsScreen extends StatelessWidget {
             Text(
               'About KissanFresh',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).primaryColor,
-                  ),
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).primaryColor,
+              ),
             ),
             const SizedBox(height: 15),
             const Text(
@@ -46,15 +46,30 @@ class AboutUsScreen extends StatelessWidget {
               style: TextStyle(fontSize: 16, height: 1.5),
             ),
             const SizedBox(height: 20),
-            _buildFeatureRow(context, Icons.eco_outlined, 'Farm Fresh', 'Directly sourced from local growers.'),
-            _buildFeatureRow(context, Icons.home_repair_service_outlined, 'Home Cooked', 'Delicious meals made with love by home chefs.'),
-            _buildFeatureRow(context, Icons.delivery_dining_outlined, 'Express Delivery', 'Get your orders delivered within minutes.'),
+            _buildFeatureRow(
+              context,
+              Icons.eco_outlined,
+              'Farm Fresh',
+              'Directly sourced from local growers.',
+            ),
+            _buildFeatureRow(
+              context,
+              Icons.home_repair_service_outlined,
+              'Home Cooked',
+              'Delicious meals made with love by home chefs.',
+            ),
+            _buildFeatureRow(
+              context,
+              Icons.delivery_dining_outlined,
+              'Express Delivery',
+              'Get your orders delivered within minutes.',
+            ),
             const SizedBox(height: 30),
             Text(
               'Our Mission',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             const Text(
@@ -67,7 +82,12 @@ class AboutUsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFeatureRow(BuildContext context, IconData icon, String title, String desc) {
+  Widget _buildFeatureRow(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String desc,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Row(
@@ -79,7 +99,13 @@ class AboutUsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Text(desc, style: TextStyle(color: Colors.grey[600])),
               ],

@@ -29,20 +29,25 @@ class SelectableCategoryCard extends StatelessWidget {
               ? LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Theme.of(context).primaryColor, Theme.of(context).colorScheme.secondary],
+                  colors: [
+                    Theme.of(context).primaryColor,
+                    Theme.of(context).colorScheme.secondary,
+                  ],
                 )
               : null,
           color: isSelected ? null : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? Colors.transparent : Theme.of(context).dividerColor.withOpacity(0.5),
+            color: isSelected
+                ? Colors.transparent
+                : Theme.of(context).dividerColor.withValues(alpha: 0.5),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
               color: isSelected
-                  ? Theme.of(context).primaryColor.withOpacity(0.3)
-                  : Colors.black.withOpacity(0.05),
+                  ? Theme.of(context).primaryColor.withValues(alpha: 0.3)
+                  : Colors.black.withValues(alpha: 0.05),
               blurRadius: isSelected ? 12 : 8,
               offset: Offset(0, isSelected ? 4 : 2),
             ),
@@ -57,14 +62,18 @@ class SelectableCategoryCard extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? Colors.white.withOpacity(0.2)
-                    : (iconColor ?? Theme.of(context).primaryColor).withOpacity(0.1),
+                    ? Colors.white.withValues(alpha: 0.2)
+                    : (iconColor ?? Theme.of(context).primaryColor).withValues(
+                        alpha: 0.1,
+                      ),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 icon,
                 size: 24,
-                color: isSelected ? Colors.white : (iconColor ?? Theme.of(context).primaryColor),
+                color: isSelected
+                    ? Colors.white
+                    : (iconColor ?? Theme.of(context).primaryColor),
               ),
             ),
             const SizedBox(height: 6),
@@ -73,7 +82,9 @@ class SelectableCategoryCard extends StatelessWidget {
               style: GoogleFonts.montserrat(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
+                color: isSelected
+                    ? Colors.white
+                    : Theme.of(context).colorScheme.onSurface,
                 letterSpacing: 0.2,
               ),
               textAlign: TextAlign.center,

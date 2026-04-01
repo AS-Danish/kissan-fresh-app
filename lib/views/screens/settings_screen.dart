@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:kissanfresh/routes/AppRoutes.dart';
+import 'package:kissanfresh/routes/app_routes.dart';
 import 'package:kissanfresh/controllers/auth_controller.dart';
 import 'package:kissanfresh/controllers/profile_controller.dart';
 import 'package:kissanfresh/controllers/theme_controller.dart';
@@ -66,7 +66,7 @@ class SettingsScreen extends StatelessWidget {
                 trailing: Switch(
                   value: true,
                   onChanged: (value) {},
-                  activeColor: const Color(0xFF14b8a6),
+                  activeThumbColor: const Color(0xFF14b8a6),
                 ),
               ),
               _SettingsItem(
@@ -81,7 +81,7 @@ class SettingsScreen extends StatelessWidget {
                     onChanged: (value) {
                       themeController.switchTheme(value);
                     },
-                    activeColor: Theme.of(context).primaryColor,
+                    activeThumbColor: Theme.of(context).primaryColor,
                   );
                 }),
               ),
@@ -138,7 +138,7 @@ class SettingsScreen extends StatelessWidget {
   Widget _buildProfileSection(BuildContext context) {
     return Obx(() {
       final user = AuthController.instance.firebaseUser.value;
-      
+
       if (user == null) {
         return GestureDetector(
           onTap: () => Get.toNamed(AppRoutes.loginScreen),
@@ -150,7 +150,7 @@ class SettingsScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
                 ),
@@ -162,10 +162,16 @@ class SettingsScreen extends StatelessWidget {
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).dividerColor.withOpacity(0.5),
+                    color: Theme.of(
+                      context,
+                    ).dividerColor.withValues(alpha: 0.5),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.lock_outline, color: Theme.of(context).iconTheme.color, size: 28),
+                  child: Icon(
+                    Icons.lock_outline,
+                    color: Theme.of(context).iconTheme.color,
+                    size: 28,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -191,7 +197,10 @@ class SettingsScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: Theme.of(context).textTheme.bodyMedium?.color),
+                Icon(
+                  Icons.chevron_right,
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                ),
               ],
             ),
           ),
@@ -208,7 +217,7 @@ class SettingsScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -217,10 +226,10 @@ class SettingsScreen extends StatelessWidget {
         child: Obx(() {
           if (profileController.isLoading.value) {
             return const SizedBox(
-              height: 64, 
+              height: 64,
               child: Center(
-                child: CircularProgressIndicator(color: Color(0xFF0d9488))
-              )
+                child: CircularProgressIndicator(color: Color(0xFF0d9488)),
+              ),
             );
           }
           return Row(
@@ -231,8 +240,8 @@ class SettingsScreen extends StatelessWidget {
                 height: 64,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: profileController.profileImage.value.isEmpty 
-                      ? null 
+                  color: profileController.profileImage.value.isEmpty
+                      ? null
                       : Colors.transparent,
                   gradient: profileController.profileImage.value.isEmpty
                       ? const LinearGradient(
@@ -271,7 +280,9 @@ class SettingsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      profileController.name.value.isNotEmpty ? profileController.name.value : 'User',
+                      profileController.name.value.isNotEmpty
+                          ? profileController.name.value
+                          : 'User',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -282,7 +293,9 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      profileController.email.value.isNotEmpty ? profileController.email.value : 'No email added',
+                      profileController.email.value.isNotEmpty
+                          ? profileController.email.value
+                          : 'No email added',
                       style: TextStyle(
                         fontSize: 14,
                         color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -292,7 +305,9 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      profileController.phoneNumber.value.isNotEmpty ? profileController.phoneNumber.value : user.phoneNumber ?? '',
+                      profileController.phoneNumber.value.isNotEmpty
+                          ? profileController.phoneNumber.value
+                          : user.phoneNumber ?? '',
                       style: TextStyle(
                         fontSize: 14,
                         color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -341,7 +356,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -351,11 +366,8 @@ class SettingsScreen extends StatelessWidget {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: items.length,
-        separatorBuilder: (context, index) => const Divider(
-          height: 1,
-          indent: 60,
-          endIndent: 16,
-        ),
+        separatorBuilder: (context, index) =>
+            const Divider(height: 1, indent: 60, endIndent: 16),
         itemBuilder: (context, index) {
           final item = items[index];
           return ListTile(
@@ -367,7 +379,7 @@ class SettingsScreen extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -386,14 +398,15 @@ class SettingsScreen extends StatelessWidget {
             ),
             subtitle: item.subtitle != null
                 ? Text(
-              item.subtitle!,
-              style: TextStyle(
-                fontSize: 13,
-                color: Theme.of(context).textTheme.bodyMedium?.color,
-              ),
-            )
+                    item.subtitle!,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                    ),
+                  )
                 : null,
-            trailing: item.trailing ??
+            trailing:
+                item.trailing ??
                 Icon(
                   Icons.chevron_right,
                   color: Theme.of(context).textTheme.bodyMedium?.color,
@@ -440,10 +453,7 @@ class SettingsScreen extends StatelessWidget {
                 SizedBox(width: 8),
                 Text(
                   'Logout',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -471,10 +481,7 @@ class SettingsScreen extends StatelessWidget {
                 SizedBox(width: 8),
                 Text(
                   'Login',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -490,7 +497,9 @@ class SettingsScreen extends StatelessWidget {
         'Version 1.0.0',
         style: TextStyle(
           fontSize: 12,
-          color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+          color: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
         ),
       ),
     );

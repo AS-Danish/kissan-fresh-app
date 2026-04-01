@@ -9,10 +9,7 @@ import '../../controllers/wishlist_controller.dart';
 class ProductDetailsScreen extends StatelessWidget {
   final ProductCardModel product;
 
-  const ProductDetailsScreen({
-    super.key,
-    required this.product,
-  });
+  const ProductDetailsScreen({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +37,7 @@ class ProductDetailsScreen extends StatelessWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -55,30 +52,32 @@ class ProductDetailsScreen extends StatelessWidget {
               onPressed: () => Get.back(),
             ),
             actions: [
-              Obx(() => IconButton(
-                icon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+              Obx(
+                () => IconButton(
+                  icon: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Get.find<WishlistController>().isInWishlist(product)
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      color: Theme.of(context).primaryColor,
+                      size: 20,
+                    ),
                   ),
-                  child: Icon(
-                    Get.find<WishlistController>().isInWishlist(product)
-                        ? Icons.favorite
-                        : Icons.favorite_border,
-                    color: Theme.of(context).primaryColor,
-                    size: 20,
-                  ),
+                  onPressed: controller.toggleFavorite,
                 ),
-                onPressed: controller.toggleFavorite,
-              )),
+              ),
               const SizedBox(width: 8),
             ],
             flexibleSpace: FlexibleSpaceBar(
@@ -91,31 +90,45 @@ class ProductDetailsScreen extends StatelessWidget {
                             itemCount: product.images!.length,
                             onPageChanged: controller.onImageChanged,
                             itemBuilder: (context, index) {
-                              return _buildNetworkImage(context, product.images![index]);
+                              return _buildNetworkImage(
+                                context,
+                                product.images![index],
+                              );
                             },
                           ),
                           Positioned(
                             bottom: 20,
                             left: 0,
                             right: 0,
-                            child: Obx(() => Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: List.generate(
-                                    product.images!.length,
-                                    (index) => AnimatedContainer(
-                                      duration: const Duration(milliseconds: 300),
-                                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                                      width: controller.currentImageIndex.value == index ? 24 : 8,
-                                      height: 8,
-                                      decoration: BoxDecoration(
-                                        color: controller.currentImageIndex.value == index
-                                            ? Theme.of(context).primaryColor
-                                            : Theme.of(context).dividerColor.withOpacity(0.5),
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
+                            child: Obx(
+                              () => Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: List.generate(
+                                  product.images!.length,
+                                  (index) => AnimatedContainer(
+                                    duration: const Duration(milliseconds: 300),
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    width:
+                                        controller.currentImageIndex.value ==
+                                            index
+                                        ? 24
+                                        : 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color:
+                                          controller.currentImageIndex.value ==
+                                              index
+                                          ? Theme.of(context).primaryColor
+                                          : Theme.of(context).dividerColor
+                                                .withValues(alpha: 0.5),
+                                      borderRadius: BorderRadius.circular(4),
                                     ),
                                   ),
-                                )),
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       )
@@ -210,7 +223,9 @@ class ProductDetailsScreen extends StatelessWidget {
                             style: GoogleFonts.montserrat(
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
-                              color: Theme.of(context).textTheme.bodyMedium?.color,
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium?.color,
                               height: 1.6,
                               letterSpacing: 0.2,
                             ),
@@ -232,7 +247,7 @@ class ProductDetailsScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),
@@ -241,15 +256,20 @@ class ProductDetailsScreen extends StatelessWidget {
                       child: Column(
                         children: [
                           Obx(() {
-                            final p = controller.observableProduct.value ?? product;
+                            final p =
+                                controller.observableProduct.value ?? product;
                             return _buildDetailRow(
                               context: context,
                               icon: Icons.inventory_2_outlined,
                               label: 'Stock Status',
-                              value: p.stockCount > 0 
-                                  ? (p.stockCount < 10 ? 'Only ${p.stockCount} left!' : 'In Stock (${p.stockCount})') 
+                              value: p.stockCount > 0
+                                  ? (p.stockCount < 10
+                                        ? 'Only ${p.stockCount} left!'
+                                        : 'In Stock (${p.stockCount})')
                                   : 'Out of Stock',
-                              valueColor: p.stockCount > 0 ? const Color(0xFF10B981) : Colors.red,
+                              valueColor: p.stockCount > 0
+                                  ? const Color(0xFF10B981)
+                                  : Colors.red,
                             );
                           }),
 
@@ -257,7 +277,8 @@ class ProductDetailsScreen extends StatelessWidget {
                           Divider(color: Colors.grey.shade200, height: 1),
                           const SizedBox(height: 12),
                           Obx(() {
-                            final p = controller.observableProduct.value ?? product;
+                            final p =
+                                controller.observableProduct.value ?? product;
                             return _buildDetailRow(
                               context: context,
                               icon: Icons.local_offer_outlined,
@@ -276,8 +297,10 @@ class ProductDetailsScreen extends StatelessWidget {
                   // Tags Section (Dynamic as Info Cards)
                   Obx(() {
                     final p = controller.observableProduct.value ?? product;
-                    if (p.tags == null || p.tags!.isEmpty) return const SizedBox.shrink();
-                    
+                    if (p.tags == null || p.tags!.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
@@ -299,7 +322,8 @@ class ProductDetailsScreen extends StatelessWidget {
                               clipBehavior: Clip.none,
                               scrollDirection: Axis.horizontal,
                               itemCount: p.tags!.length,
-                              separatorBuilder: (context, index) => const SizedBox(width: 16),
+                              separatorBuilder: (context, index) =>
+                                  const SizedBox(width: 16),
                               itemBuilder: (context, index) {
                                 return SizedBox(
                                   width: 140, // Fixed width for each card
@@ -346,7 +370,7 @@ class ProductDetailsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -359,7 +383,7 @@ class ProductDetailsScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 24),
@@ -423,37 +447,10 @@ class ProductDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBenefitItem(BuildContext context, String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          Container(
-            width: 6,
-            height: 6,
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: GoogleFonts.montserrat(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey.shade700,
-                height: 1.5,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomBar(BuildContext context, ProductDetailsController controller) {
+  Widget _buildBottomBar(
+    BuildContext context,
+    ProductDetailsController controller,
+  ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -464,7 +461,7 @@ class ProductDetailsScreen extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -478,10 +475,12 @@ class ProductDetailsScreen extends StatelessWidget {
               // Quantity Controls
               Container(
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: Theme.of(context).primaryColor.withOpacity(0.3),
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -491,7 +490,8 @@ class ProductDetailsScreen extends StatelessWidget {
                     _buildQuantityButton(
                       context: context,
                       icon: Icons.remove,
-                      onPressed: (p.stockCount > 0 && controller.quantity.value > 1)
+                      onPressed:
+                          (p.stockCount > 0 && controller.quantity.value > 1)
                           ? controller.decreaseQuantity
                           : null,
                     ),
@@ -509,8 +509,10 @@ class ProductDetailsScreen extends StatelessWidget {
                     _buildQuantityButton(
                       context: context,
                       icon: Icons.add,
-                      onPressed: (p.stockCount > 0 && controller.quantity.value < p.stockCount) 
-                          ? controller.increaseQuantity 
+                      onPressed:
+                          (p.stockCount > 0 &&
+                              controller.quantity.value < p.stockCount)
+                          ? controller.increaseQuantity
                           : null,
                     ),
                   ],
@@ -526,18 +528,34 @@ class ProductDetailsScreen extends StatelessWidget {
                     gradient: LinearGradient(
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
-                      colors: p.inStock 
-                          ? [Theme.of(context).primaryColor, Theme.of(context).primaryColor.withOpacity(0.8)]
-                          : [Theme.of(context).dividerColor.withOpacity(0.3), Theme.of(context).dividerColor.withOpacity(0.5)],
+                      colors: p.inStock
+                          ? [
+                              Theme.of(context).primaryColor,
+                              Theme.of(
+                                context,
+                              ).primaryColor.withValues(alpha: 0.8),
+                            ]
+                          : [
+                              Theme.of(
+                                context,
+                              ).dividerColor.withValues(alpha: 0.3),
+                              Theme.of(
+                                context,
+                              ).dividerColor.withValues(alpha: 0.5),
+                            ],
                     ),
                     borderRadius: BorderRadius.circular(16),
-                    boxShadow: p.inStock ? [
-                      BoxShadow(
-                        color: Theme.of(context).primaryColor.withOpacity(0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ] : [],
+                    boxShadow: p.inStock
+                        ? [
+                            BoxShadow(
+                              color: Theme.of(
+                                context,
+                              ).primaryColor.withValues(alpha: 0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ]
+                        : [],
                   ),
                   child: Material(
                     color: Colors.transparent,
@@ -550,8 +568,8 @@ class ProductDetailsScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              p.inStock 
-                                  ? Icons.shopping_cart_outlined 
+                              p.inStock
+                                  ? Icons.shopping_cart_outlined
                                   : Icons.remove_shopping_cart_outlined,
                               color: Colors.white,
                               size: 20,
@@ -604,7 +622,7 @@ class ProductDetailsScreen extends StatelessWidget {
           size: 20,
           color: onPressed != null
               ? Theme.of(context).primaryColor
-              : Theme.of(context).primaryColor.withOpacity(0.3),
+              : Theme.of(context).primaryColor.withValues(alpha: 0.3),
         ),
       ),
     );

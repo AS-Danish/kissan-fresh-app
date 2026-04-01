@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class CartSuccessPopup extends StatefulWidget {
   final String message;
@@ -13,7 +12,8 @@ class CartSuccessPopup extends StatefulWidget {
   State<CartSuccessPopup> createState() => _CartSuccessPopupState();
 }
 
-class _CartSuccessPopupState extends State<CartSuccessPopup> with SingleTickerProviderStateMixin {
+class _CartSuccessPopupState extends State<CartSuccessPopup>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _checkAnimation;
@@ -61,7 +61,7 @@ class _CartSuccessPopupState extends State<CartSuccessPopup> with SingleTickerPr
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 30,
                 offset: const Offset(0, 10),
               ),
@@ -73,12 +73,12 @@ class _CartSuccessPopupState extends State<CartSuccessPopup> with SingleTickerPr
               Stack(
                 alignment: Alignment.center,
                 children: [
-                   // Outer glow/ring
+                  // Outer glow/ring
                   Container(
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withOpacity(0.1),
+                      color: const Color(0xFF10B981).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -121,7 +121,9 @@ class _CartSuccessPopupState extends State<CartSuccessPopup> with SingleTickerPr
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
-                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                  color: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
                   letterSpacing: 0.2,
                 ),
               ),

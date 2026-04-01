@@ -19,14 +19,17 @@ class PrivacyPolicyScreen extends StatelessWidget {
           children: [
             Text(
               'Your Privacy Matters',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             Text(
               'Last Updated: March 22, 2026',
-              style: TextStyle(color: Colors.grey[600], fontStyle: FontStyle.italic),
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontStyle: FontStyle.italic,
+              ),
             ),
             const SizedBox(height: 25),
             _buildSection(
@@ -63,10 +66,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
           const SizedBox(height: 10),
           Text(

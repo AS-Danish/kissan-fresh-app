@@ -22,7 +22,7 @@ class CategoriesSection extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 16),
+        separatorBuilder: (_, _) => const SizedBox(width: 16),
         itemBuilder: (context, index) {
           final item = categories[index];
           final bool isSelected = selectedIndex == index;

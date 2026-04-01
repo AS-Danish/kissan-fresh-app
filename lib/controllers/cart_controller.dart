@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../model/product_card_model.dart';
-import '../routes/AppRoutes.dart';
+import '../routes/app_routes.dart';
 import 'auth_controller.dart';
 import '../services/location_service.dart';
 
@@ -28,7 +28,7 @@ class CartController extends GetxController {
 
   // Observable list of cart items
   RxList<CartItem> cartItems = <CartItem>[].obs;
-  
+
   final Box _cartBox = Hive.box('cart_box');
 
   // Processing state to prevent double taps
@@ -39,7 +39,10 @@ class CartController extends GetxController {
 
   // Computed values
   double get subtotal {
-    return cartItems.fold(0, (sum, item) => sum + (item.price * item.count));
+    return cartItems.fold(
+      0,
+      (accSum, item) => accSum + (item.price * item.count),
+    );
   }
 
   double get deliveryFee {
@@ -54,7 +57,7 @@ class CartController extends GetxController {
     } else if (appliedCoupon.value == 'FRESH50') {
       return (subtotal >= 50) ? 50.0 : subtotal;
     }
-    
+
     // Legacy auto-applied discount (15% off above ₹499)
     if (subtotal >= 499) {
       return subtotal * 0.15;
@@ -72,7 +75,7 @@ class CartController extends GetxController {
   }
 
   double get autoDiscountValue {
-     if (appliedCoupon.value.isEmpty && subtotal >= 499) {
+    if (appliedCoupon.value.isEmpty && subtotal >= 499) {
       return subtotal * 0.15;
     }
     return 0;
@@ -89,20 +92,32 @@ class CartController extends GetxController {
   // Coupon Methods
   void applyCoupon(String code) {
     if (code.isEmpty) return;
-    
+
     final normalizedCode = code.trim().toUpperCase();
-    
+
     if (normalizedCode == 'KISSAN20') {
       appliedCoupon.value = normalizedCode;
-      Get.snackbar('Coupon Applied', '20% discount applied successfully!', 
-        backgroundColor: Colors.green, colorText: Colors.white);
+      Get.snackbar(
+        'Coupon Applied',
+        '20% discount applied successfully!',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
     } else if (normalizedCode == 'FRESH50') {
       appliedCoupon.value = normalizedCode;
-      Get.snackbar('Coupon Applied', '₹50 discount applied successfully!',
-        backgroundColor: Colors.green, colorText: Colors.white);
+      Get.snackbar(
+        'Coupon Applied',
+        '₹50 discount applied successfully!',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
     } else {
-      Get.snackbar('Invalid Coupon', 'The coupon code you entered is not valid.',
-        backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar(
+        'Invalid Coupon',
+        'The coupon code you entered is not valid.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
     cartItems.refresh(); // Trigger total re-calc
   }
@@ -110,8 +125,12 @@ class CartController extends GetxController {
   void removeCoupon() {
     appliedCoupon.value = '';
     cartItems.refresh();
-    Get.snackbar('Coupon Removed', 'Coupon has been removed from your cart.',
-      backgroundColor: Colors.black87, colorText: Colors.white);
+    Get.snackbar(
+      'Coupon Removed',
+      'Coupon has been removed from your cart.',
+      backgroundColor: Colors.black87,
+      colorText: Colors.white,
+    );
   }
 
   // Add product to cart from ProductCardModel
@@ -141,26 +160,30 @@ class CartController extends GetxController {
     }
 
     // Use product ID if available, otherwise use title
-        final productId = product.id ?? product.title;
-        final cartItem = CartItem(
-          id: productId,
-          name: product.title,
-          quantity: product.unit,
-          price: product.price,
-          image: product.image,
-          count: quantity,
-          availableStock: product.stockCount,
-          inStock: product.inStock,
-        );
-
+    final productId = product.id ?? product.title;
+    final cartItem = CartItem(
+      id: productId,
+      name: product.title,
+      quantity: product.unit,
+      price: product.price,
+      image: product.image,
+      count: quantity,
+      availableStock: product.stockCount,
+      inStock: product.inStock,
+    );
 
     final existingIndex = cartItems.indexWhere((i) => i.id == productId);
 
     if (existingIndex >= 0) {
       // Check stock limit
-      if (cartItems[existingIndex].count + quantity > cartItems[existingIndex].availableStock) {
-        Get.snackbar('Stock Limit Reached', 'Only ${cartItems[existingIndex].availableStock} units available for ${product.title}',
-            backgroundColor: Colors.orange, colorText: Colors.white);
+      if (cartItems[existingIndex].count + quantity >
+          cartItems[existingIndex].availableStock) {
+        Get.snackbar(
+          'Stock Limit Reached',
+          'Only ${cartItems[existingIndex].availableStock} units available for ${product.title}',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
         return false;
       }
       // Item already exists, increase count
@@ -169,7 +192,7 @@ class CartController extends GetxController {
     } else {
       // New item, add to cart
       // Need a way to get availableStock for new item without waiting for validation
-      // For now, assume product has it or fetch it. 
+      // For now, assume product has it or fetch it.
       // Actually, I'll update CartItem to have a fallback or pass it from ProductCardModel if added.
       // Since ProductCardModel doesn't have it, I'll trigger a validation or assume a default and update.
       cartItems.add(cartItem);
@@ -209,9 +232,14 @@ class CartController extends GetxController {
     final existingIndex = cartItems.indexWhere((i) => i.id == item.id);
 
     if (existingIndex >= 0) {
-      if (cartItems[existingIndex].count + 1 > cartItems[existingIndex].availableStock) {
-        Get.snackbar('Stock Limit Reached', 'Only ${cartItems[existingIndex].availableStock} units available.',
-            backgroundColor: Colors.orange, colorText: Colors.white);
+      if (cartItems[existingIndex].count + 1 >
+          cartItems[existingIndex].availableStock) {
+        Get.snackbar(
+          'Stock Limit Reached',
+          'Only ${cartItems[existingIndex].availableStock} units available.',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
         return false;
       }
       cartItems[existingIndex].count++;
@@ -234,8 +262,12 @@ class CartController extends GetxController {
     final index = cartItems.indexWhere((item) => item.id == itemId);
     if (index >= 0) {
       if (cartItems[index].count + 1 > cartItems[index].availableStock) {
-        Get.snackbar('Stock Limit Reached', 'Only ${cartItems[index].availableStock} units available.',
-            backgroundColor: Colors.orange, colorText: Colors.white);
+        Get.snackbar(
+          'Stock Limit Reached',
+          'Only ${cartItems[index].availableStock} units available.',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
         return;
       }
       cartItems[index].count++;
@@ -243,7 +275,6 @@ class CartController extends GetxController {
       _saveToHive();
     }
   }
-
 
   void decrementItem(String itemId) {
     final index = cartItems.indexWhere((item) => item.id == itemId);
@@ -286,7 +317,7 @@ class CartController extends GetxController {
     _cartWorker = ever(cartItems, (List<CartItem> items) {
       _updateStockSubscription(items);
     });
-    
+
     // Initial setup
     _updateStockSubscription(cartItems);
   }
@@ -296,7 +327,7 @@ class CartController extends GetxController {
     if (items.isEmpty) return;
 
     final productIds = items.map((item) => item.id).toList();
-    
+
     // Firestore whereIn limit is 30. If cart > 30, we'd need chunks.
     // For this app, 30 is likely sufficient.
     final limitedIds = productIds.take(30).toList();
@@ -306,40 +337,40 @@ class CartController extends GetxController {
         .where(FieldPath.documentId, whereIn: limitedIds)
         .snapshots()
         .listen((snapshot) {
-      bool changed = false;
-      for (var doc in snapshot.docs) {
-        final data = doc.data();
-        final productId = doc.id;
-        final index = cartItems.indexWhere((item) => item.id == productId);
-        
-        if (index >= 0) {
-          final double freshPrice = (data['price'] ?? 0).toDouble();
-          final int freshStock = (data['stockCount'] ?? 0).toInt();
-          final bool freshInStock = (data['inStock'] ?? true) && freshStock > 0;
+          bool changed = false;
+          for (var doc in snapshot.docs) {
+            final data = doc.data();
+            final productId = doc.id;
+            final index = cartItems.indexWhere((item) => item.id == productId);
 
-          if (cartItems[index].price != freshPrice || 
-              cartItems[index].availableStock != freshStock || 
-              cartItems[index].inStock != freshInStock) {
-            
-            cartItems[index].price = freshPrice;
-            cartItems[index].availableStock = freshStock;
-            cartItems[index].inStock = freshInStock;
-            
-            // Cap quantity if it exceeds stock
-            if (cartItems[index].count > freshStock && freshStock >= 0) {
-              cartItems[index].count = freshStock;
+            if (index >= 0) {
+              final double freshPrice = (data['price'] ?? 0).toDouble();
+              final int freshStock = (data['stockCount'] ?? 0).toInt();
+              final bool freshInStock =
+                  (data['inStock'] ?? true) && freshStock > 0;
+
+              if (cartItems[index].price != freshPrice ||
+                  cartItems[index].availableStock != freshStock ||
+                  cartItems[index].inStock != freshInStock) {
+                cartItems[index].price = freshPrice;
+                cartItems[index].availableStock = freshStock;
+                cartItems[index].inStock = freshInStock;
+
+                // Cap quantity if it exceeds stock
+                if (cartItems[index].count > freshStock && freshStock >= 0) {
+                  cartItems[index].count = freshStock;
+                }
+
+                changed = true;
+              }
             }
-            
-            changed = true;
           }
-        }
-      }
-      
-      if (changed) {
-        cartItems.refresh();
-        _saveToHive();
-      }
-    });
+
+          if (changed) {
+            cartItems.refresh();
+            _saveToHive();
+          }
+        });
   }
 
   void _initializeRazorpay() {
@@ -359,30 +390,31 @@ class CartController extends GetxController {
 
   Future<void> _handlePaymentSuccess(PaymentSuccessResponse response) async {
     if (Get.isDialogOpen ?? false) Get.back();
-    
+
     // Show loading while processing order
     Get.dialog(
-      const Center(
-        child: CircularProgressIndicator(color: Color(0xFF0d9488)),
-      ),
+      const Center(child: CircularProgressIndicator(color: Color(0xFF0d9488))),
       barrierDismissible: false,
     );
 
     try {
       final success = await placeOrder(paymentId: response.paymentId);
-      
+
       if (success) {
         // Refresh orders list
         if (Get.isRegistered<OrdersController>()) {
           Get.find<OrdersController>().loadOrders();
         }
-        
+
         // Navigate to My Orders with success popup flag
-        Get.offAllNamed(AppRoutes.myOrdersRoute, arguments: {
-          'showSuccessPopup': true,
-          'paymentId': response.paymentId,
-          'orderType': 'Online',
-        });
+        Get.offAllNamed(
+          AppRoutes.myOrdersRoute,
+          arguments: {
+            'showSuccessPopup': true,
+            'paymentId': response.paymentId,
+            'orderType': 'Online',
+          },
+        );
       }
     } catch (e) {
       debugPrint("Error in _handlePaymentSuccess: $e");
@@ -446,8 +478,12 @@ class CartController extends GetxController {
 
     // Check if any items became out of stock
     if (cartItems.any((item) => !item.inStock)) {
-      Get.snackbar('Out of Stock', 'Some items in your cart are now out of stock. Please review.',
-          backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar(
+        'Out of Stock',
+        'Some items in your cart are now out of stock. Please review.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
       isProcessingOrder.value = false;
       return;
     }
@@ -461,11 +497,7 @@ class CartController extends GetxController {
 
     // Show loading dialog while Razorpay is opening
     Get.dialog(
-      const Center(
-        child: CircularProgressIndicator(
-          color: Color(0xFF0d9488),
-        ),
-      ),
+      const Center(child: CircularProgressIndicator(color: Color(0xFF0d9488))),
       barrierDismissible: false,
     );
 
@@ -476,18 +508,15 @@ class CartController extends GetxController {
       'description': 'Order Payment',
       'retry': {'enabled': true, 'max_count': 1},
       'send_sms_hash': true,
-      'prefill': {
-        'contact': user.phoneNumber ?? '',
-        'email': user.email ?? ''
-      },
+      'prefill': {'contact': user.phoneNumber ?? '', 'email': user.email ?? ''},
       'external': {
-        'wallets': ['paytm']
-      }
+        'wallets': ['paytm'],
+      },
     };
 
     try {
       _razorpay.open(options);
-      
+
       // Auto-close loading dialog after a short delay
       // The Razorpay UI should replace it
       Future.delayed(const Duration(milliseconds: 1500), () {
@@ -505,13 +534,17 @@ class CartController extends GetxController {
     }
   }
 
-  Future<bool> placeOrder({String? paymentId, String paymentStatus = 'paid', String orderType = 'Online'}) async {
+  Future<bool> placeOrder({
+    String? paymentId,
+    String paymentStatus = 'paid',
+    String orderType = 'Online',
+  }) async {
     final user = _authController.firebaseUser.value;
     if (user == null) throw Exception('User not logged in');
 
     final String orderId = const Uuid().v4();
     final String orderNumber = 'ORD${DateTime.now().millisecondsSinceEpoch}';
-    
+
     // Resolve delivery address from multiple sources
     final String deliveryAddress = _resolveDeliveryAddress();
 
@@ -520,13 +553,17 @@ class CartController extends GetxController {
       userId: user.uid,
       orderNumber: orderNumber,
       paymentId: paymentId, // Added paymentId to track post-payment
-      items: cartItems.map((item) => OrderItem(
-        productId: item.id,
-        title: item.name,
-        image: item.image,
-        quantity: item.count,
-        price: item.price,
-      )).toList(),
+      items: cartItems
+          .map(
+            (item) => OrderItem(
+              productId: item.id,
+              title: item.name,
+              image: item.image,
+              quantity: item.count,
+              price: item.price,
+            ),
+          )
+          .toList(),
       totalAmount: total,
       subtotal: subtotal,
       discount: autoDiscountValue,
@@ -541,19 +578,19 @@ class CartController extends GetxController {
     );
     // 4. Call Cloud Function to process order creation and assignment transactionally
     try {
-      final httpsCallable = FirebaseFunctions.instance.httpsCallable('createOrder');
-      
+      final httpsCallable = FirebaseFunctions.instance.httpsCallable(
+        'createOrder',
+      );
+
       // We pass the order data. The CF expects {'order': orderMap}
-      await httpsCallable.call({
-        'order': order.toJson(),
-      });
+      await httpsCallable.call({'order': order.toJson()});
 
       // Function execution successful
       clearCart();
       return true;
     } catch (e) {
       debugPrint("Order processing failed: $e");
-      
+
       // If payment was already done (paymentId != null), we must record this failure
       if (paymentId != null) {
         await _recordFailedOrder(order, e.toString());
@@ -565,17 +602,29 @@ class CartController extends GetxController {
         Get.back();
       }
 
-      String title = paymentId != null ? "Order Issue - Refund Initiated" : "Order Failed";
+      String title = paymentId != null
+          ? "Order Issue - Refund Initiated"
+          : "Order Failed";
       String message = "";
       if (e.toString().contains("Insufficient stock")) {
-          message = "Insufficient stock for some items.";
-          if (paymentId != null) message += " A full refund has been automatically initiated.";
-      } else if (e.toString().contains("no_slots_available") || e.toString().contains("failed-precondition") || e.toString().contains("active slots")) {
-          message = "No delivery slots are currently available. Please try again later.";
-          if (paymentId != null) message += " Your payment will be fully refunded automatically.";
+        message = "Insufficient stock for some items.";
+        if (paymentId != null) {
+          message += " A full refund has been automatically initiated.";
+        }
+      } else if (e.toString().contains("no_slots_available") ||
+          e.toString().contains("failed-precondition") ||
+          e.toString().contains("active slots")) {
+        message =
+            "No delivery slots are currently available. Please try again later.";
+        if (paymentId != null) {
+          message += " Your payment will be fully refunded automatically.";
+        }
       } else {
-          message = "An issue occurred while finalizing your order.";
-          if (paymentId != null) message += " A full refund has been initiated. Payment ID: $paymentId";
+        message = "An issue occurred while finalizing your order.";
+        if (paymentId != null) {
+          message +=
+              " A full refund has been initiated. Payment ID: $paymentId";
+        }
       }
 
       Get.snackbar(
@@ -586,7 +635,7 @@ class CartController extends GetxController {
         colorText: Colors.white,
         duration: const Duration(seconds: 10),
       );
-      
+
       // Trigger a refresh of stock in cart
       validateCartItems();
       return false;
@@ -633,7 +682,9 @@ class CartController extends GetxController {
       }
       // Also check last known address from LocationService
       final lastAddr = box.get('last_known_address');
-      if (lastAddr != null && lastAddr is String && !invalidValues.contains(lastAddr)) {
+      if (lastAddr != null &&
+          lastAddr is String &&
+          !invalidValues.contains(lastAddr)) {
         return lastAddr;
       }
     } catch (_) {}
@@ -679,8 +730,12 @@ class CartController extends GetxController {
     Get.back();
 
     if (cartItems.any((item) => !item.inStock)) {
-      Get.snackbar('Out of Stock', 'Some items in your cart are now out of stock. Please review.',
-          backgroundColor: Colors.red, colorText: Colors.white);
+      Get.snackbar(
+        'Out of Stock',
+        'Some items in your cart are now out of stock. Please review.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
       isProcessingOrder.value = false;
       return;
     }
@@ -705,10 +760,10 @@ class CartController extends GetxController {
         }
 
         // Navigate to My Orders with success popup flag
-        Get.offAllNamed(AppRoutes.myOrdersRoute, arguments: {
-          'showSuccessPopup': true,
-          'orderType': 'COD',
-        });
+        Get.offAllNamed(
+          AppRoutes.myOrdersRoute,
+          arguments: {'showSuccessPopup': true, 'orderType': 'COD'},
+        );
       }
     } catch (e) {
       if (Get.isDialogOpen ?? false) Get.back();
@@ -730,54 +785,60 @@ class CartController extends GetxController {
     bool needsUpdate = false;
     try {
       final List<String> itemIds = cartItems.map((e) => e.id).toList();
-      
+
       // Process in chunks of 30 due to whereIn limits
       for (int i = 0; i < itemIds.length; i += 30) {
         final chunk = itemIds.skip(i).take(30).toList();
-        
-        final querySnap = await _firestore.collection('products').where(FieldPath.documentId, whereIn: chunk).get();
+
+        final querySnap = await _firestore
+            .collection('products')
+            .where(FieldPath.documentId, whereIn: chunk)
+            .get();
         final docMap = {for (var doc in querySnap.docs) doc.id: doc};
 
         for (int j = 0; j < cartItems.length; j++) {
-           var cartItem = cartItems[j];
-           if (!chunk.contains(cartItem.id)) continue;
+          var cartItem = cartItems[j];
+          if (!chunk.contains(cartItem.id)) continue;
 
-           if (docMap.containsKey(cartItem.id)) {
-              final data = docMap[cartItem.id]!.data() as Map<String, dynamic>;
-              final double freshPrice = (data['price'] ?? 0).toDouble();
-              final int freshStockCount = (data['stockCount'] ?? 0).toInt();
-              final bool freshStockStatus = (data['inStock'] ?? true) && freshStockCount > 0;
+          if (docMap.containsKey(cartItem.id)) {
+            final data = docMap[cartItem.id]!.data();
+            final double freshPrice = (data['price'] ?? 0).toDouble();
+            final int freshStockCount = (data['stockCount'] ?? 0).toInt();
+            final bool freshStockStatus =
+                (data['inStock'] ?? true) && freshStockCount > 0;
 
-              if (cartItem.price != freshPrice || 
-                  cartItem.inStock != freshStockStatus || 
-                  cartItem.availableStock != freshStockCount) {
-                cartItem.price = freshPrice;
-                cartItem.inStock = freshStockStatus;
-                cartItem.availableStock = freshStockCount;
-                
-                if (cartItem.count > freshStockCount) {
-                  cartItem.count = freshStockCount;
-                }
-                if (freshStockCount <= 0) {
-                  cartItem.inStock = false;
-                } else {
-                  cartItem.inStock = true;
-                }
-                needsUpdate = true;
+            if (cartItem.price != freshPrice ||
+                cartItem.inStock != freshStockStatus ||
+                cartItem.availableStock != freshStockCount) {
+              cartItem.price = freshPrice;
+              cartItem.inStock = freshStockStatus;
+              cartItem.availableStock = freshStockCount;
+
+              if (cartItem.count > freshStockCount) {
+                cartItem.count = freshStockCount;
               }
-           } else {
-              // Product deleted from db
-              if (cartItem.inStock != false || cartItem.availableStock != 0 || cartItem.count != 0) {
-                  cartItem.inStock = false;
-                  cartItem.availableStock = 0;
-                  cartItem.count = 0;
-                  needsUpdate = true;
+              if (freshStockCount <= 0) {
+                cartItem.inStock = false;
+              } else {
+                cartItem.inStock = true;
               }
-           }
+              needsUpdate = true;
+            }
+          } else {
+            // Product deleted from db
+            if (cartItem.inStock != false ||
+                cartItem.availableStock != 0 ||
+                cartItem.count != 0) {
+              cartItem.inStock = false;
+              cartItem.availableStock = 0;
+              cartItem.count = 0;
+              needsUpdate = true;
+            }
+          }
         }
       }
     } catch (e) {
-      print("Error validating cart items: $e");
+      debugPrint("Error validating cart items: $e");
     }
 
     if (needsUpdate) {
@@ -791,7 +852,9 @@ class CartController extends GetxController {
       final savedData = _cartBox.get('cart_items_list');
       if (savedData != null) {
         List<dynamic> itemsList = jsonDecode(savedData);
-        cartItems.value = itemsList.map((item) => CartItem.fromJson(item)).toList();
+        cartItems.value = itemsList
+            .map((item) => CartItem.fromJson(item))
+            .toList();
       }
     } catch (e) {
       Get.snackbar('Cart Error', 'Failed to load local cart items.');
@@ -800,10 +863,12 @@ class CartController extends GetxController {
 
   void _saveToHive() {
     try {
-       List<Map<String, dynamic>> jsonData = cartItems.map((item) => item.toJson()).toList();
-       _cartBox.put('cart_items_list', jsonEncode(jsonData));
+      List<Map<String, dynamic>> jsonData = cartItems
+          .map((item) => item.toJson())
+          .toList();
+      _cartBox.put('cart_items_list', jsonEncode(jsonData));
     } catch (e) {
-      print("Error saving cart to Hive: $e");
+      debugPrint("Error saving cart to Hive: $e");
     }
   }
 }

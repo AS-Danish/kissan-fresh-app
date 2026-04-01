@@ -11,7 +11,7 @@ class AuthWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AuthController authController = Get.find<AuthController>();
-    
+
     return Obx(() {
       if (authController.firebaseUser.value != null) {
         return child;

@@ -15,7 +15,6 @@ class MapPickerWidget extends StatefulWidget {
 
 class _MapPickerWidgetState extends State<MapPickerWidget> {
   late CameraPosition _initialPosition;
-  GoogleMapController? _mapController;
 
   @override
   void initState() {
@@ -26,39 +25,35 @@ class _MapPickerWidgetState extends State<MapPickerWidget> {
     );
   }
 
-  void _updateMapStyle() {
-    if (_mapController == null || !mounted) return;
-    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    _mapController!.setMapStyle(isDarkMode ? AppTheme.darkMapStyle : null);
-  }
-
   @override
   Widget build(BuildContext context) {
-    // Re-check style on every build (triggered by theme changes)
-    WidgetsBinding.instance.addPostFrameCallback((_) => _updateMapStyle());
+    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    return Obx(() => GoogleMap(
-      key: const ValueKey('map_picker_stable'),
-      onMapCreated: (controller) {
-        _mapController = controller;
-        widget.controller.onMapCreated(controller);
-        _updateMapStyle();
-      },
-      initialCameraPosition: _initialPosition,
-      onTap: widget.controller.onMapTap,
-      markers: {
-        Marker(
-          markerId: const MarkerId('selected-location'),
-          position: widget.controller.selectedLocation.value,
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-        ),
-      },
-      myLocationEnabled: true,
-      myLocationButtonEnabled: false,
-      zoomControlsEnabled: false,
-      compassEnabled: true,
-      mapToolbarEnabled: false,
-      mapType: MapType.normal,
-    ));
+    return Obx(
+      () => GoogleMap(
+        key: const ValueKey('map_picker_stable'),
+        style: isDarkMode ? AppTheme.darkMapStyle : null,
+        onMapCreated: (controller) {
+          widget.controller.onMapCreated(controller);
+        },
+        initialCameraPosition: _initialPosition,
+        onTap: widget.controller.onMapTap,
+        markers: {
+          Marker(
+            markerId: const MarkerId('selected-location'),
+            position: widget.controller.selectedLocation.value,
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+              BitmapDescriptor.hueRed,
+            ),
+          ),
+        },
+        myLocationEnabled: true,
+        myLocationButtonEnabled: false,
+        zoomControlsEnabled: false,
+        compassEnabled: true,
+        mapToolbarEnabled: false,
+        mapType: MapType.normal,
+      ),
+    );
   }
 }

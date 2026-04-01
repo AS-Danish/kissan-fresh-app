@@ -9,15 +9,16 @@ class AuthService {
     required Function(String, int?) onCodeSent,
     required Function(FirebaseAuthException) onVerificationFailed,
     required Function(String) onCodeAutoRetrievalTimeout,
-    required Function(PhoneAuthCredential) onVerificationCompleted, // For auto-verification
+    required Function(PhoneAuthCredential)
+    onVerificationCompleted, // For auto-verification
   }) async {
     // DISABLE THIS FOR PRODUCTION!
     // This forcibly bypasses Play Integrity / reCAPTCHA on emulators for testing purposes.
     //await _auth.setSettings(appVerificationDisabledForTesting: true);
-    
+
     await _auth.verifyPhoneNumber(
       phoneNumber: phoneNumber,
-      verificationCompleted: onVerificationCompleted, 
+      verificationCompleted: onVerificationCompleted,
       verificationFailed: onVerificationFailed,
       codeSent: onCodeSent,
       codeAutoRetrievalTimeout: onCodeAutoRetrievalTimeout,
@@ -25,10 +26,12 @@ class AuthService {
   }
 
   // Sign in with credential (for OTP + SMS Code or Auto-verification)
-  Future<UserCredential> signInWithCredential(PhoneAuthCredential credential) async {
+  Future<UserCredential> signInWithCredential(
+    PhoneAuthCredential credential,
+  ) async {
     return await _auth.signInWithCredential(credential);
   }
-  
+
   // Sign in with SMS Code
   Future<UserCredential> signInWithSmsCode({
     required String verificationId,
@@ -40,7 +43,6 @@ class AuthService {
     );
     return await _auth.signInWithCredential(credential);
   }
-
 
   // Sign Out
   Future<void> signOut() async {

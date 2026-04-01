@@ -25,7 +25,10 @@ class AddressSelectionScreen extends StatelessWidget {
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Theme.of(context).appBarTheme.iconTheme?.color),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).appBarTheme.iconTheme?.color,
+          ),
           onPressed: () => Get.back(),
         ),
       ),
@@ -51,7 +54,10 @@ class AddressSelectionScreen extends StatelessWidget {
               backgroundColor: Theme.of(context).colorScheme.surface,
               elevation: 4,
               onPressed: controller.getCurrentLocation,
-              child: Icon(Icons.my_location, color: Theme.of(context).primaryColor),
+              child: Icon(
+                Icons.my_location,
+                color: Theme.of(context).primaryColor,
+              ),
             ),
           ),
 

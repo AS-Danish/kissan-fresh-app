@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:kissanfresh/controllers/bottom_bar_controller.dart';
 import 'package:kissanfresh/controllers/cart_controller.dart';
 import 'package:kissanfresh/controllers/theme_controller.dart';
-import '../../routes/AppRoutes.dart';
+import '../../routes/app_routes.dart';
 
 class MainLayout extends StatelessWidget {
   const MainLayout({super.key});
@@ -24,7 +24,7 @@ class MainLayout extends StatelessWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       bottomNavigationBar: Obx(
-            () => Stack(
+        () => Stack(
           clipBehavior: Clip.none,
           alignment: Alignment.bottomCenter,
           children: [
@@ -38,7 +38,7 @@ class MainLayout extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black.withValues(alpha: 0.08),
                     blurRadius: 10,
                     offset: const Offset(0, -2),
                   ),
@@ -152,7 +152,10 @@ class MainLayout extends StatelessWidget {
     );
   }
 
-  Widget _buildCenterCartButton(BuildContext context, BottomBarController barController) {
+  Widget _buildCenterCartButton(
+    BuildContext context,
+    BottomBarController barController,
+  ) {
     return InkWell(
       onTap: () => barController.changePage(2),
       borderRadius: BorderRadius.circular(35),
@@ -167,7 +170,7 @@ class MainLayout extends StatelessWidget {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Theme.of(context).primaryColor.withOpacity(0.5),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.5),
                   blurRadius: 15,
                   spreadRadius: 2,
                   offset: const Offset(0, 5),
@@ -183,8 +186,10 @@ class MainLayout extends StatelessWidget {
           // Badge
           Obx(() {
             final cartController = Get.find<CartController>();
-            if (cartController.totalItemCount == 0) return const SizedBox.shrink();
-            
+            if (cartController.totalItemCount == 0) {
+              return const SizedBox.shrink();
+            }
+
             return Positioned(
               right: 0,
               top: 0,
@@ -219,11 +224,7 @@ class _LazyTabBuilder extends StatefulWidget {
   final int currentIndex;
   final List<String> routes;
 
-  const _LazyTabBuilder({
-    Key? key,
-    required this.currentIndex,
-    required this.routes,
-  }) : super(key: key);
+  const _LazyTabBuilder({required this.currentIndex, required this.routes});
 
   @override
   State<_LazyTabBuilder> createState() => _LazyTabBuilderState();
@@ -284,6 +285,6 @@ class _LazyTabBuilderState extends State<_LazyTabBuilder> {
       return Center(child: Text('Route not found: $routeName'));
     }
 
-    return page.page?.call() ?? const SizedBox.shrink();
+    return page.page.call();
   }
 }

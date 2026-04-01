@@ -6,13 +6,13 @@ import '../model/product_card_model.dart';
 import 'cart_controller.dart';
 import 'wishlist_controller.dart';
 import 'auth_controller.dart';
-import '../routes/AppRoutes.dart';
+import '../routes/app_routes.dart';
 import '../views/widgets/cart_success_popup.dart';
 
 class ProductDetailsController extends GetxController {
   // Observable quantity
   var quantity = 1.obs;
-  
+
   Timer? _cartPopupTimer;
 
   // Observable for current image index
@@ -34,7 +34,8 @@ class ProductDetailsController extends GetxController {
   }
 
   void _startProductListener() {
-    final productId = observableProduct.value?.id ?? observableProduct.value?.title;
+    final productId =
+        observableProduct.value?.id ?? observableProduct.value?.title;
     if (productId == null) return;
 
     _productSubscription?.cancel();
@@ -43,27 +44,28 @@ class ProductDetailsController extends GetxController {
         .doc(productId)
         .snapshots()
         .listen((snapshot) {
-      if (snapshot.exists && snapshot.data() != null) {
-        final data = snapshot.data()!;
-        final current = observableProduct.value!;
-        
-        observableProduct.value = ProductCardModel(
-          id: current.id,
-          title: current.title,
-          description: current.description,
-          price: (data['price'] ?? 0).toDouble(),
-          image: current.image,
-          images: current.images,
-          unit: current.unit,
-          category: current.category,
-          stockCount: (data['stockCount'] ?? 0).toInt(),
-          inStock: (data['inStock'] ?? true) && (data['stockCount'] ?? 0) > 0,
-          tags: current.tags,
-          onTap: current.onTap,
-          onAddToCart: current.onAddToCart,
-        );
-      }
-    });
+          if (snapshot.exists && snapshot.data() != null) {
+            final data = snapshot.data()!;
+            final current = observableProduct.value!;
+
+            observableProduct.value = ProductCardModel(
+              id: current.id,
+              title: current.title,
+              description: current.description,
+              price: (data['price'] ?? 0).toDouble(),
+              image: current.image,
+              images: current.images,
+              unit: current.unit,
+              category: current.category,
+              stockCount: (data['stockCount'] ?? 0).toInt(),
+              inStock:
+                  (data['inStock'] ?? true) && (data['stockCount'] ?? 0) > 0,
+              tags: current.tags,
+              onTap: current.onTap,
+              onAddToCart: current.onAddToCart,
+            );
+          }
+        });
   }
 
   /// Increase quantity
@@ -97,8 +99,10 @@ class ProductDetailsController extends GetxController {
     if (observableProduct.value != null) {
       wishlistController.toggleWishlist(observableProduct.value!);
     }
-    
-    final isFav = observableProduct.value != null && wishlistController.isInWishlist(observableProduct.value!);
+
+    final isFav =
+        observableProduct.value != null &&
+        wishlistController.isInWishlist(observableProduct.value!);
 
     Get.snackbar(
       isFav ? 'Added to Favorites' : 'Removed from Favorites',
@@ -133,15 +137,12 @@ class ProductDetailsController extends GetxController {
       final cartController = Get.find<CartController>();
       final p = observableProduct.value;
       if (p == null) return;
-      
+
       // Use the centralized addToCart for strict stock enforcement
       bool added = cartController.addToCart(p, quantity.value);
-      
+
       if (added) {
-        Get.dialog(
-          const CartSuccessPopup(),
-          barrierDismissible: true,
-        );
+        Get.dialog(const CartSuccessPopup(), barrierDismissible: true);
 
         // Automatically close after 2 seconds
         _cartPopupTimer?.cancel();
@@ -167,7 +168,8 @@ class ProductDetailsController extends GetxController {
   }
 
   /// Calculate total price
-  double get totalPrice => (observableProduct.value?.price ?? 0) * quantity.value;
+  double get totalPrice =>
+      (observableProduct.value?.price ?? 0) * quantity.value;
 
   @override
   void onClose() {

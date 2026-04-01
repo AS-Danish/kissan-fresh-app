@@ -100,7 +100,7 @@ class MapsCacheService {
     debugPrint('Fetching from Google Maps API: $key');
     final url = Uri.parse(
       'https://maps.googleapis.com/maps/api/geocode/json'
-          '?latlng=${point.latitude},${point.longitude}&key=$_apiKey',
+      '?latlng=${point.latitude},${point.longitude}&key=$_apiKey',
     );
 
     try {
@@ -109,10 +109,10 @@ class MapsCacheService {
         final data = json.decode(response.body);
         if (data['status'] == 'OK' && data['results'].isNotEmpty) {
           final address = data['results'][0]['formatted_address'];
-          
+
           // Save to Both Caches
           await _saveToCache(key, {'address': address});
-          
+
           return address;
         }
       }
@@ -142,7 +142,7 @@ class MapsCacheService {
     debugPrint('Fetching from Google Maps API: $key');
     final url = Uri.parse(
       'https://maps.googleapis.com/maps/api/geocode/json'
-          '?address=${Uri.encodeComponent(query.trim())}&key=$_apiKey',
+      '?address=${Uri.encodeComponent(query.trim())}&key=$_apiKey',
     );
 
     try {
@@ -152,16 +152,16 @@ class MapsCacheService {
         if (data['status'] == 'OK' && data['results'].isNotEmpty) {
           final loc = data['results'][0]['geometry']['location'];
           final address = data['results'][0]['formatted_address'];
-          
+
           final resultData = {
             'lat': loc['lat'],
             'lng': loc['lng'],
-            'address': address
+            'address': address,
           };
 
           // Save to Both Caches
           await _saveToCache(key, resultData);
-          
+
           return resultData;
         }
       }
@@ -171,7 +171,10 @@ class MapsCacheService {
     return null;
   }
 
-  Future<List<Map<String, dynamic>>> getAutocompletePredictions(String query, {String? sessionToken}) async {
+  Future<List<Map<String, dynamic>>> getAutocompletePredictions(
+    String query, {
+    String? sessionToken,
+  }) async {
     final trimmed = query.trim().toLowerCase();
     if (trimmed.isEmpty) return [];
 
@@ -181,13 +184,16 @@ class MapsCacheService {
 
     // 1. Check Local Cache (Hive)
     final localData = await _checkLocalCache(key);
-    if (localData != null) return List<Map<String, dynamic>>.from(localData['predictions'] ?? []);
+    if (localData != null) {
+      return List<Map<String, dynamic>>.from(localData['predictions'] ?? []);
+    }
 
     // 2. Google API Fallback
     debugPrint('Fetching from Google Places Autocomplete API: $key');
-    String urlString = 'https://maps.googleapis.com/maps/api/place/autocomplete/json'
-          '?input=${Uri.encodeComponent(query.trim())}&key=$_apiKey';
-    
+    String urlString =
+        'https://maps.googleapis.com/maps/api/place/autocomplete/json'
+        '?input=${Uri.encodeComponent(query.trim())}&key=$_apiKey';
+
     if (sessionToken != null && sessionToken.isNotEmpty) {
       urlString += '&sessiontoken=$sessionToken';
     }
@@ -199,12 +205,15 @@ class MapsCacheService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'OK' && data['predictions'] != null) {
-          final List<Map<String, dynamic>> predictions = (data['predictions'] as List)
-              .map((p) => {
-                    'description': p['description'],
-                    'place_id': p['place_id'],
-                  })
-              .toList();
+          final List<Map<String, dynamic>> predictions =
+              (data['predictions'] as List)
+                  .map(
+                    (p) => {
+                      'description': p['description'],
+                      'place_id': p['place_id'],
+                    },
+                  )
+                  .toList();
 
           // We only save autocomplete to local cache (Hive) for short-term reuse
           final cacheWrapper = {
@@ -212,7 +221,7 @@ class MapsCacheService {
             'result': {'predictions': predictions},
           };
           await _saveToLocalCache(key, cacheWrapper);
-          
+
           return predictions;
         }
       }
@@ -222,7 +231,10 @@ class MapsCacheService {
     return [];
   }
 
-  Future<Map<String, dynamic>?> getPlaceDetails(String placeId, {String? sessionToken}) async {
+  Future<Map<String, dynamic>?> getPlaceDetails(
+    String placeId, {
+    String? sessionToken,
+  }) async {
     final key = 'details_$placeId';
 
     // 1. Check Local Cache
@@ -236,7 +248,8 @@ class MapsCacheService {
     // 3. API Fetch
     debugPrint('Fetching from Google Place Details API: $placeId');
     // We strictly limit fields to keep costs in the "Basic" category
-    String urlString = 'https://maps.googleapis.com/maps/api/place/details/json'
+    String urlString =
+        'https://maps.googleapis.com/maps/api/place/details/json'
         '?place_id=$placeId&fields=geometry,formatted_address&key=$_apiKey';
 
     if (sessionToken != null && sessionToken.isNotEmpty) {
@@ -250,7 +263,7 @@ class MapsCacheService {
         if (data['status'] == 'OK' && data['result'] != null) {
           final result = data['result'];
           final loc = result['geometry']['location'];
-          
+
           final resultData = {
             'lat': loc['lat'],
             'lng': loc['lng'],

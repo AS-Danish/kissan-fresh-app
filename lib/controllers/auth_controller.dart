@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:get/get.dart';
-import 'package:kissanfresh/routes/AppRoutes.dart';
+import 'package:kissanfresh/routes/app_routes.dart';
 import 'package:kissanfresh/services/auth_service.dart';
 import 'package:kissanfresh/services/user_service.dart';
 import 'package:kissanfresh/services/location_service.dart';
@@ -13,11 +13,11 @@ class AuthController extends GetxController {
   final AuthService _authService = AuthService();
   final UserService _userService = UserService();
   late Rx<User?> firebaseUser;
-  
+
   // Observables for UI
   var verificationId = ''.obs;
   var isLoading = false.obs;
-  
+
   // Resend OTP variables
   var resendTimer = 0.obs;
   Timer? _countdownTimer;
@@ -34,34 +34,37 @@ class AuthController extends GetxController {
     ever(firebaseUser, _setInitialScreen);
   }
 
-  _setInitialScreen(User? user) async {
-    // This logic can be used to redirect, but since we have a hybrid approach 
+  void _setInitialScreen(User? user) async {
+    // This logic can be used to redirect, but since we have a hybrid approach
     // where home is always visible, we might not want to force redirect on init for everyone
     // unless they are in a protected route.
     // However, if the user IS logged in, we MUST verify onboarding status.
     if (user != null) {
       debugPrint("User is logged in: ${user.phoneNumber}");
-      
+
       // Fetch user data from firestore to check onboarding
       final userModel = await _userService.getUser(user.uid);
-      
+
       if (userModel == null || !userModel.onboardingCompleted) {
-         // Profile is incomplete! Force them to onboarding screen
-         debugPrint("User onboarding is incomplete. Forcing redirect to onboarding.");
-         Get.offAllNamed(AppRoutes.onboardingRoute);
+        // Profile is incomplete! Force them to onboarding screen
+        debugPrint(
+          "User onboarding is incomplete. Forcing redirect to onboarding.",
+        );
+        Get.offAllNamed(AppRoutes.onboardingRoute);
       } else {
-         // User is fully onboarded.
-         // If we are on login screen, or onboarding screen by mistake, go home
-         if (Get.currentRoute == AppRoutes.loginScreen || 
-             Get.currentRoute == AppRoutes.onboardingRoute) {
-            Get.offAllNamed(AppRoutes.mainLayout);
-         }
+        // User is fully onboarded.
+        // If we are on login screen, or onboarding screen by mistake, go home
+        if (Get.currentRoute == AppRoutes.loginScreen ||
+            Get.currentRoute == AppRoutes.onboardingRoute) {
+          Get.offAllNamed(AppRoutes.mainLayout);
+        }
       }
     } else {
-       debugPrint("User is logged out");
+      debugPrint("User is logged out");
     }
   }
 
+  @override
   void onClose() {
     _countdownTimer?.cancel();
     super.onClose();
@@ -112,7 +115,7 @@ class AuthController extends GetxController {
           _startResendTimer();
           // Navigate to OTP Screen if not already there
           if (Get.currentRoute != AppRoutes.otpVerificationRoute) {
-             Get.toNamed(AppRoutes.otpVerificationRoute, arguments: phone);
+            Get.toNamed(AppRoutes.otpVerificationRoute, arguments: phone);
           }
         },
         onCodeAutoRetrievalTimeout: (String vId) {
@@ -145,9 +148,10 @@ class AuthController extends GetxController {
   }
 
   void resendOtp(String phone) async {
-     if (resendTimer.value > 0) return;
-     phoneController.text = phone; // Ensure the phone controller has the correct context
-     sendOtp();
+    if (resendTimer.value > 0) return;
+    phoneController.text =
+        phone; // Ensure the phone controller has the correct context
+    sendOtp();
   }
 
   // Verify OTP
@@ -155,11 +159,11 @@ class AuthController extends GetxController {
     if (isLoading.value) return;
 
     if (smsCode.isEmpty || smsCode.length != 6) {
-       Get.snackbar(
+      Get.snackbar(
         "Error",
         "Please enter a valid 6-digit OTP",
         snackPosition: SnackPosition.BOTTOM,
-         backgroundColor: Colors.redAccent,
+        backgroundColor: Colors.redAccent,
         colorText: Colors.white,
       );
       return;
@@ -172,7 +176,7 @@ class AuthController extends GetxController {
         smsCode: smsCode,
       );
       isLoading.value = false;
-      if (Get.isDialogOpen ?? false) Get.back(); 
+      if (Get.isDialogOpen ?? false) Get.back();
       _handleSuccess();
     } catch (e) {
       isLoading.value = false;
@@ -181,7 +185,7 @@ class AuthController extends GetxController {
         "Invalid OTP",
         "The entered OTP is incorrect. Please try again.",
         snackPosition: SnackPosition.BOTTOM,
-         backgroundColor: Colors.redAccent,
+        backgroundColor: Colors.redAccent,
         colorText: Colors.white,
       );
     }
@@ -192,13 +196,13 @@ class AuthController extends GetxController {
     final user = _authService.currentUser;
     if (user != null) {
       final userModel = await _userService.getUser(user.uid);
-      final bool isFullyOnboarded = userModel != null && userModel.onboardingCompleted;
-      
+      final bool isFullyOnboarded =
+          userModel != null && userModel.onboardingCompleted;
+
       if (isFullyOnboarded) {
-        
         // Populate global location logic via Firestore Profile
-        if (userModel?.address != null && userModel!.address!.isNotEmpty) {
-           Get.find<LocationService>().currentAddress.value = userModel.address;
+        if (userModel.address != null && userModel.address!.isNotEmpty) {
+          Get.find<LocationService>().currentAddress.value = userModel.address!;
         }
 
         Get.offAllNamed(AppRoutes.mainLayout); // Clear stack and go home

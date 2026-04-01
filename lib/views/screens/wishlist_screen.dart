@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/wishlist_controller.dart';
 import '../../controllers/cart_controller.dart';
 import '../../model/product_card_model.dart';
-import '../../routes/AppRoutes.dart';
+import '../../routes/app_routes.dart';
 import '../widgets/product_card_widget.dart';
 
 class WishlistScreen extends StatelessWidget {
@@ -38,16 +38,20 @@ class WishlistScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                 Container(
+                Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).dividerColor.withOpacity(0.1),
+                    color: Theme.of(
+                      context,
+                    ).dividerColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.favorite_border,
                     size: 60,
-                    color: Theme.of(context).dividerColor.withOpacity(0.5),
+                    color: Theme.of(
+                      context,
+                    ).dividerColor.withValues(alpha: 0.5),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -84,7 +88,7 @@ class WishlistScreen extends StatelessWidget {
           itemCount: controller.wishlistItems.length,
           itemBuilder: (context, index) {
             final product = controller.wishlistItems[index];
-            
+
             // Create a wrapper product with functional callbacks
             final functionalProduct = ProductCardModel(
               id: product.id,
@@ -120,11 +124,11 @@ class WishlistScreen extends StatelessWidget {
                     );
                   }
                 } catch (e) {
-                   debugPrint("CartController not found: $e");
+                  debugPrint("CartController not found: $e");
                 }
               },
             );
-            
+
             return ProductCardWidget(
               product: functionalProduct,
               showAddButton: true,

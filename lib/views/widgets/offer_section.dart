@@ -20,13 +20,15 @@ class OffersSection extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 20),
           itemCount: 3,
-          separatorBuilder: (_, __) => const SizedBox(width: 16),
+          separatorBuilder: (_, _) => const SizedBox(width: 16),
           itemBuilder: (context, index) {
             if (index == 0) {
               return _buildOfferCard(
                 context: context,
                 icon: Icons.percent,
-                iconBgColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                iconBgColor: Theme.of(
+                  context,
+                ).primaryColor.withValues(alpha: 0.1),
                 iconColor: Theme.of(context).primaryColor,
                 badge: 'EXCLUSIVE DEAL',
                 badgeColor: Theme.of(context).primaryColor,
@@ -39,7 +41,9 @@ class OffersSection extends StatelessWidget {
               return _buildOfferCard(
                 context: context,
                 icon: Icons.local_shipping_outlined,
-                iconBgColor: Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+                iconBgColor: Theme.of(
+                  context,
+                ).colorScheme.secondary.withValues(alpha: 0.2),
                 iconColor: Theme.of(context).colorScheme.secondary,
                 badge: 'FREE DELIVERY',
                 badgeColor: Theme.of(context).colorScheme.secondary,
@@ -52,7 +56,9 @@ class OffersSection extends StatelessWidget {
               return _buildOfferCard(
                 context: context,
                 icon: Icons.card_giftcard,
-                iconBgColor: Theme.of(context).primaryColor.withOpacity(0.2),
+                iconBgColor: Theme.of(
+                  context,
+                ).primaryColor.withValues(alpha: 0.2),
                 iconColor: Theme.of(context).primaryColor,
                 badge: 'NEW USER',
                 badgeColor: Theme.of(context).primaryColor,
@@ -84,16 +90,19 @@ class OffersSection extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: Theme.of(context).brightness == Brightness.light 
-          ? [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ]
-          : [],
-        border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.2), width: 1),
+        boxShadow: Theme.of(context).brightness == Brightness.light
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : [],
+        border: Border.all(
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
+          width: 1,
+        ),
       ),
       child: Row(
         children: [
@@ -138,7 +147,9 @@ class OffersSection extends StatelessWidget {
                   subtitle,
                   style: GoogleFonts.montserrat(
                     fontSize: 11.5,
-                    color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey.shade600,
+                    color:
+                        Theme.of(context).textTheme.bodyMedium?.color ??
+                        Colors.grey.shade600,
                     fontWeight: FontWeight.w500,
                   ),
                   maxLines: 1,
@@ -149,7 +160,11 @@ class OffersSection extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           // Arrow icon
-          Icon(Icons.arrow_forward_ios, size: 16, color: Theme.of(context).dividerColor),
+          Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: Theme.of(context).dividerColor,
+          ),
         ],
       ),
     );

@@ -57,20 +57,23 @@ class LocationService extends GetxService {
         return;
       }
 
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 10),
-        ),
-      ).catchError((e) {
-        debugPrint('Fused Location Provider failed, trying balanced accuracy: $e');
-        return Geolocator.getCurrentPosition(
-          locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.medium,
-            timeLimit: Duration(seconds: 10),
-          ),
-        );
-      });
+      final position =
+          await Geolocator.getCurrentPosition(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.high,
+              timeLimit: Duration(seconds: 10),
+            ),
+          ).catchError((e) {
+            debugPrint(
+              'Fused Location Provider failed, trying balanced accuracy: $e',
+            );
+            return Geolocator.getCurrentPosition(
+              locationSettings: const LocationSettings(
+                accuracy: LocationAccuracy.medium,
+                timeLimit: Duration(seconds: 10),
+              ),
+            );
+          });
 
       final latLng = LatLng(position.latitude, position.longitude);
       currentLocation.value = latLng;
@@ -80,13 +83,13 @@ class LocationService extends GetxService {
 
       if (address != null) {
         currentAddress.value = address;
-        
+
         // Save to local Hive box for global fast access if needed
         final box = Hive.box('user_settings');
         await box.put('last_known_lat', position.latitude);
         await box.put('last_known_lng', position.longitude);
         await box.put('last_known_address', address);
-        
+
         debugPrint('Location fetched and saved: $address');
       }
     } catch (e) {

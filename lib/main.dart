@@ -6,7 +6,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kissanfresh/bindings/bottom_bar_binding.dart';
-import 'package:kissanfresh/routes/AppRoutes.dart';
+import 'package:kissanfresh/routes/app_routes.dart';
 import 'package:kissanfresh/views/layout/main_layout.dart';
 
 import 'firebase_options.dart';
@@ -24,7 +24,10 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   try {
     await FirebaseAppCheck.instance.activate(
-      androidProvider: kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
+      // ignore: deprecated_member_use
+      androidProvider: kDebugMode
+          ? AndroidProvider.debug
+          : AndroidProvider.playIntegrity,
     );
   } catch (e) {
     debugPrint("Firebase App Check activation failed: $e");

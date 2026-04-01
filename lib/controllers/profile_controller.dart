@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
-import 'package:kissanfresh/routes/AppRoutes.dart';
+import 'package:kissanfresh/routes/app_routes.dart';
 
 class ProfileController extends GetxController {
   final UserService _userService = UserService();
@@ -20,14 +20,14 @@ class ProfileController extends GetxController {
   var email = ''.obs;
   var address = ''.obs;
   var phoneNumber = ''.obs;
-  
+
   // Profile image (network URL)
-  var profileImage = ''.obs; 
+  var profileImage = ''.obs;
   var initials = ''.obs;
 
   // Text Editing Controllers
   late TextEditingController nameController;
-  late TextEditingController emailController; 
+  late TextEditingController emailController;
   late TextEditingController addressController;
   late TextEditingController phoneController;
 
@@ -37,7 +37,7 @@ class ProfileController extends GetxController {
   void onInit() {
     super.onInit();
     nameController = TextEditingController();
-    emailController = TextEditingController(); 
+    emailController = TextEditingController();
     addressController = TextEditingController();
     phoneController = TextEditingController();
     _loadUserProfile();
@@ -72,7 +72,7 @@ class ProfileController extends GetxController {
         phoneNumber.value = userModel.phoneNumber;
         profileImage.value = userModel.imageUrl ?? '';
         _updateInitials(name.value);
-        
+
         nameController.text = name.value;
         emailController.text = email.value;
         addressController.text = address.value;
@@ -93,10 +93,10 @@ class ProfileController extends GetxController {
       initials.value = 'U';
       return;
     }
-    
+
     List<String> names = fullName.trim().split(' ');
     String computed = '';
-    
+
     if (names.isNotEmpty) {
       computed += names[0][0].toUpperCase();
       if (names.length > 1 && names[1].isNotEmpty) {
@@ -117,9 +117,10 @@ class ProfileController extends GetxController {
 
   void updateProfile() async {
     // Validate inputs (basic)
-    if (nameController.text.trim().isEmpty || addressController.text.trim().isEmpty) {
+    if (nameController.text.trim().isEmpty ||
+        addressController.text.trim().isEmpty) {
       Get.snackbar(
-        'Error', 
+        'Error',
         'Name and Address are required',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
@@ -129,43 +130,46 @@ class ProfileController extends GetxController {
     }
 
     isLoading.value = true;
-    
+
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
         // Fetch existing model to preserve roles/creation date, or update directly
         final existingUser = await _userService.getUser(currentUser.uid);
         if (existingUser != null) {
-           final updatedModel = UserModel(
-             id: existingUser.id,
-             name: nameController.text.trim(),
-             phoneNumber: existingUser.phoneNumber, // Don't alter raw phone
-             email: emailController.text.trim().isEmpty ? null : emailController.text.trim(),
-             address: addressController.text.trim(),
-             imageUrl: existingUser.imageUrl,
-             role: existingUser.role,
-             onboardingCompleted: existingUser.onboardingCompleted,
-             createdAt: existingUser.createdAt,
-           );
+          final updatedModel = UserModel(
+            id: existingUser.id,
+            name: nameController.text.trim(),
+            phoneNumber: existingUser.phoneNumber, // Don't alter raw phone
+            email: emailController.text.trim().isEmpty
+                ? null
+                : emailController.text.trim(),
+            address: addressController.text.trim(),
+            imageUrl: existingUser.imageUrl,
+            role: existingUser.role,
+            onboardingCompleted: existingUser.onboardingCompleted,
+            createdAt: existingUser.createdAt,
+          );
 
-           await _userService.createUser(updatedModel);
+          await _userService.createUser(updatedModel);
 
-           // Sync the observable values locally for the UI
-           name.value = updatedModel.name;
-           email.value = updatedModel.email ?? '';
-           address.value = updatedModel.address ?? '';
-           _updateInitials(name.value);
+          // Sync the observable values locally for the UI
+          name.value = updatedModel.name;
+          email.value = updatedModel.email ?? '';
+          address.value = updatedModel.address ?? '';
+          _updateInitials(name.value);
 
-           // Update cache
-           final prefs = await SharedPreferences.getInstance();
-           await prefs.setString('cached_name', name.value);
-           await prefs.setString('cached_email', email.value);
-           await prefs.setString('cached_address', address.value);
+          // Update cache
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('cached_name', name.value);
+          await prefs.setString('cached_email', email.value);
+          await prefs.setString('cached_address', address.value);
 
-           // Update global location service with newest address
-           Get.find<LocationService>().currentAddress.value = updatedModel.address;
+          // Update global location service with newest address
+          Get.find<LocationService>().currentAddress.value =
+              updatedModel.address;
 
-           Get.snackbar(
+          Get.snackbar(
             'Success',
             'Profile updated successfully',
             snackPosition: SnackPosition.BOTTOM,
@@ -177,7 +181,7 @@ class ProfileController extends GetxController {
         }
       }
     } catch (e) {
-       Get.snackbar(
+      Get.snackbar(
         'Error',
         'Could not update profile',
         snackPosition: SnackPosition.BOTTOM,
@@ -185,17 +189,15 @@ class ProfileController extends GetxController {
         colorText: Colors.white,
       );
     } finally {
-       isLoading.value = false;
+      isLoading.value = false;
     }
   }
-  
+
   void deleteAccount() {
     Get.dialog(
       AlertDialog(
         backgroundColor: Theme.of(Get.context!).colorScheme.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
         contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
         title: Row(
@@ -203,10 +205,14 @@ class ProfileController extends GetxController {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
+                color: Colors.red.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 24),
+              child: const Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.red,
+                size: 24,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -230,7 +236,9 @@ class ProfileController extends GetxController {
               style: GoogleFonts.montserrat(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Theme.of(Get.context!).colorScheme.onSurface.withOpacity(0.7),
+                color: Theme.of(
+                  Get.context!,
+                ).colorScheme.onSurface.withValues(alpha: 0.7),
                 height: 1.5,
               ),
             ),
@@ -254,7 +262,9 @@ class ProfileController extends GetxController {
                     style: GoogleFonts.montserrat(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: Theme.of(Get.context!).colorScheme.onSurface.withOpacity(0.6),
+                      color: Theme.of(
+                        Get.context!,
+                      ).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ),
@@ -364,17 +374,17 @@ class ProfileController extends GetxController {
   Future<void> pickImage() async {
     try {
       final XFile? image = await _picker.pickImage(
-         source: ImageSource.gallery,
-         imageQuality: 70, // compress image
+        source: ImageSource.gallery,
+        imageQuality: 70, // compress image
       );
-      
+
       if (image == null) return;
-      
+
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser == null) return;
 
       isLoading.value = true;
-      
+
       // Upload to Firebase Storage
       final File file = File(image.path);
       final storageRef = FirebaseStorage.instance
@@ -384,7 +394,7 @@ class ProfileController extends GetxController {
 
       final uploadTask = await storageRef.putFile(file);
       final downloadUrl = await uploadTask.ref.getDownloadURL();
-      
+
       // Update local and cache
       profileImage.value = downloadUrl;
       final prefs = await SharedPreferences.getInstance();
@@ -393,28 +403,27 @@ class ProfileController extends GetxController {
       // Fetch existing model to update image field
       final existingUser = await _userService.getUser(currentUser.uid);
       if (existingUser != null) {
-          final updatedModel = UserModel(
-             id: existingUser.id,
-             name: existingUser.name,
-             phoneNumber: existingUser.phoneNumber,
-             email: existingUser.email,
-             address: existingUser.address,
-             imageUrl: downloadUrl, // NEW URL
-             role: existingUser.role,
-             onboardingCompleted: existingUser.onboardingCompleted,
-             createdAt: existingUser.createdAt,
-           );
-           await _userService.createUser(updatedModel); // Acts as a save/update
-           
-           Get.snackbar(
-            'Success',
-            'Profile picture updated!',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: const Color(0xFF10B981),
-            colorText: Colors.white,
-          );
-      }
+        final updatedModel = UserModel(
+          id: existingUser.id,
+          name: existingUser.name,
+          phoneNumber: existingUser.phoneNumber,
+          email: existingUser.email,
+          address: existingUser.address,
+          imageUrl: downloadUrl, // NEW URL
+          role: existingUser.role,
+          onboardingCompleted: existingUser.onboardingCompleted,
+          createdAt: existingUser.createdAt,
+        );
+        await _userService.createUser(updatedModel); // Acts as a save/update
 
+        Get.snackbar(
+          'Success',
+          'Profile picture updated!',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: const Color(0xFF10B981),
+          colorText: Colors.white,
+        );
+      }
     } catch (e) {
       Get.snackbar(
         'Upload Failed',

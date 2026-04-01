@@ -17,11 +17,11 @@ class TermsConditionsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-             Text(
+            Text(
               'Standard Terms of Use',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             Text(
@@ -44,7 +44,7 @@ class TermsConditionsScreen extends StatelessWidget {
               '3. Product Availability',
               'While we strive for accuracy, products may occasionally be out of stock or have different packaging than shown. We reserve the right to limit quantities.',
             ),
-             _buildSection(
+            _buildSection(
               context,
               '4. Cancellation & Refunds',
               'Orders can be cancelled before preparation/dispatch. Refunds are processed according to our internal policy, usually within 5-7 business days.',
@@ -63,10 +63,7 @@ class TermsConditionsScreen extends StatelessWidget {
         children: [
           Text(
             title,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
           const SizedBox(height: 10),
           Text(

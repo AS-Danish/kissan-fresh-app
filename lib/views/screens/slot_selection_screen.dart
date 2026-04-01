@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/slot_selection_controller.dart';
 import '../../model/slot_model.dart';
-import '../../routes/AppRoutes.dart';
+import '../../routes/app_routes.dart';
 import 'package:intl/intl.dart';
 
 class SlotSelectionScreen extends StatelessWidget {
@@ -14,15 +14,18 @@ class SlotSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded,
-              color: theme.appBarTheme.titleTextStyle?.color, size: 20),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: theme.appBarTheme.titleTextStyle?.color,
+            size: 20,
+          ),
           onPressed: () => Get.back(),
         ),
         title: Text(
@@ -38,7 +41,9 @@ class SlotSelectionScreen extends StatelessWidget {
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFF0d9488)));
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF0d9488)),
+          );
         }
 
         if (controller.availableSlots.isEmpty) {
@@ -75,12 +80,13 @@ class SlotSelectionScreen extends StatelessWidget {
                         return GridView.builder(
                           physics: const NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 2.5,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                          ),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                childAspectRatio: 2.5,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                              ),
                           itemCount: dailySlots.length,
                           itemBuilder: (context, slotIndex) {
                             return _buildSlotCard(theme, dailySlots[slotIndex]);
@@ -119,27 +125,37 @@ class SlotSelectionScreen extends StatelessWidget {
                 margin: const EdgeInsets.only(right: 12),
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 decoration: BoxDecoration(
-                  color: isSelected ? theme.primaryColor : theme.colorScheme.surface,
+                  color: isSelected
+                      ? theme.primaryColor
+                      : theme.colorScheme.surface,
                   borderRadius: BorderRadius.circular(25),
                   border: Border.all(
-                    color: isSelected ? theme.primaryColor : theme.dividerColor.withOpacity(0.3),
+                    color: isSelected
+                        ? theme.primaryColor
+                        : theme.dividerColor.withValues(alpha: 0.3),
                     width: 1.5,
                   ),
-                  boxShadow: isSelected ? [
-                    BoxShadow(
-                      color: theme.primaryColor.withOpacity(0.25),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    )
-                  ] : [],
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: theme.primaryColor.withValues(alpha: 0.25),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ]
+                      : [],
                 ),
                 child: Center(
                   child: Text(
                     dateLabel,
                     style: GoogleFonts.montserrat(
                       fontSize: 14,
-                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                      color: isSelected ? Colors.white : theme.colorScheme.onSurface,
+                      fontWeight: isSelected
+                          ? FontWeight.w800
+                          : FontWeight.w600,
+                      color: isSelected
+                          ? Colors.white
+                          : theme.colorScheme.onSurface,
                     ),
                   ),
                 ),
@@ -155,26 +171,37 @@ class SlotSelectionScreen extends StatelessWidget {
     final bool isAvailable = slot.isAvailable;
     final bool isSelected = controller.selectedSlotId.value == slot.id;
 
-    final String timeRange = "${DateFormat('h:mm a').format(slot.startTime)} - ${DateFormat('h:mm a').format(slot.endTime)}";
+    final String timeRange =
+        "${DateFormat('h:mm a').format(slot.startTime)} - ${DateFormat('h:mm a').format(slot.endTime)}";
 
     return GestureDetector(
       onTap: isAvailable ? () => controller.selectSlot(slot.id!) : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
-          color: isSelected ? theme.primaryColor : (isAvailable ? theme.colorScheme.surface : theme.colorScheme.surface.withOpacity(0.5)),
+          color: isSelected
+              ? theme.primaryColor
+              : (isAvailable
+                    ? theme.colorScheme.surface
+                    : theme.colorScheme.surface.withValues(alpha: 0.5)),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? theme.primaryColor : (isAvailable ? theme.dividerColor.withOpacity(0.5) : theme.dividerColor.withOpacity(0.2)),
+            color: isSelected
+                ? theme.primaryColor
+                : (isAvailable
+                      ? theme.dividerColor.withValues(alpha: 0.5)
+                      : theme.dividerColor.withValues(alpha: 0.2)),
             width: isSelected ? 2 : 1,
           ),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: theme.primaryColor.withOpacity(0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            )
-          ] : [],
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: theme.primaryColor.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : [],
         ),
         child: Stack(
           children: [
@@ -184,7 +211,13 @@ class SlotSelectionScreen extends StatelessWidget {
                 style: GoogleFonts.montserrat(
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                  color: isSelected ? Colors.white : (isAvailable ? theme.colorScheme.onSurface : theme.colorScheme.onSurface.withOpacity(0.4)),
+                  color: isSelected
+                      ? Colors.white
+                      : (isAvailable
+                            ? theme.colorScheme.onSurface
+                            : theme.colorScheme.onSurface.withValues(
+                                alpha: 0.4,
+                              )),
                 ),
               ),
             ),
@@ -193,10 +226,13 @@ class SlotSelectionScreen extends StatelessWidget {
                 top: 4,
                 right: 4,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
-                     color: Colors.red.withOpacity(0.1),
-                     borderRadius: BorderRadius.circular(4),
+                    color: Colors.red.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
                     slot.isFull ? 'FULL' : 'UNAVAILABLE',
@@ -260,7 +296,7 @@ class SlotSelectionScreen extends StatelessWidget {
         color: theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 16,
             offset: const Offset(0, -4),
           ),
@@ -270,14 +306,17 @@ class SlotSelectionScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Obx(() {
-            final bool hasSelection = controller.selectedSlotId.value.isNotEmpty;
+            final bool hasSelection =
+                controller.selectedSlotId.value.isNotEmpty;
             return SizedBox(
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: hasSelection ? () {
-                  Get.toNamed(AppRoutes.paymentMethodRoute);
-                } : null,
+                onPressed: hasSelection
+                    ? () {
+                        Get.toNamed(AppRoutes.paymentMethodRoute);
+                      }
+                    : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.primaryColor,
                   disabledBackgroundColor: Colors.grey.shade300,

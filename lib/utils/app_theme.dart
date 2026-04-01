@@ -15,11 +15,15 @@ class AppTheme {
   static const Color darkPrimary = Color(0xFFa8d5b5); // Sage Glow
   static const Color darkSecondary = Color(0xFF1a3828); // Deep Forest
   static const Color darkBackground = Color(0xFF0d1f17); // Midnight Pine
-  static const Color darkSurface = Color(0xFF112a1f); // Slightly lighter than background for cards
+  static const Color darkSurface = Color(
+    0xFF112a1f,
+  ); // Slightly lighter than background for cards
   static const Color darkPrimaryText = Color(0xFFc8dfd2); // Mist White
   static const Color darkSecondaryText = Color(0xFF8aa898); // Dusty Sage
   static const Color darkBorder = Color(0xFF6b9478); // Fern Muted
-  static const Color darkBadge = Color(0xFFa8d5b5); // Using Sage Glow for badges to stand out
+  static const Color darkBadge = Color(
+    0xFFa8d5b5,
+  ); // Using Sage Glow for badges to stand out
 
   static final ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,

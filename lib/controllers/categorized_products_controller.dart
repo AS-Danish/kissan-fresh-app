@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../model/product_card_model.dart';
-import '../routes/AppRoutes.dart';
+import '../routes/app_routes.dart';
 import 'cart_controller.dart';
 import 'homepage_controller.dart';
 import '../services/cache_service.dart';
@@ -13,7 +13,8 @@ class CategorizedProductsController extends GetxController {
   final CacheService _cacheService = Get.find<CacheService>();
 
   // Map of category name to list of products
-  final RxMap<String, List<ProductCardModel>> categorizedProducts = <String, List<ProductCardModel>>{}.obs;
+  final RxMap<String, List<ProductCardModel>> categorizedProducts =
+      <String, List<ProductCardModel>>{}.obs;
   final RxBool isLoading = false.obs;
 
   @override
@@ -27,7 +28,9 @@ class CategorizedProductsController extends GetxController {
   }
 
   String get currentOrigin {
-    return homepageController.currentTab.value == 'Grocery' ? 'kissan-fresh' : 'home-food';
+    return homepageController.currentTab.value == 'Grocery'
+        ? 'kissan-fresh'
+        : 'home-food';
   }
 
   // Gets the relevant category names for the current origin
@@ -55,7 +58,7 @@ class CategorizedProductsController extends GetxController {
       if (cachedData.isNotEmpty) {
         categorizedProducts.assignAll(cachedData);
         // Skip Firestore fetch to massively reduce reads on startup
-        return; 
+        return;
       } else {
         isLoading.value = true;
         categorizedProducts.clear();
@@ -72,7 +75,6 @@ class CategorizedProductsController extends GetxController {
         // Small delay between chunks to keep main thread free
         await Future.delayed(const Duration(milliseconds: 100));
       }
-
     } catch (e) {
       debugPrint("Error fetching categorized products: $e");
     } finally {
@@ -86,11 +88,15 @@ class CategorizedProductsController extends GetxController {
           .collection('products')
           .where('productOrigin', isEqualTo: origin)
           .where('category', isEqualTo: category)
-          .limit(6) // limit to 6 products per category for the horizontal scroll
+          .limit(
+            6,
+          ) // limit to 6 products per category for the horizontal scroll
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        List<ProductCardModel> products = querySnapshot.docs.map((doc) => _mapToProductCardModel(doc)).toList();
+        List<ProductCardModel> products = querySnapshot.docs
+            .map((doc) => _mapToProductCardModel(doc))
+            .toList();
         categorizedProducts[category] = products;
         // Save to persistent cache
         _cacheService.saveCategorizedProducts(origin, categorizedProducts);
@@ -102,15 +108,17 @@ class CategorizedProductsController extends GetxController {
 
   ProductCardModel _mapToProductCardModel(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-    
+
     // Extract a single image logic
     String imageUrl = '';
     if (data['image'] != null && data['image'].toString().isNotEmpty) {
       imageUrl = data['image'];
-    } else if (data['images'] != null && data['images'] is List && data['images'].isNotEmpty) {
+    } else if (data['images'] != null &&
+        data['images'] is List &&
+        data['images'].isNotEmpty) {
       imageUrl = data['images'][0];
     }
-    
+
     // Parse list of images if any
     List<String>? imagesList;
     if (data['images'] != null && data['images'] is List) {
@@ -126,7 +134,7 @@ class CategorizedProductsController extends GetxController {
     if (data['tags'] != null && data['tags'] is List) {
       dynamicTags = List<String>.from(data['tags']);
     }
-    
+
     // Add implicit tags
     if (category != 'General' && !dynamicTags.contains(category)) {
       dynamicTags.add(category);

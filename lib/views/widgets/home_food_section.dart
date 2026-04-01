@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/homepage_controller.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../views/widgets/product_card_widget.dart';
 import 'all_products_section.dart';
 import 'categories_section.dart';
 
@@ -18,16 +17,22 @@ class HomeFoodSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Categories
-        Obx(() => CategoriesSection(
-          categories: controller.homeFoodCategories,
-          selectedIndex: controller.selectedHomeFoodIndex.value,
-          onCategorySelected: controller.selectHomeFoodCategory,
-        )),
+        Obx(
+          () => CategoriesSection(
+            categories: controller.homeFoodCategories,
+            selectedIndex: controller.selectedHomeFoodIndex.value,
+            onCategorySelected: controller.selectHomeFoodCategory,
+          ),
+        ),
         const SizedBox(height: 32),
 
         // Today's Special
         Obx(() {
-          final isAll = controller.homeFoodCategories[controller.selectedHomeFoodIndex.value].label == 'All';
+          final isAll =
+              controller
+                  .homeFoodCategories[controller.selectedHomeFoodIndex.value]
+                  .label ==
+              'All';
           if (!isAll) return const SizedBox.shrink();
 
           if (controller.isLoadingSpecials.value) {
@@ -69,7 +74,8 @@ class HomeFoodSection extends StatelessWidget {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: controller.todaysSpecials.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 16),
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 16),
                       itemBuilder: (context, index) {
                         final special = controller.todaysSpecials[index];
                         return GestureDetector(
@@ -81,12 +87,14 @@ class HomeFoodSection extends StatelessWidget {
                               color: Theme.of(context).colorScheme.surface,
                               borderRadius: BorderRadius.circular(16),
                               image: DecorationImage(
-                                image: CachedNetworkImageProvider(special.image),
+                                image: CachedNetworkImageProvider(
+                                  special.image,
+                                ),
                                 fit: BoxFit.cover,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
+                                  color: Colors.black.withValues(alpha: 0.1),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
@@ -101,8 +109,8 @@ class HomeFoodSection extends StatelessWidget {
                                   stops: const [0.3, 0.7, 1.0],
                                   colors: [
                                     Colors.transparent,
-                                    Colors.black.withOpacity(0.6),
-                                    Colors.black.withOpacity(0.9),
+                                    Colors.black.withValues(alpha: 0.6),
+                                    Colors.black.withValues(alpha: 0.9),
                                   ],
                                 ),
                               ),
@@ -130,7 +138,7 @@ class HomeFoodSection extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 32),
-            ]
+            ],
           );
         }),
 

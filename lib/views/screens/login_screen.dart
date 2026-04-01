@@ -10,16 +10,19 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AuthController controller = Get.put(AuthController());
-    
+
     final RxBool isButtonEnabled = false.obs;
     controller.phoneController.addListener(() {
       isButtonEnabled.value = controller.phoneController.text.length == 10;
     });
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor, // Ensure bottom safe area is correct
+      backgroundColor: Theme.of(
+        context,
+      ).scaffoldBackgroundColor, // Ensure bottom safe area is correct
       body: CustomScrollView(
-        physics: const ClampingScrollPhysics(), // Prevents bouncing to reveal background above top
+        physics:
+            const ClampingScrollPhysics(), // Prevents bouncing to reveal background above top
         slivers: [
           SliverFillRemaining(
             hasScrollBody: false,
@@ -42,7 +45,7 @@ class LoginScreen extends StatelessWidget {
                             height: 150,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.white.withOpacity(0.08),
+                              color: Colors.white.withValues(alpha: 0.08),
                             ),
                           ),
                         ),
@@ -54,13 +57,16 @@ class LoginScreen extends StatelessWidget {
                             height: 100,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.white.withOpacity(0.08),
+                              color: Colors.white.withValues(alpha: 0.08),
                             ),
                           ),
                         ),
                         // Top Content
                         Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 40,
+                            horizontal: 24,
+                          ),
                           child: _buildTopSection(context),
                         ),
                       ],
@@ -70,7 +76,9 @@ class LoginScreen extends StatelessWidget {
 
                 // Bottom Section (White Card overlapping)
                 Container(
-                  color: Theme.of(context).primaryColor, // Match top so curve is smooth
+                  color: Theme.of(
+                    context,
+                  ).primaryColor, // Match top so curve is smooth
                   child: Container(
                     decoration: BoxDecoration(
                       color: Theme.of(context).scaffoldBackgroundColor,
@@ -83,7 +91,11 @@ class LoginScreen extends StatelessWidget {
                       top: false,
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(32, 40, 32, 40),
-                        child: _buildLoginForm(context, controller, isButtonEnabled),
+                        child: _buildLoginForm(
+                          context,
+                          controller,
+                          isButtonEnabled,
+                        ),
                       ),
                     ),
                   ),
@@ -108,21 +120,21 @@ class LoginScreen extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
             ],
           ),
           child: Icon(
-            Icons.eco_rounded, 
+            Icons.eco_rounded,
             color: Theme.of(context).primaryColor,
             size: 54,
           ),
         ),
-        
+
         const SizedBox(height: 24),
-        
+
         Text(
           'Kissan Fresh',
           style: GoogleFonts.montserrat(
@@ -132,7 +144,7 @@ class LoginScreen extends StatelessWidget {
             letterSpacing: 1.2,
           ),
         ),
-        
+
         const SizedBox(height: 12),
 
         Text(
@@ -141,7 +153,7 @@ class LoginScreen extends StatelessWidget {
           style: GoogleFonts.montserrat(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.white.withOpacity(0.95),
+            color: Colors.white.withValues(alpha: 0.95),
             height: 1.4,
             letterSpacing: 0.3,
           ),
@@ -150,7 +162,11 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLoginForm(BuildContext context, AuthController controller, RxBool isButtonEnabled) {
+  Widget _buildLoginForm(
+    BuildContext context,
+    AuthController controller,
+    RxBool isButtonEnabled,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -172,7 +188,7 @@ class LoginScreen extends StatelessWidget {
             color: Theme.of(context).textTheme.bodyMedium?.color,
           ),
         ),
-        
+
         const SizedBox(height: 48),
 
         // Phone Number Input
@@ -182,38 +198,40 @@ class LoginScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).primaryColor.withOpacity(0.08),
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.08),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
             ],
-            border: Border.all(
-              color: Colors.grey.shade100,
-              width: 1.5,
-            ),
+            border: Border.all(color: Colors.grey.shade100, width: 1.5),
           ),
           child: Row(
             children: [
               // Country Code part
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 20,
+                ),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).dividerColor.withOpacity(0.1),
+                  color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(14),
                     bottomLeft: Radius.circular(14),
                   ),
                   border: Border(
-                    right: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.5), width: 1.5),
+                    right: BorderSide(
+                      color: Theme.of(
+                        context,
+                      ).dividerColor.withValues(alpha: 0.5),
+                      width: 1.5,
+                    ),
                   ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      '🇮🇳',
-                      style: TextStyle(fontSize: 20),
-                    ),
+                    const Text('ðŸ‡®ðŸ‡³', style: TextStyle(fontSize: 20)),
                     const SizedBox(width: 8),
                     Text(
                       '+91',
@@ -226,16 +244,14 @@ class LoginScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               // Input Field
               Expanded(
                 child: TextField(
                   controller: controller.phoneController,
                   keyboardType: TextInputType.phone,
                   maxLength: 10,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                  ],
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   style: GoogleFonts.montserrat(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -263,101 +279,116 @@ class LoginScreen extends StatelessWidget {
         const SizedBox(height: 32),
 
         // OTP Button
-        Obx(() => Container(
-          width: double.infinity,
-          height: 60,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: isButtonEnabled.value
-                ? [
-                    BoxShadow(
-                      color: Theme.of(context).primaryColor.withOpacity(0.35),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ]
-                : [],
-          ),
-          child: ElevatedButton(
-            onPressed: isButtonEnabled.value ? () {
-              // Show loading dialog
-              Get.dialog(
-                Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Sending OTP...',
-                          style: GoogleFonts.montserrat(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Theme.of(context).colorScheme.onSurface,
-                            decoration: TextDecoration.none,
+        Obx(
+          () => Container(
+            width: double.infinity,
+            height: 60,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: isButtonEnabled.value
+                  ? [
+                      BoxShadow(
+                        color: Theme.of(
+                          context,
+                        ).primaryColor.withValues(alpha: 0.35),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ]
+                  : [],
+            ),
+            child: ElevatedButton(
+              onPressed: isButtonEnabled.value
+                  ? () {
+                      // Show loading dialog
+                      Get.dialog(
+                        Center(
+                          child: Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).cardColor,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.1),
+                                  blurRadius: 10,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Theme.of(context).primaryColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Sending OTP...',
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
+                                    decoration: TextDecoration.none,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ],
+                        barrierDismissible: false,
+                      );
+
+                      controller.sendOtp();
+
+                      // We rely on controller to dismiss dialog via Get.back() if needed,
+                      // but since we navigate to OTP screen, it will handle it.
+                      // Actually, better to handle it in controller directly.
+                    }
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                disabledBackgroundColor: Theme.of(
+                  context,
+                ).dividerColor.withValues(alpha: 0.3),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 0,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Continue',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: isButtonEnabled.value
+                          ? Colors.white
+                          : Theme.of(context).textTheme.bodyMedium?.color
+                                ?.withValues(alpha: 0.5),
+                      letterSpacing: 0.5,
                     ),
                   ),
-                ),
-                barrierDismissible: false,
-              );
-              
-              controller.sendOtp();
-              
-              // We rely on controller to dismiss dialog via Get.back() if needed, 
-              // but since we navigate to OTP screen, it will handle it.
-              // Actually, better to handle it in controller directly.
-            } : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).primaryColor,
-              disabledBackgroundColor: Theme.of(context).dividerColor.withOpacity(0.3),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                  if (isButtonEnabled.value) ...[
+                    const SizedBox(width: 12),
+                    const Icon(
+                      Icons.arrow_forward_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ],
+                ],
               ),
-              elevation: 0,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Continue',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: isButtonEnabled.value ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                if (isButtonEnabled.value) ...[
-                  const SizedBox(width: 12),
-                  const Icon(
-                    Icons.arrow_forward_rounded,
-                    color: Colors.white,
-                    size: 22,
-                  ),
-                ]
-              ],
             ),
           ),
-        )),
-        
+        ),
+
         const SizedBox(height: 60),
 
         // Bottom Footer (Sign Up & Terms)
@@ -396,7 +427,9 @@ class LoginScreen extends StatelessWidget {
                   text: 'By continuing, you agree to our\n',
                   style: GoogleFonts.montserrat(
                     fontSize: 12.5,
-                    color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.8),
+                    color: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
                     height: 1.5,
                     fontWeight: FontWeight.w500,
                   ),

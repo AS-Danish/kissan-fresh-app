@@ -54,10 +54,7 @@ abstract class AppRoutes {
       page: () => ImprovedHomeScreen(),
       binding: HomepageBinding(),
     ),
-    GetPage(
-      name: wishlistRoute,
-      page: () => const WishlistScreen(),
-    ),
+    GetPage(name: wishlistRoute, page: () => const WishlistScreen()),
     GetPage(
       name: searchRoute,
       page: () => SearchScreen(),
@@ -79,26 +76,36 @@ abstract class AppRoutes {
       binding: ProductDetailsBinding(),
     ),
     GetPage(
-      name: loginScreen, 
+      name: loginScreen,
       page: () => LoginScreen(),
       middlewares: [AuthMiddleware()],
     ),
     GetPage(
-      name: profileRoute, 
+      name: profileRoute,
       page: () => const ProfileScreen(),
       middlewares: [RequireAuthMiddleware()],
     ),
-    GetPage(name: addressSelectionRoute, page: () => const AddressSelectionScreen()),
     GetPage(
-      name: otpVerificationRoute, 
+      name: addressSelectionRoute,
+      page: () => const AddressSelectionScreen(),
+    ),
+    GetPage(
+      name: otpVerificationRoute,
       page: () => OtpVerificationScreen(),
       middlewares: [AuthMiddleware()],
     ),
-    GetPage(name: onboardingRoute, page: () => const OnboardingScreen(), binding: OnboardingBinding()),
+    GetPage(
+      name: onboardingRoute,
+      page: () => const OnboardingScreen(),
+      binding: OnboardingBinding(),
+    ),
     GetPage(name: paymentMethodRoute, page: () => PaymentMethodScreen()),
     GetPage(name: aboutUsRoute, page: () => const AboutUsScreen()),
     GetPage(name: privacyPolicyRoute, page: () => const PrivacyPolicyScreen()),
-    GetPage(name: termsConditionsRoute, page: () => const TermsConditionsScreen()),
+    GetPage(
+      name: termsConditionsRoute,
+      page: () => const TermsConditionsScreen(),
+    ),
     GetPage(name: helpSupportRoute, page: () => const HelpSupportScreen()),
     GetPage(name: slotSelectionRoute, page: () => SlotSelectionScreen()),
   ];

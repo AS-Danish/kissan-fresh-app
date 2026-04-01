@@ -5,10 +5,7 @@ import 'package:kissanfresh/model/trending_item_model.dart';
 class TrendingItemWidget extends StatelessWidget {
   final TrendingItemModel trendingItem;
 
-  const TrendingItemWidget({
-    super.key,
-    required this.trendingItem,
-  });
+  const TrendingItemWidget({super.key, required this.trendingItem});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +16,7 @@ class TrendingItemWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 4,
             offset: Offset(0, 2),
@@ -42,24 +39,24 @@ class TrendingItemWidget extends StatelessWidget {
                   ),
                   child: trendingItem.imageUrl != null
                       ? ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.network(
-                      trendingItem.imageUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.network(
+                            trendingItem.imageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.local_drink_outlined,
+                                size: 40,
+                                color: Colors.grey.shade300,
+                              );
+                            },
+                          ),
+                        )
+                      : Icon(
                           Icons.local_drink_outlined,
                           size: 40,
                           color: Colors.grey.shade300,
-                        );
-                      },
-                    ),
-                  )
-                      : Icon(
-                    Icons.local_drink_outlined,
-                    size: 40,
-                    color: Colors.grey.shade300,
-                  ),
+                        ),
                 ),
                 SizedBox(width: 12),
                 Expanded(

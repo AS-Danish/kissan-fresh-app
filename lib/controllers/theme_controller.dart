@@ -7,7 +7,8 @@ class ThemeController extends GetxController {
   final _key = 'isDarkMode';
 
   // Get the theme mode from the reactive state
-  ThemeMode get themeMode => isDarkMode.value ? ThemeMode.dark : ThemeMode.light;
+  ThemeMode get themeMode =>
+      isDarkMode.value ? ThemeMode.dark : ThemeMode.light;
 
   // Observable for UI switches depending on the theme state
   RxBool isDarkMode = false.obs;
@@ -24,7 +25,7 @@ class ThemeController extends GetxController {
   }
 
   // Save the theme mode to Hive
-  _saveThemeToBox(bool isDark) {
+  void _saveThemeToBox(bool isDark) {
     _box.put(_key, isDark);
   }
 

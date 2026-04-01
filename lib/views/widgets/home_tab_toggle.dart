@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_instance/src/extension_instance.dart';
@@ -15,10 +14,10 @@ class HomeTabToggle extends StatelessWidget {
       height: 52,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withOpacity(0.2),
+        color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(30),
         border: Border.all(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -41,7 +40,7 @@ class HomeTabToggle extends StatelessWidget {
                   borderRadius: BorderRadius.circular(26),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 4,
                       offset: const Offset(0, 2),
                     ),
@@ -53,8 +52,8 @@ class HomeTabToggle extends StatelessWidget {
               children: [
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => Get.find<HomepageController>()
-                        .switchTab('Grocery'),
+                    onTap: () =>
+                        Get.find<HomepageController>().switchTab('Grocery'),
                     behavior: HitTestBehavior.translucent,
                     child: Center(
                       child: Text(
@@ -64,7 +63,8 @@ class HomeTabToggle extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                           color: isGrocery
                               ? Theme.of(context).primaryColor
-                              : Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.9),
+                              : Theme.of(context).textTheme.bodyLarge?.color
+                                    ?.withValues(alpha: 0.9),
                         ),
                       ),
                     ),
@@ -72,8 +72,8 @@ class HomeTabToggle extends StatelessWidget {
                 ),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => Get.find<HomepageController>()
-                        .switchTab('HomeFood'),
+                    onTap: () =>
+                        Get.find<HomepageController>().switchTab('HomeFood'),
                     behavior: HitTestBehavior.translucent,
                     child: Center(
                       child: Text(
@@ -83,7 +83,8 @@ class HomeTabToggle extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                           color: !isGrocery
                               ? Theme.of(context).primaryColor
-                              : Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.9),
+                              : Theme.of(context).textTheme.bodyLarge?.color
+                                    ?.withValues(alpha: 0.9),
                         ),
                       ),
                     ),

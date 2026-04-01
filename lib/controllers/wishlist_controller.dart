@@ -1,12 +1,11 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../model/product_card_model.dart';
-import '../routes/AppRoutes.dart';
+import '../routes/app_routes.dart';
 import 'auth_controller.dart';
 
 class WishlistController extends GetxController {
@@ -35,65 +34,20 @@ class WishlistController extends GetxController {
     // let's rely on manual sync or explicit product fetches.
   }
 
-  void _syncWishlistWithSnapshot(QuerySnapshot snapshot) {
-    if (wishlistItems.isEmpty) return;
-
-    bool changed = false;
-    final productDataMap = {for (var doc in snapshot.docs) doc.id: doc.data()};
-
-      for (int i = 0; i < wishlistItems.length; i++) {
-        final item = wishlistItems[i];
-        final productId = item.id ?? item.title;
-        
-        if (productDataMap.containsKey(productId)) {
-          final data = productDataMap[productId]! as Map<String, dynamic>;
-          final double freshPrice = (data['price'] ?? 0).toDouble();
-          final int freshStockCount = (data['stockCount'] ?? 0).toInt();
-          final bool freshStockStatus = (data['inStock'] ?? true) && freshStockCount > 0;
-
-          if (item.price != freshPrice || 
-              item.inStock != freshStockStatus || 
-              item.stockCount != freshStockCount) {
-            
-            wishlistItems[i] = ProductCardModel(
-              id: item.id,
-              title: item.title,
-              description: item.description,
-              price: freshPrice,
-              image: item.image,
-              images: item.images,
-              unit: item.unit,
-              category: item.category,
-              inStock: freshStockStatus,
-              stockCount: freshStockCount,
-              tags: item.tags,
-              onTap: item.onTap,
-              onAddToCart: item.onAddToCart,
-            );
-            changed = true;
-          }
-        }
-      }
-
-      if (changed) {
-        wishlistItems.refresh();
-      }
-  }
-
   void _fetchWishlist() async {
     final user = _authController.firebaseUser.value;
     if (user == null) return;
 
     final box = Hive.box('wishlist_box');
-    
+
     // First: Load from local cache instantly
     if (box.containsKey(user.uid)) {
       final cachedData = box.get(user.uid) as List<dynamic>?;
       if (cachedData != null) {
         List<ProductCardModel> loadedItems = [];
         for (var data in cachedData) {
-            final mapData = Map<String, dynamic>.from(data as Map);
-            loadedItems.add(_mapToProductCardModel(mapData));
+          final mapData = Map<String, dynamic>.from(data as Map);
+          loadedItems.add(_mapToProductCardModel(mapData));
         }
         wishlistItems.value = loadedItems;
       }
@@ -107,9 +61,11 @@ class WishlistController extends GetxController {
           .get();
 
       List<ProductCardModel> loadedItems = [];
-      if (docSnapshot.exists && docSnapshot.data() != null && docSnapshot.data()!.containsKey('wishlist')) {
+      if (docSnapshot.exists &&
+          docSnapshot.data() != null &&
+          docSnapshot.data()!.containsKey('wishlist')) {
         List<dynamic> wishlistData = docSnapshot.data()!['wishlist'];
-        
+
         // Save raw network response to Box for next startup
         box.put(user.uid, wishlistData);
 
@@ -118,9 +74,9 @@ class WishlistController extends GetxController {
         }
       }
       wishlistItems.value = loadedItems;
-      
+
       wishlistItems.value = loadedItems;
-      
+
       // Optimization: Removed full collection fetch for sync.
       // Syncing should be done per-item when needed or when a product is viewed.
     } catch (e) {
@@ -131,7 +87,7 @@ class WishlistController extends GetxController {
   ProductCardModel _mapToProductCardModel(Map<String, dynamic> data) {
     final int stockCount = (data['stockCount'] ?? 0).toInt();
     final bool inStock = (data['inStock'] ?? true) && stockCount > 0;
-    
+
     return ProductCardModel(
       id: data['id'] ?? data['title'],
       title: data['title'] ?? 'Unknown',
@@ -152,29 +108,32 @@ class WishlistController extends GetxController {
   // Helper to sync local wishlist with Firestore array
   Future<void> _updateFirestoreWishlist(String uid) async {
     try {
-      List<Map<String, dynamic>> data = wishlistItems.map((item) => {
-        'id': item.id ?? item.title,
-        'title': item.title,
-        'description': item.description,
-        'price': item.price,
-        'image': item.image,
-        'unit': item.unit,
-        'category': item.category,
-        'tags': item.tags,
-        'inStock': item.inStock,
-        'images': item.images,
-      }).toList();
+      List<Map<String, dynamic>> data = wishlistItems
+          .map(
+            (item) => {
+              'id': item.id ?? item.title,
+              'title': item.title,
+              'description': item.description,
+              'price': item.price,
+              'image': item.image,
+              'unit': item.unit,
+              'category': item.category,
+              'tags': item.tags,
+              'inStock': item.inStock,
+              'images': item.images,
+            },
+          )
+          .toList();
 
       // Update to Local Hive instantly
       final box = Hive.box('wishlist_box');
       box.put(uid, data);
 
-      await _firestore
-          .collection('users')
-          .doc(uid)
-          .set({'wishlist': data}, SetOptions(merge: true));
+      await _firestore.collection('users').doc(uid).set({
+        'wishlist': data,
+      }, SetOptions(merge: true));
     } catch (e) {
-      print("Error updating wishlist in Firestore: $e");
+      debugPrint("Error updating wishlist in Firestore: $e");
     }
   }
 
@@ -196,7 +155,7 @@ class WishlistController extends GetxController {
         image: product.image,
         images: product.images,
         unit: product.unit,
-         category: product.category,
+        category: product.category,
         inStock: product.inStock,
         tags: product.tags,
         onTap: product.onTap,
@@ -215,7 +174,7 @@ class WishlistController extends GetxController {
 
     final targetId = product.id ?? product.title;
     wishlistItems.removeWhere((item) => (item.id ?? item.title) == targetId);
-    
+
     await _updateFirestoreWishlist(user.uid);
   }
 

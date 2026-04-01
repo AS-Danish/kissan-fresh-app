@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:get/get.dart';
 import '../../model/product_card_model.dart';
 
 class ProductCardWidget extends StatefulWidget {
@@ -18,9 +17,10 @@ class ProductCardWidget extends StatefulWidget {
   State<ProductCardWidget> createState() => _ProductCardWidgetState();
 }
 
-class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTickerProviderStateMixin {
+class _ProductCardWidgetState extends State<ProductCardWidget>
+    with SingleTickerProviderStateMixin {
   bool _isPressed = false;
-  
+
   bool _isNetworkImage(String path) {
     return path.startsWith('http://') || path.startsWith('https://');
   }
@@ -45,18 +45,18 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
               BoxShadow(
-                color: primaryColor.withOpacity(0.02),
+                color: primaryColor.withValues(alpha: 0.02),
                 blurRadius: 30,
                 offset: const Offset(0, 5),
               ),
             ],
             border: Border.all(
-              color: colorScheme.outline.withOpacity(0.08),
+              color: colorScheme.outline.withValues(alpha: 0.08),
               width: 1.5,
             ),
           ),
@@ -70,40 +70,53 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
                   children: [
                     Positioned.fill(
                       child: ClipRRect(
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(24),
+                        ),
                         child: ColorFiltered(
                           colorFilter: widget.product.inStock
-                              ? const ColorFilter.mode(Colors.transparent, BlendMode.multiply)
-                              : const ColorFilter.mode(Colors.grey, BlendMode.saturation),
+                              ? const ColorFilter.mode(
+                                  Colors.transparent,
+                                  BlendMode.multiply,
+                                )
+                              : const ColorFilter.mode(
+                                  Colors.grey,
+                                  BlendMode.saturation,
+                                ),
                           child: _isNetworkImage(widget.product.image)
                               ? CachedNetworkImage(
                                   imageUrl: widget.product.image,
                                   fit: BoxFit.cover,
                                   memCacheWidth: 400,
                                   memCacheHeight: 400,
-                                  placeholder: (context, url) => _buildPlaceholder(),
-                                  errorWidget: (context, url, error) => _buildErrorPlaceholder(),
+                                  placeholder: (context, url) =>
+                                      _buildPlaceholder(),
+                                  errorWidget: (context, url, error) =>
+                                      _buildErrorPlaceholder(),
                                 )
                               : Image.asset(
                                   widget.product.image,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) => _buildErrorPlaceholder(),
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      _buildErrorPlaceholder(),
                                 ),
                         ),
                       ),
                     ),
-                    
+
                     // Subtle Glassy Gradient Overlay
                     Positioned.fill(
                       child: Container(
                         decoration: BoxDecoration(
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(24),
+                          ),
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              Colors.white.withOpacity(0.05),
-                              Colors.black.withOpacity(0.03),
+                              Colors.white.withValues(alpha: 0.05),
+                              Colors.black.withValues(alpha: 0.03),
                             ],
                           ),
                         ),
@@ -111,41 +124,53 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
                     ),
 
                     // Product Tags (Top Left)
-                    if (widget.product.tags != null && widget.product.tags!.isNotEmpty)
+                    if (widget.product.tags != null &&
+                        widget.product.tags!.isNotEmpty)
                       Positioned(
                         top: 12,
                         left: 12,
                         child: Wrap(
                           spacing: 4,
-                          children: widget.product.tags!.take(1).map((tag) => Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: primaryColor.withOpacity(0.9),
-                              borderRadius: BorderRadius.circular(8),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
+                          children: widget.product.tags!
+                              .take(1)
+                              .map(
+                                (tag) => Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: primaryColor.withValues(alpha: 0.9),
+                                    borderRadius: BorderRadius.circular(8),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Text(
+                                    tag.toUpperCase(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
                                 ),
-                              ],
-                            ),
-                            child: Text(
-                              tag.toUpperCase(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 8,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          )).toList(),
+                              )
+                              .toList(),
                         ),
                       ),
 
                     // Sold Out Ribbon
-                    if (!widget.product.inStock || widget.product.stockCount <= 0)
-                       Positioned(
+                    if (!widget.product.inStock ||
+                        widget.product.stockCount <= 0)
+                      Positioned(
                         top: 15,
                         left: -25,
                         child: Transform.rotate(
@@ -175,7 +200,10 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
               Expanded(
                 flex: 11,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -190,7 +218,9 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
                               style: GoogleFonts.outfit(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
-                                color: widget.product.inStock ? colorScheme.onSurface : Colors.grey.shade600,
+                                color: widget.product.inStock
+                                    ? colorScheme.onSurface
+                                    : Colors.grey.shade600,
                                 height: 1.1,
                               ),
                               maxLines: 1,
@@ -211,7 +241,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 4),
 
                       // Premium Price & Add Row
@@ -224,16 +254,22 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
                               fit: BoxFit.scaleDown,
                               alignment: Alignment.centerLeft,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 6,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: (widget.product.inStock && widget.product.stockCount > 0)
-                                      ? primaryColor.withOpacity(0.1) 
-                                      : Colors.grey.withOpacity(0.1),
+                                  color:
+                                      (widget.product.inStock &&
+                                          widget.product.stockCount > 0)
+                                      ? primaryColor.withValues(alpha: 0.1)
+                                      : Colors.grey.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.baseline,
                                   textBaseline: TextBaseline.alphabetic,
                                   children: [
                                     Text(
@@ -241,7 +277,11 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
                                       style: GoogleFonts.outfit(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w600,
-                                        color: (widget.product.inStock && widget.product.stockCount > 0) ? primaryColor : Colors.grey,
+                                        color:
+                                            (widget.product.inStock &&
+                                                widget.product.stockCount > 0)
+                                            ? primaryColor
+                                            : Colors.grey,
                                       ),
                                     ),
                                     Text(
@@ -249,7 +289,11 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
                                       style: GoogleFonts.outfit(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w800,
-                                        color: (widget.product.inStock && widget.product.stockCount > 0) ? primaryColor : Colors.grey,
+                                        color:
+                                            (widget.product.inStock &&
+                                                widget.product.stockCount > 0)
+                                            ? primaryColor
+                                            : Colors.grey,
                                       ),
                                     ),
                                     const SizedBox(width: 1),
@@ -258,8 +302,12 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
                                       style: GoogleFonts.outfit(
                                         fontSize: 8,
                                         fontWeight: FontWeight.w500,
-                                        color: (widget.product.inStock && widget.product.stockCount > 0) 
-                                            ? primaryColor.withOpacity(0.7) 
+                                        color:
+                                            (widget.product.inStock &&
+                                                widget.product.stockCount > 0)
+                                            ? primaryColor.withValues(
+                                                alpha: 0.7,
+                                              )
                                             : Colors.grey.shade500,
                                       ),
                                     ),
@@ -274,28 +322,41 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
                           // Modern Add Button
                           if (widget.showAddButton)
                             GestureDetector(
-                              onTap: widget.product.stockCount > 0 ? widget.product.onAddToCart : null,
+                              onTap: widget.product.stockCount > 0
+                                  ? widget.product.onAddToCart
+                                  : null,
 
                               child: Container(
                                 width: 34,
                                 height: 34,
                                 decoration: BoxDecoration(
-                                  color: (widget.product.inStock && widget.product.stockCount > 0) ? primaryColor : Colors.grey.shade300,
+                                  color:
+                                      (widget.product.inStock &&
+                                          widget.product.stockCount > 0)
+                                      ? primaryColor
+                                      : Colors.grey.shade300,
                                   borderRadius: BorderRadius.circular(10),
-                                  boxShadow: widget.product.inStock ? [
-                                    BoxShadow(
-                                      color: primaryColor.withOpacity(0.25),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ] : [],
+                                  boxShadow: widget.product.inStock
+                                      ? [
+                                          BoxShadow(
+                                            color: primaryColor.withValues(
+                                              alpha: 0.25,
+                                            ),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ]
+                                      : [],
                                 ),
                                 child: Icon(
-                                  widget.product.stockCount > 0 ? Icons.add_rounded : Icons.block_rounded,
-                                  color: widget.product.stockCount > 0 ? Colors.white : Colors.grey.shade500,
+                                  widget.product.stockCount > 0
+                                      ? Icons.add_rounded
+                                      : Icons.block_rounded,
+                                  color: widget.product.stockCount > 0
+                                      ? Colors.white
+                                      : Colors.grey.shade500,
                                   size: 20,
                                 ),
-
                               ),
                             ),
                         ],
@@ -319,7 +380,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
           width: 24,
           height: 24,
           child: CircularProgressIndicator(
-            color: Theme.of(context).primaryColor.withOpacity(0.3),
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
             strokeWidth: 2,
           ),
         ),
@@ -331,7 +392,11 @@ class _ProductCardWidgetState extends State<ProductCardWidget> with SingleTicker
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: Center(
-        child: Icon(Icons.image_not_supported_outlined, color: Colors.grey.shade300, size: 36),
+        child: Icon(
+          Icons.image_not_supported_outlined,
+          color: Colors.grey.shade300,
+          size: 36,
+        ),
       ),
     );
   }

@@ -45,7 +45,7 @@ class UserModel {
       imageUrl: map['imageUrl'],
       role: map['role'] ?? 'user',
       onboardingCompleted: map['onboardingCompleted'] ?? false,
-      createdAt: map['createdAt'] != null 
+      createdAt: map['createdAt'] != null
           ? DateTime.tryParse(map['createdAt']) ?? DateTime.now()
           : DateTime.now(),
     );

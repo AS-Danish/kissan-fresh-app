@@ -17,7 +17,11 @@ class HelpSupportScreen extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 20),
-            Icon(Icons.support_agent_outlined, size: 80, color: Theme.of(context).primaryColor),
+            Icon(
+              Icons.support_agent_outlined,
+              size: 80,
+              color: Theme.of(context).primaryColor,
+            ),
             const SizedBox(height: 20),
             const Text(
               'How can we help you?',
@@ -64,7 +68,13 @@ class HelpSupportScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSupportOption(BuildContext context, IconData icon, String title, String subtitle, VoidCallback onTap) {
+  Widget _buildSupportOption(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String subtitle,
+    VoidCallback onTap,
+  ) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 0,
@@ -77,7 +87,7 @@ class HelpSupportScreen extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor.withOpacity(0.1),
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(icon, color: Theme.of(context).primaryColor),

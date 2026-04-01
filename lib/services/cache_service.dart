@@ -6,7 +6,10 @@ class CacheService extends GetxService {
   final Box _productsBox = Hive.box('products_cache');
 
   // Save regular products (by category/origin key)
-  Future<void> saveProducts(String cacheKey, List<ProductCardModel> products) async {
+  Future<void> saveProducts(
+    String cacheKey,
+    List<ProductCardModel> products,
+  ) async {
     final data = products.map((p) => p.toJson()).toList();
     await _productsBox.put('products_$cacheKey', data);
   }
@@ -15,13 +18,21 @@ class CacheService extends GetxService {
   List<ProductCardModel> getProducts(String cacheKey) {
     final data = _productsBox.get('products_$cacheKey');
     if (data != null && data is List) {
-      return data.map((json) => ProductCardModel.fromJson(Map<String, dynamic>.from(json))).toList();
+      return data
+          .map(
+            (json) =>
+                ProductCardModel.fromJson(Map<String, dynamic>.from(json)),
+          )
+          .toList();
     }
     return [];
   }
 
   // Save categorized products for the Home/Categories screen
-  Future<void> saveCategorizedProducts(String origin, Map<String, List<ProductCardModel>> categorizedData) async {
+  Future<void> saveCategorizedProducts(
+    String origin,
+    Map<String, List<ProductCardModel>> categorizedData,
+  ) async {
     final serializedData = categorizedData.map((key, value) {
       return MapEntry(key, value.map((p) => p.toJson()).toList());
     });

@@ -7,16 +7,21 @@ import 'product_card_widget.dart';
 class CategorizedProductsSection extends StatelessWidget {
   CategorizedProductsSection({super.key});
 
-  final CategorizedProductsController controller = Get.put(CategorizedProductsController());
+  final CategorizedProductsController controller = Get.put(
+    CategorizedProductsController(),
+  );
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      if (controller.isLoading.value && controller.categorizedProducts.isEmpty) {
+      if (controller.isLoading.value &&
+          controller.categorizedProducts.isEmpty) {
         return Padding(
           padding: const EdgeInsets.all(32.0),
           child: Center(
-            child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
+            child: CircularProgressIndicator(
+              color: Theme.of(context).primaryColor,
+            ),
           ),
         );
       }
@@ -38,7 +43,10 @@ class CategorizedProductsSection extends StatelessWidget {
             children: [
               // Category Header
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 8,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -71,7 +79,8 @@ class CategorizedProductsSection extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   scrollDirection: Axis.horizontal,
                   itemCount: products.length,
-                  separatorBuilder: (context, index) => const SizedBox(width: 16),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(width: 16),
                   itemBuilder: (context, index) {
                     return SizedBox(
                       width: 160,

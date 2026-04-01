@@ -19,7 +19,7 @@ class LocationSearchBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -44,7 +44,9 @@ class LocationSearchBar extends StatelessWidget {
                     hintText: 'Search for building, street or area...',
                     hintStyle: GoogleFonts.montserrat(
                       fontSize: 14,
-                      color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
+                      color: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
                     ),
                     border: InputBorder.none,
                     isDense: true,
@@ -54,24 +56,32 @@ class LocationSearchBar extends StatelessWidget {
                   onSubmitted: (value) => controller.searchAddress(value),
                 ),
               ),
-              Obx(() => controller.searchController.text.isNotEmpty || controller.isSearching.value
-                  ? IconButton(
-                      icon: const Icon(Icons.close, color: Colors.grey, size: 20),
-                      onPressed: () {
-                        controller.searchController.clear();
-                        controller.onSearchChanged('');
-                        FocusManager.instance.primaryFocus?.unfocus();
-                      },
-                    )
-                  : const SizedBox(width: 16)),
+              Obx(
+                () =>
+                    controller.searchController.text.isNotEmpty ||
+                        controller.isSearching.value
+                    ? IconButton(
+                        icon: const Icon(
+                          Icons.close,
+                          color: Colors.grey,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          controller.searchController.clear();
+                          controller.onSearchChanged('');
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        },
+                      )
+                    : const SizedBox(width: 16),
+              ),
             ],
           ),
         ),
-        
+
         // Autocomplete Predictions Dropdown
         Obx(() {
           if (controller.predictions.isEmpty) return const SizedBox.shrink();
-          
+
           return Container(
             margin: const EdgeInsets.only(top: 8),
             decoration: BoxDecoration(
@@ -79,7 +89,7 @@ class LocationSearchBar extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -92,24 +102,34 @@ class LocationSearchBar extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: controller.predictions.length,
-                separatorBuilder: (context, index) => Divider(height: 1, color: Theme.of(context).dividerColor),
+                separatorBuilder: (context, index) =>
+                    Divider(height: 1, color: Theme.of(context).dividerColor),
                 itemBuilder: (context, index) {
                   final prediction = controller.predictions[index];
                   // Extract main text and secondary text if possible (Google usually separates these by comma)
                   final desc = prediction['description'] ?? '';
                   final parts = desc.split(', ');
                   final mainText = parts.isNotEmpty ? parts[0] : desc;
-                  final secondaryText = parts.length > 1 ? parts.sublist(1).join(', ') : '';
+                  final secondaryText = parts.length > 1
+                      ? parts.sublist(1).join(', ')
+                      : '';
 
                   return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 0,
+                    ),
                     leading: CircleAvatar(
                       backgroundColor: Colors.grey.shade100,
                       radius: 16,
-                      child: const Icon(Icons.location_on, color: Colors.grey, size: 18),
+                      child: const Icon(
+                        Icons.location_on,
+                        color: Colors.grey,
+                        size: 18,
+                      ),
                     ),
                     title: Text(
-                      mainText, 
+                      mainText,
                       style: GoogleFonts.montserrat(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -118,21 +138,23 @@ class LocationSearchBar extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    subtitle: secondaryText.isNotEmpty 
-                      ? Text(
-                          secondaryText,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 12,
-                            color: Theme.of(context).textTheme.bodyMedium?.color,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        )
-                      : null,
+                    subtitle: secondaryText.isNotEmpty
+                        ? Text(
+                            secondaryText,
+                            style: GoogleFonts.montserrat(
+                              fontSize: 12,
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium?.color,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          )
+                        : null,
                     onTap: () {
                       FocusManager.instance.primaryFocus?.unfocus();
                       controller.searchAddress(
-                        prediction['description'], 
+                        prediction['description'],
                         placeId: prediction['place_id'],
                       );
                     },

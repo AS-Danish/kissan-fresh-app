@@ -29,7 +29,11 @@ class ImprovedHomeScreen extends StatelessWidget {
               // Ensure real-time theme updates
               Get.find<ThemeController>().isDarkMode.value;
               if (controller.currentTab.value == 'Grocery') {
-                final isAll = controller.categories[controller.selectedIndex.value].label == 'All';
+                final isAll =
+                    controller
+                        .categories[controller.selectedIndex.value]
+                        .label ==
+                    'All';
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

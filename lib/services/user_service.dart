@@ -8,7 +8,10 @@ class UserService {
 
   Future<bool> checkUserExists(String uid) async {
     try {
-      final docSnapshot = await _firestore.collection(collectionName).doc(uid).get();
+      final docSnapshot = await _firestore
+          .collection(collectionName)
+          .doc(uid)
+          .get();
       return docSnapshot.exists;
     } catch (e) {
       debugPrint("Error checking if user exists: $e");
@@ -18,7 +21,10 @@ class UserService {
 
   Future<void> createUser(UserModel user) async {
     try {
-      await _firestore.collection(collectionName).doc(user.id).set(user.toMap());
+      await _firestore
+          .collection(collectionName)
+          .doc(user.id)
+          .set(user.toMap());
     } catch (e) {
       debugPrint("Error creating user: $e");
       rethrow;
@@ -27,7 +33,10 @@ class UserService {
 
   Future<UserModel?> getUser(String uid) async {
     try {
-      final docSnapshot = await _firestore.collection(collectionName).doc(uid).get();
+      final docSnapshot = await _firestore
+          .collection(collectionName)
+          .doc(uid)
+          .get();
       if (docSnapshot.exists && docSnapshot.data() != null) {
         return UserModel.fromMap(docSnapshot.data()!);
       }

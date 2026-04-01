@@ -62,15 +62,39 @@ class OrderModel {
   }
 
   String get formattedOrderDate {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${orderDate.day} ${months[orderDate.month - 1]}, ${orderDate.year}';
   }
 
   String get formattedDeliveredDate {
     if (deliveredDate == null) return '';
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${deliveredDate!.day} ${months[deliveredDate!.month - 1]}, ${deliveredDate!.year}';
   }
 
@@ -151,14 +175,20 @@ class OrderModel {
       userId: json['userId'] ?? '',
       orderNumber: json['orderNumber'] ?? '',
       paymentId: json['paymentId'],
-      items: (json['items'] as List?)?.map((i) => OrderItem.fromJson(i)).toList() ?? [],
+      items:
+          (json['items'] as List?)
+              ?.map((i) => OrderItem.fromJson(i))
+              .toList() ??
+          [],
       totalAmount: (json['totalAmount'] ?? 0.0).toDouble(),
       subtotal: (json['subtotal'] ?? 0.0).toDouble(),
       discount: (json['discount'] ?? 0.0).toDouble(),
       couponDiscount: (json['couponDiscount'] ?? 0.0).toDouble(),
       deliveryFee: (json['deliveryFee'] ?? 0.0).toDouble(),
       orderDate: DateTime.parse(json['orderDate']),
-      deliveredDate: json['deliveredDate'] != null ? DateTime.parse(json['deliveredDate']) : null,
+      deliveredDate: json['deliveredDate'] != null
+          ? DateTime.parse(json['deliveredDate'])
+          : null,
       status: OrderStatus.values.firstWhere(
         (e) => e.name.toUpperCase() == json['status'],
         orElse: () => OrderStatus.processing,
@@ -210,9 +240,4 @@ class OrderItem {
   }
 }
 
-enum OrderStatus {
-  processing,
-  outForDelivery,
-  delivered,
-  cancelled,
-}
+enum OrderStatus { processing, outForDelivery, delivered, cancelled }

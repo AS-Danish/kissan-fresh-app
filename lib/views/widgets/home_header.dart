@@ -4,9 +4,8 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/homepage_controller.dart';
 import '../../controllers/profile_controller.dart';
-import '../../routes/AppRoutes.dart';
+import '../../routes/app_routes.dart';
 import '../../services/location_service.dart';
-import '../screens/search_screen.dart';
 import 'home_tab_toggle.dart';
 
 class HomeHeader extends StatelessWidget {
@@ -20,7 +19,10 @@ class HomeHeader extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Theme.of(context).primaryColor, Theme.of(context).colorScheme.secondary],
+          colors: [
+            Theme.of(context).primaryColor,
+            Theme.of(context).colorScheme.secondary,
+          ],
         ),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(32),
@@ -28,7 +30,7 @@ class HomeHeader extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).primaryColor.withOpacity(0.3),
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -68,9 +70,14 @@ class HomeHeader extends StatelessWidget {
                       const SizedBox(height: 12),
                       InkWell(
                         onTap: () async {
-                          final result = await Get.toNamed(AppRoutes.addressSelectionRoute);
-                          if (result != null && result is Map<String, dynamic>) {
-                            Get.find<HomepageController>().updateAddress(result['address'] ?? '');
+                          final result = await Get.toNamed(
+                            AppRoutes.addressSelectionRoute,
+                          );
+                          if (result != null &&
+                              result is Map<String, dynamic>) {
+                            Get.find<HomepageController>().updateAddress(
+                              result['address'] ?? '',
+                            );
                           }
                         },
                         borderRadius: BorderRadius.circular(8),
@@ -81,8 +88,9 @@ class HomeHeader extends StatelessWidget {
                           ),
                           child: Obx(() {
                             final locationService = Get.find<LocationService>();
-                            final isDenied = locationService.locationPermissionDenied.value;
-                            
+                            final isDenied =
+                                locationService.locationPermissionDenied.value;
+
                             if (isDenied) {
                               return Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -115,7 +123,7 @@ class HomeHeader extends StatelessWidget {
                                 ],
                               );
                             }
-                            
+
                             return Row(
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.center,
@@ -128,7 +136,10 @@ class HomeHeader extends StatelessWidget {
                                 const SizedBox(width: 8),
                                 Flexible(
                                   child: Text(
-                                    Get.find<HomepageController>().currentAddress.value ?? 'Fetching location...',
+                                    Get.find<HomepageController>()
+                                            .currentAddress
+                                            .value ??
+                                        'Fetching location...',
                                     style: GoogleFonts.montserrat(
                                       color: Colors.white,
                                       fontWeight: FontWeight.w600,
@@ -164,44 +175,51 @@ class HomeHeader extends StatelessWidget {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: profileController.profileImage.value.isEmpty 
-                              ? Colors.white.withOpacity(0.2)
+                          color: profileController.profileImage.value.isEmpty
+                              ? Colors.white.withValues(alpha: 0.2)
                               : Colors.transparent,
                           shape: BoxShape.circle,
                         ),
                         clipBehavior: Clip.antiAlias,
-                        child: Obx(() => profileController.profileImage.value.isEmpty
-                            ? Center(
-                                child: Text(
-                                  profileController.initials.value.isNotEmpty ? profileController.initials.value : 'U',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
+                        child: Obx(
+                          () => profileController.profileImage.value.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    profileController.initials.value.isNotEmpty
+                                        ? profileController.initials.value
+                                        : 'U',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
+                                )
+                              : Image.network(
+                                  profileController.profileImage.value,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(
+                                        Icons.person,
+                                        color: Colors.white,
+                                      ),
                                 ),
-                              )
-                            : Image.network(
-                                profileController.profileImage.value,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Icon(Icons.person, color: Colors.white),
-                              )),
+                        ),
                       ),
                     );
-                  }
+                  },
                 ),
               ],
             ),
             const SizedBox(height: 24),
 
-              Container(
+            Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: Colors.black.withValues(alpha: 0.08),
                     blurRadius: 16,
                     offset: const Offset(0, 4),
                   ),
@@ -209,7 +227,7 @@ class HomeHeader extends StatelessWidget {
               ),
               child: GestureDetector(
                 onTap: () {
-                   Get.toNamed(AppRoutes.searchRoute);
+                  Get.toNamed(AppRoutes.searchRoute);
                 },
                 behavior: HitTestBehavior.opaque,
                 child: IgnorePointer(
@@ -238,9 +256,16 @@ class HomeHeader extends StatelessWidget {
                       suffixIcon: Padding(
                         padding: const EdgeInsets.only(right: 4),
                         child: IconButton(
-                          icon: const Icon(Icons.mic, size: 22, color: Color(0xFF9AA7AC)),
+                          icon: const Icon(
+                            Icons.mic,
+                            size: 22,
+                            color: Color(0xFF9AA7AC),
+                          ),
                           onPressed: () {
-                            Get.toNamed(AppRoutes.searchRoute, arguments: {'startSpeech': true});
+                            Get.toNamed(
+                              AppRoutes.searchRoute,
+                              arguments: {'startSpeech': true},
+                            );
                           },
                         ),
                       ),
