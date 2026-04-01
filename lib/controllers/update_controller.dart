@@ -19,10 +19,8 @@ class UpdateController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // Start update checks after a short delay to ensure app is ready
-    Future.delayed(const Duration(seconds: 2), () {
-      checkUpdates();
-    });
+    // Start update checks immediately
+    checkUpdates();
   }
 
   Future<void> checkUpdates() async {

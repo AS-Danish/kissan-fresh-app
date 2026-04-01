@@ -40,12 +40,12 @@ void main() async {
   await Hive.openBox('wishlist_box');
   await Hive.openBox('orders_cache');
   await Hive.openBox('products_cache');
+  Get.put(UpdateController(), permanent: true); // Check for updates immediately
   Get.put(ThemeController()); // Initialize theme early
   Get.put(CacheService(), permanent: true); // Register CacheService
   Get.put(LocationService(), permanent: true); // Add LocationService
   Get.put(AuthController(), permanent: true);
   Get.put(CartController(), permanent: true);
-  Get.put(UpdateController(), permanent: true);
   runApp(const MyApp());
 }
 
