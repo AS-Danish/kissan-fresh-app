@@ -11,27 +11,68 @@ import 'auth_controller.dart';
 class WishlistController extends GetxController {
   // Observable list of wishlist items
   RxList<ProductCardModel> wishlistItems = <ProductCardModel>[].obs;
+  // Real-time product data map: productId -> product data
+  RxMap<String, Map<String, dynamic>> realTimeProductData =
+      <String, Map<String, dynamic>>{}.obs;
+
   final AuthController _authController = Get.find<AuthController>();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   StreamSubscription? _productsSubscription;
+  Worker? _wishlistWorker;
 
   @override
   void onInit() {
     super.onInit();
+    
+    // Start listening to product changes whenever wishlistItems changes
+    _wishlistWorker = ever(wishlistItems, (_) {
+      _updateProductsSubscription();
+    });
+    
+    // Initial fetch from cache and network
     _fetchWishlist();
-    _startProductsListener();
   }
 
   @override
   void onClose() {
     _productsSubscription?.cancel();
+    _wishlistWorker?.dispose();
     super.onClose();
   }
 
-  void _startProductsListener() {
-    // Optimization: Don't listen to the entire products collection.
-    // Instead, we could listen to specific products if needed, but for now
-    // let's rely on manual sync or explicit product fetches.
+  void _updateProductsSubscription() {
+    _productsSubscription?.cancel();
+
+    final productIds =
+        wishlistItems
+            .map((item) => item.id)
+            .where((id) => id != null)
+            .cast<String>()
+            .toList();
+
+    if (productIds.isEmpty) {
+      realTimeProductData.clear();
+      return;
+    }
+
+    // Split into chunks if needed, but for wishlist we limit to top 30 for real-time
+    final limitedIds = productIds.take(30).toList();
+
+    _productsSubscription =
+        _firestore
+            .collection('products')
+            .where(FieldPath.documentId, whereIn: limitedIds)
+            .snapshots()
+            .listen(
+              (snapshot) {
+                final Map<String, Map<String, dynamic>> newData = {};
+                for (var doc in snapshot.docs) {
+                  newData[doc.id] = doc.data();
+                }
+                realTimeProductData.assignAll(newData);
+              },
+              onError: (e) => debugPrint("Error in wishlist products stream: $e"),
+            );
   }
 
   void _fetchWishlist() async {
@@ -74,8 +115,9 @@ class WishlistController extends GetxController {
         }
       }
       wishlistItems.value = loadedItems;
-
-      wishlistItems.value = loadedItems;
+      
+      // Update real-time subscription immediately after fetch
+      _updateProductsSubscription();
 
       // Optimization: Removed full collection fetch for sync.
       // Syncing should be done per-item when needed or when a product is viewed.

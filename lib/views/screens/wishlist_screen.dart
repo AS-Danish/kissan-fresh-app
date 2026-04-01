@@ -89,7 +89,17 @@ class WishlistScreen extends StatelessWidget {
           itemBuilder: (context, index) {
             final product = controller.wishlistItems[index];
 
-            // Create a wrapper product with functional callbacks
+            // Get real-time data if available
+            final realTimeData = controller.realTimeProductData[product.id];
+
+            // Primary logic: use real-time inStock boolean, if available.
+            // User requested to ignore stockCount for wishlist availability.
+            bool effectiveInStock = product.inStock;
+            if (realTimeData != null) {
+              effectiveInStock = realTimeData['inStock'] ?? true;
+            }
+
+            // Create a wrapper product with functional callbacks and real-time stock
             final functionalProduct = ProductCardModel(
               id: product.id,
               image: product.image,
@@ -99,12 +109,14 @@ class WishlistScreen extends StatelessWidget {
               price: product.price,
               unit: product.unit,
               category: product.category,
-              inStock: product.inStock,
-              stockCount: product.stockCount,
+              inStock: effectiveInStock,
+              // We set stockCount to 1 if inStock is true to satisfy ProductCardWidget's UI logic
+              // which checks both inStock AND stockCount > 0.
+              stockCount: effectiveInStock ? 1 : 0,
               onTap: () {
                 Get.toNamed(
                   AppRoutes.productDetailsRoute,
-                  arguments: product, // Pass the original product
+                  arguments: product, // Pass the original product or update it too if needed
                 );
               },
               onAddToCart: () {
