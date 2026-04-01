@@ -1,0 +1,129 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:shorebird_code_push/shorebird_code_push.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../views/screens/update/force_update_screen.dart';
+
+import 'dart:math' as math;
+
+class UpdateController extends GetxController {
+  final ShorebirdUpdater _updater = ShorebirdUpdater();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  
+  RxBool isCheckingForUpdate = false.obs;
+  RxBool isUpdateAvailable = false.obs;
+  RxBool isDownloading = false.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Start update checks after a short delay to ensure app is ready
+    Future.delayed(const Duration(seconds: 2), () {
+      checkUpdates();
+    });
+  }
+
+  Future<void> checkUpdates() async {
+    await checkForceUpdate();
+    await checkShorebirdUpdate();
+  }
+
+  /// Checks if a mandatory update is required via Play Store
+  Future<void> checkForceUpdate() async {
+    try {
+      final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      final String currentVersion = packageInfo.version;
+      
+      final doc = await _firestore.collection('app_config').doc('versioning').get();
+      
+      if (doc.exists) {
+        final data = doc.data()!;
+        final String minVersion = data['min_version'] ?? '1.0.0';
+        final String storeUrl = data['store_url'] ?? '';
+        final bool forceUpdateEnabled = data['force_update'] ?? false;
+
+        if (forceUpdateEnabled && _isVersionLower(currentVersion, minVersion)) {
+          Get.offAll(() => ForceUpdateScreen(storeUrl: storeUrl));
+        }
+      }
+    } catch (e) {
+      debugPrint("Error checking force update: $e");
+    }
+  }
+
+  /// Checks for Shorebird OTA patches
+  Future<void> checkShorebirdUpdate() async {
+    try {
+      final status = await _updater.checkForUpdate();
+      
+      if (status == UpdateStatus.outdated) {
+        isUpdateAvailable.value = true;
+        
+        // Auto-download the update in background
+        isDownloading.value = true;
+        await _updater.update();
+        isDownloading.value = false;
+
+        // Notify user to restart
+        _showRestartSnackbar();
+      }
+    } catch (e) {
+      debugPrint("Error checking Shorebird update: $e");
+      isDownloading.value = false;
+    }
+  }
+
+  void _showRestartSnackbar() {
+    Get.snackbar(
+      'Update Available',
+      'A new version has been downloaded. Please restart the app to apply the changes.',
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: const Color(0xFF10B981),
+      colorText: Colors.white,
+      duration: const Duration(days: 1), // Keep it visible
+      isDismissible: false,
+      mainButton: TextButton(
+        onPressed: () {
+          Get.back();
+        },
+        child: const Text(
+          'OK',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+      ),
+      margin: const EdgeInsets.all(16),
+      borderRadius: 12,
+      icon: const Icon(Icons.system_update, color: Colors.white),
+    );
+  }
+
+  bool _isVersionLower(String current, String min) {
+    List<int> currentParts = _parseVersion(current);
+    List<int> minParts = _parseVersion(min);
+
+    for (int i = 0; i < math.max(currentParts.length, minParts.length); i++) {
+      int currentPart = i < currentParts.length ? currentParts[i] : 0;
+      int minPart = i < minParts.length ? minParts[i] : 0;
+
+      if (currentPart < minPart) return true;
+      if (currentPart > minPart) return false;
+    }
+    return false;
+  }
+
+  List<int> _parseVersion(String version) {
+    // Handle versions like "1.0.0+3" or "1.0.0-beta"
+    String cleanVersion = version.split('+').first.split('-').first;
+    return cleanVersion.split('.').map((e) => int.tryParse(e) ?? 0).toList();
+  }
+
+  Future<void> launchStore(String url) async {
+    if (url.isEmpty) return;
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+}

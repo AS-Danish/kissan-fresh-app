@@ -15,6 +15,7 @@ import 'package:kissanfresh/controllers/auth_controller.dart';
 import 'package:kissanfresh/controllers/cart_controller.dart';
 import 'package:kissanfresh/services/location_service.dart';
 import 'package:kissanfresh/controllers/theme_controller.dart';
+import 'package:kissanfresh/controllers/update_controller.dart';
 import 'package:kissanfresh/services/cache_service.dart';
 import 'package:kissanfresh/utils/app_theme.dart';
 
@@ -44,6 +45,7 @@ void main() async {
   Get.put(LocationService(), permanent: true); // Add LocationService
   Get.put(AuthController(), permanent: true);
   Get.put(CartController(), permanent: true);
+  Get.put(UpdateController(), permanent: true);
   runApp(const MyApp());
 }
 
