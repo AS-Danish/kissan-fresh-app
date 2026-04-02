@@ -468,6 +468,13 @@ class CartController extends GetxController {
       return;
     }
 
+    // Step 0: Validate Service Area
+    final resolved = _resolveDeliveryAddressData();
+    if (!_validateServiceArea(resolved)) {
+      isProcessingOrder.value = false;
+      return;
+    }
+
     // Step 1: Validate prices and stock first
     Get.dialog(
       const Center(child: CircularProgressIndicator(color: Color(0xFF0d9488))),
@@ -546,7 +553,7 @@ class CartController extends GetxController {
     final String orderNumber = 'ORD${DateTime.now().millisecondsSinceEpoch}';
 
     // Resolve delivery address from multiple sources
-    final String deliveryAddress = _resolveDeliveryAddress();
+    final resolved = _resolveDeliveryAddressData();
 
     final order = OrderModel(
       id: orderId,
@@ -571,7 +578,9 @@ class CartController extends GetxController {
       deliveryFee: deliveryFee,
       orderDate: DateTime.now(),
       status: OrderStatus.processing,
-      deliveryAddress: deliveryAddress,
+      deliveryAddress: resolved.address,
+      latitude: resolved.latitude,
+      longitude: resolved.longitude,
       paymentStatus: paymentStatus,
       orderType: orderType,
       slotId: Get.find<SlotSelectionController>().selectedSlotId.value,
@@ -647,6 +656,52 @@ class CartController extends GetxController {
   /// 2. LocationService (GPS-detected address)
   /// 3. Hive persisted address
   String _resolveDeliveryAddress() {
+    return _resolveDeliveryAddressData().address;
+  }
+
+  /// Helper to check if the resolved address is within the service area (30km)
+  bool _validateServiceArea(ResolvedAddress resolved) {
+    final locationService = Get.find<LocationService>();
+
+    // If we have coordinates, use the precise distance check
+    if (resolved.latitude != null && resolved.longitude != null) {
+      final isServiceable = locationService.isWithinServiceArea(
+        resolved.latitude,
+        resolved.longitude,
+      );
+
+      if (!isServiceable) {
+        Get.snackbar(
+          'Service Unavailable',
+          'We are not in your area yet. Currently, we only serve Chattrapati Sambhaji Nagar.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.orange.shade800,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 6),
+          icon: const Icon(Icons.location_off_rounded, color: Colors.white),
+        );
+        return false;
+      }
+      return true;
+    }
+
+    // Fallback if no coordinates: If it's a valid string, return true but log it.
+    // However, it's safer to require map selection for precision.
+    if (resolved.address == 'Address not available') {
+      Get.snackbar(
+        'Address Error',
+        'Please select a valid delivery address.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  /// Resolves the delivery address and coordinates from multiple sources
+  ResolvedAddress _resolveDeliveryAddressData() {
     const invalidValues = [
       'Select delivery address',
       'Default Address',
@@ -657,39 +712,53 @@ class CartController extends GetxController {
       'No address selected',
     ];
 
-    // 1. Try AddressController (user explicitly selected an address)
+    // Priority 1: AddressController (user explicitly selected an address)
     try {
       if (Get.isRegistered<AddressController>()) {
-        final addr = Get.find<AddressController>().currentAddress.value;
-        if (!invalidValues.contains(addr)) return addr;
+        final ctrl = Get.find<AddressController>();
+        final addr = ctrl.currentAddress.value;
+        if (!invalidValues.contains(addr)) {
+          return ResolvedAddress(
+            address: addr,
+            latitude: ctrl.selectedLocation.value.latitude,
+            longitude: ctrl.selectedLocation.value.longitude,
+          );
+        }
       }
     } catch (_) {}
 
-    // 2. Try LocationService (GPS-detected address)
+    // Priority 2: LocationService (GPS-detected address)
     try {
       if (Get.isRegistered<LocationService>()) {
-        final addr = Get.find<LocationService>().currentAddress.value;
-        if (addr != null && !invalidValues.contains(addr)) return addr;
+        final loc = Get.find<LocationService>();
+        final addr = loc.currentAddress.value;
+        if (addr != null && !invalidValues.contains(addr)) {
+          return ResolvedAddress(
+            address: addr,
+            latitude: loc.currentLocation.value?.latitude,
+            longitude: loc.currentLocation.value?.longitude,
+          );
+        }
       }
     } catch (_) {}
 
-    // 3. Try Hive persisted address
+    // Priority 3: Hive persisted settings
     try {
       final box = Hive.box('user_settings');
       final addr = box.get('current_address');
+      final lat = box.get('last_known_lat');
+      final lng = box.get('last_known_lng');
+
       if (addr != null && addr is String && !invalidValues.contains(addr)) {
-        return addr;
-      }
-      // Also check last known address from LocationService
-      final lastAddr = box.get('last_known_address');
-      if (lastAddr != null &&
-          lastAddr is String &&
-          !invalidValues.contains(lastAddr)) {
-        return lastAddr;
+        return ResolvedAddress(
+          address: addr,
+          latitude: lat,
+          longitude: lng,
+        );
       }
     } catch (_) {}
 
-    return 'Address not available';
+    return ResolvedAddress(address: 'Address not available');
   }
 
   Future<void> _recordFailedOrder(OrderModel order, String error) async {
@@ -718,6 +787,13 @@ class CartController extends GetxController {
     if (user == null) {
       isProcessingOrder.value = false;
       Get.toNamed(AppRoutes.loginScreen);
+      return;
+    }
+
+    // Step 0: Validate Service Area
+    final resolved = _resolveDeliveryAddressData();
+    if (!_validateServiceArea(resolved)) {
+      isProcessingOrder.value = false;
       return;
     }
 
@@ -871,6 +947,18 @@ class CartController extends GetxController {
       debugPrint("Error saving cart to Hive: $e");
     }
   }
+}
+
+class ResolvedAddress {
+  final String address;
+  final double? latitude;
+  final double? longitude;
+
+  ResolvedAddress({
+    required this.address,
+    this.latitude,
+    this.longitude,
+  });
 }
 
 class CartItem {

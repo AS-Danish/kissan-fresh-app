@@ -11,6 +11,11 @@ class LocationService extends GetxService {
   var currentAddress = RxnString();
   var isLocationEnabled = false.obs;
   var locationPermissionDenied = false.obs;
+  
+  // Service Area Configuration
+  static const double serviceCenterLat = 19.8762;
+  static const double serviceCenterLng = 75.3433;
+  static const double maxServiceRadiusMeters = 30000; // 30km
 
   @override
   void onInit() {
@@ -93,7 +98,22 @@ class LocationService extends GetxService {
         debugPrint('Location fetched and saved: $address');
       }
     } catch (e) {
-      debugPrint('Error getting location on startup: $e');
+      debugPrint('Error getting location: $e');
     }
+  }
+
+  /// Checks if a given coordinate is within the serviceable area (30km radius from city center)
+  bool isWithinServiceArea(double? lat, double? lng) {
+    if (lat == null || lng == null) return false;
+
+    final distance = Geolocator.distanceBetween(
+      lat,
+      lng,
+      serviceCenterLat,
+      serviceCenterLng,
+    );
+
+    debugPrint('Service Area Check: Distance is ${(distance / 1000).toStringAsFixed(2)} km');
+    return distance <= maxServiceRadiusMeters;
   }
 }

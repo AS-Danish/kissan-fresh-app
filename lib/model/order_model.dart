@@ -16,6 +16,8 @@ class OrderModel {
   final OrderStatus status;
   final String? paymentId;
   final String deliveryAddress;
+  final double? latitude;
+  final double? longitude;
   final String paymentStatus;
   final String orderType;
   final String? riderId;
@@ -38,6 +40,8 @@ class OrderModel {
     this.deliveredDate,
     required this.status,
     required this.deliveryAddress,
+    this.latitude,
+    this.longitude,
     this.paymentStatus = 'paid',
     this.orderType = 'Online',
     this.riderId,
@@ -113,6 +117,8 @@ class OrderModel {
     OrderStatus? status,
     String? paymentId,
     String? deliveryAddress,
+    double? latitude,
+    double? longitude,
     String? paymentStatus,
     String? orderType,
     String? riderId,
@@ -135,6 +141,8 @@ class OrderModel {
       status: status ?? this.status,
       paymentId: paymentId ?? this.paymentId,
       deliveryAddress: deliveryAddress ?? this.deliveryAddress,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
       paymentStatus: paymentStatus ?? this.paymentStatus,
       orderType: orderType ?? this.orderType,
       riderId: riderId ?? this.riderId,
@@ -160,6 +168,8 @@ class OrderModel {
       'deliveredDate': deliveredDate?.toIso8601String(),
       'status': status.name.toUpperCase(),
       'deliveryAddress': deliveryAddress,
+      'latitude': latitude,
+      'longitude': longitude,
       'paymentStatus': paymentStatus,
       'orderType': orderType,
       'riderId': riderId,
@@ -194,6 +204,8 @@ class OrderModel {
         orElse: () => OrderStatus.processing,
       ),
       deliveryAddress: json['deliveryAddress'] ?? '',
+      latitude: (json['latitude'] ?? 0.0).toDouble(),
+      longitude: (json['longitude'] ?? 0.0).toDouble(),
       paymentStatus: json['paymentStatus'] ?? 'paid',
       orderType: json['orderType'] ?? 'Online',
       riderId: json['riderId'],

@@ -169,91 +169,94 @@ class SlotSelectionScreen extends StatelessWidget {
 
   Widget _buildSlotCard(ThemeData theme, SlotModel slot) {
     final bool isAvailable = slot.isAvailable;
-    final bool isSelected = controller.selectedSlotId.value == slot.id;
 
     final String timeRange =
         "${DateFormat('h:mm a').format(slot.startTime)} - ${DateFormat('h:mm a').format(slot.endTime)}";
 
-    return GestureDetector(
-      onTap: isAvailable ? () => controller.selectSlot(slot.id!) : null,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? theme.primaryColor
-              : (isAvailable
-                    ? theme.colorScheme.surface
-                    : theme.colorScheme.surface.withValues(alpha: 0.5)),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
+    return Obx(() {
+      final bool isSelected = controller.selectedSlotId.value == slot.id;
+
+      return GestureDetector(
+        onTap: isAvailable ? () => controller.selectSlot(slot.id!) : null,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          decoration: BoxDecoration(
             color: isSelected
                 ? theme.primaryColor
                 : (isAvailable
-                      ? theme.dividerColor.withValues(alpha: 0.5)
-                      : theme.dividerColor.withValues(alpha: 0.2)),
-            width: isSelected ? 2 : 1,
+                      ? theme.colorScheme.surface
+                      : theme.colorScheme.surface.withValues(alpha: 0.5)),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected
+                  ? theme.primaryColor
+                  : (isAvailable
+                        ? theme.dividerColor.withValues(alpha: 0.5)
+                        : theme.dividerColor.withValues(alpha: 0.2)),
+              width: isSelected ? 2 : 1,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: theme.primaryColor.withValues(alpha: 0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [],
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: theme.primaryColor.withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
+          child: Stack(
+            children: [
+              Center(
+                child: Text(
+                  timeRange,
+                  style: GoogleFonts.montserrat(
+                    fontSize: 13,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                    color: isSelected
+                        ? Colors.white
+                        : (isAvailable
+                              ? theme.colorScheme.onSurface
+                              : theme.colorScheme.onSurface.withValues(
+                                  alpha: 0.4,
+                                )),
                   ),
-                ]
-              : [],
-        ),
-        child: Stack(
-          children: [
-            Center(
-              child: Text(
-                timeRange,
-                style: GoogleFonts.montserrat(
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                  color: isSelected
-                      ? Colors.white
-                      : (isAvailable
-                            ? theme.colorScheme.onSurface
-                            : theme.colorScheme.onSurface.withValues(
-                                alpha: 0.4,
-                              )),
                 ),
               ),
-            ),
-            if (!isAvailable)
-              Positioned(
-                top: 4,
-                right: 4,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    slot.isFull ? 'FULL' : 'UNAVAILABLE',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 8,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.red,
+              if (!isAvailable)
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      slot.isFull ? 'FULL' : 'UNAVAILABLE',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 8,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.red,
+                      ),
                     ),
                   ),
                 ),
-              ),
-            if (isSelected)
-              const Positioned(
-                top: 6,
-                right: 6,
-                child: Icon(Icons.check_circle, color: Colors.white, size: 14),
-              ),
-          ],
+              if (isSelected)
+                const Positioned(
+                  top: 6,
+                  right: 6,
+                  child: Icon(Icons.check_circle, color: Colors.white, size: 14),
+                ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    });
   }
 
   Widget _buildEmptyState(ThemeData theme) {
