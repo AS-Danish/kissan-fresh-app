@@ -9,10 +9,7 @@ import '../../model/bestseller_card_model.dart';
 class BestsellersSection extends StatelessWidget {
   BestsellersSection({super.key});
 
-  final BestsellersController controller = Get.put(
-    BestsellersController(),
-    permanent: true,
-  );
+  final BestsellersController controller = Get.find<BestsellersController>();
 
   @override
   Widget build(BuildContext context) {
@@ -78,10 +75,10 @@ class BestsellersSection extends StatelessWidget {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 0.85,
+                crossAxisCount: 3,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 0.7,
               ),
               itemCount: controller.bestsellers.length,
               itemBuilder: (context, index) {
@@ -132,14 +129,14 @@ class BestsellersSection extends StatelessWidget {
                           Expanded(
                             child: _buildImageContainer(context, item.image1),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4),
                           Expanded(
                             child: _buildImageContainer(context, item.image2),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 4),
                     // Right Column (2 images)
                     Expanded(
                       child: Column(
@@ -147,7 +144,7 @@ class BestsellersSection extends StatelessWidget {
                           Expanded(
                             child: _buildImageContainer(context, item.image3),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4),
                           Expanded(
                             child: _buildMoreContainer(
                               context,
@@ -174,7 +171,7 @@ class BestsellersSection extends StatelessWidget {
                     child: Text(
                       item.title,
                       style: GoogleFonts.montserrat(
-                        fontSize: 14,
+                        fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: Theme.of(context).colorScheme.onSurface,
                         letterSpacing: 0.2,
@@ -185,8 +182,8 @@ class BestsellersSection extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Container(
-                    width: 28,
-                    height: 28,
+                    width: 20,
+                    height: 20,
                     decoration: BoxDecoration(
                       color: Theme.of(
                         context,
@@ -195,7 +192,7 @@ class BestsellersSection extends StatelessWidget {
                     ),
                     child: Icon(
                       Icons.arrow_forward_ios,
-                      size: 12,
+                      size: 8,
                       color: Theme.of(context).primaryColor,
                     ),
                   ),
@@ -313,7 +310,7 @@ class BestsellersSection extends StatelessWidget {
                 Text(
                   count,
                   style: GoogleFonts.montserrat(
-                    fontSize: 18,
+                    fontSize: 14,
                     fontWeight: FontWeight.w900,
                     color: Colors.white,
                     letterSpacing: 0.5,
@@ -322,7 +319,7 @@ class BestsellersSection extends StatelessWidget {
                 Text(
                   'MORE',
                   style: GoogleFonts.montserrat(
-                    fontSize: 9,
+                    fontSize: 7,
                     fontWeight: FontWeight.w700,
                     color: Colors.white.withValues(alpha: 0.9),
                     letterSpacing: 1.2,

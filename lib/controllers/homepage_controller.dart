@@ -214,6 +214,21 @@ class HomepageController extends GetxController {
       onTap: () {},
     ),
     CategoryItemModel(
+      label: "Vegetables",
+      icon: FontAwesomeIcons.carrot,
+      onTap: () {},
+    ),
+    CategoryItemModel(
+      label: "Chicken",
+      icon: FontAwesomeIcons.drumstickBite,
+      onTap: () {},
+    ),
+    CategoryItemModel(
+      label: "Meat",
+      icon: FontAwesomeIcons.bacon,
+      onTap: () {},
+    ),
+    CategoryItemModel(
       label: "Winter",
       icon: FontAwesomeIcons.snowflake,
       onTap: () {},

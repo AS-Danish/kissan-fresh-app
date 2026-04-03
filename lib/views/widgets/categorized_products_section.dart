@@ -7,9 +7,9 @@ import 'product_card_widget.dart';
 class CategorizedProductsSection extends StatelessWidget {
   CategorizedProductsSection({super.key});
 
-  final CategorizedProductsController controller = Get.put(
-    CategorizedProductsController(),
-  );
+  final CategorizedProductsController controller = Get.find<
+    CategorizedProductsController
+  >();
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +74,7 @@ class CategorizedProductsSection extends StatelessWidget {
               ),
               // Horizontal Scroll
               SizedBox(
-                height: 250, // Height for ProductCardWidget
+                height: 200, // Height for ProductCardWidget in 3-column layout
                 child: ListView.separated(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   scrollDirection: Axis.horizontal,
@@ -83,7 +83,7 @@ class CategorizedProductsSection extends StatelessWidget {
                       const SizedBox(width: 16),
                   itemBuilder: (context, index) {
                     return SizedBox(
-                      width: 160,
+                      width: 115,
                       child: ProductCardWidget(
                         product: products[index],
                         showAddButton: false,

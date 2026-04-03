@@ -42,7 +42,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
         child: Container(
           decoration: BoxDecoration(
             color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.05),
@@ -71,7 +71,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                     Positioned.fill(
                       child: ClipRRect(
                         borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(24),
+                          top: Radius.circular(18),
                         ),
                         child: ColorFiltered(
                           colorFilter: widget.product.inStock
@@ -109,7 +109,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(24),
+                            top: Radius.circular(18),
                           ),
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
@@ -127,8 +127,8 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                     if (widget.product.tags != null &&
                         widget.product.tags!.isNotEmpty)
                       Positioned(
-                        top: 12,
-                        left: 12,
+                        top: 8,
+                        left: 8,
                         child: Wrap(
                           spacing: 4,
                           children: widget.product.tags!
@@ -136,8 +136,8 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                               .map(
                                 (tag) => Container(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
+                                    horizontal: 6,
+                                    vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
                                     color: primaryColor.withValues(alpha: 0.9),
@@ -156,7 +156,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                                     tag.toUpperCase(),
                                     style: const TextStyle(
                                       color: Colors.white,
-                                      fontSize: 8,
+                                      fontSize: 7,
                                       fontWeight: FontWeight.w900,
                                       letterSpacing: 0.5,
                                     ),
@@ -201,8 +201,8 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                 flex: 11,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
+                    horizontal: 8,
+                    vertical: 6,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,7 +216,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                             Text(
                               widget.product.title,
                               style: GoogleFonts.outfit(
-                                fontSize: 13,
+                                fontSize: 11.5,
                                 fontWeight: FontWeight.w700,
                                 color: widget.product.inStock
                                     ? colorScheme.onSurface
@@ -230,12 +230,12 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                             Text(
                               widget.product.description,
                               style: GoogleFonts.outfit(
-                                fontSize: 9.5,
+                                fontSize: 8.5,
                                 fontWeight: FontWeight.w400,
                                 color: Colors.grey.shade500,
                                 height: 1.2,
                               ),
-                              maxLines: 2,
+                              maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ],
@@ -255,8 +255,8 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                               alignment: Alignment.centerLeft,
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 6,
+                                  horizontal: 6,
+                                  vertical: 4,
                                 ),
                                 decoration: BoxDecoration(
                                   color:
@@ -264,7 +264,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                                           widget.product.stockCount > 0)
                                       ? primaryColor.withValues(alpha: 0.1)
                                       : Colors.grey.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -275,7 +275,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                                     Text(
                                       '₹',
                                       style: GoogleFonts.outfit(
-                                        fontSize: 11,
+                                        fontSize: 10,
                                         fontWeight: FontWeight.w600,
                                         color:
                                             (widget.product.inStock &&
@@ -287,7 +287,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                                     Text(
                                       widget.product.price.toStringAsFixed(0),
                                       style: GoogleFonts.outfit(
-                                        fontSize: 16,
+                                        fontSize: 13.5,
                                         fontWeight: FontWeight.w800,
                                         color:
                                             (widget.product.inStock &&
@@ -300,7 +300,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                                     Text(
                                       '/${widget.product.unit}',
                                       style: GoogleFonts.outfit(
-                                        fontSize: 8,
+                                        fontSize: 7,
                                         fontWeight: FontWeight.w500,
                                         color:
                                             (widget.product.inStock &&
@@ -327,15 +327,15 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                                   : null,
 
                               child: Container(
-                                width: 34,
-                                height: 34,
+                                width: 28,
+                                height: 28,
                                 decoration: BoxDecoration(
                                   color:
                                       (widget.product.inStock &&
                                           widget.product.stockCount > 0)
                                       ? primaryColor
                                       : Colors.grey.shade300,
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(8),
                                   boxShadow: widget.product.inStock
                                       ? [
                                           BoxShadow(
@@ -355,7 +355,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                                   color: widget.product.stockCount > 0
                                       ? Colors.white
                                       : Colors.grey.shade500,
-                                  size: 20,
+                                  size: 16,
                                 ),
                               ),
                             ),
