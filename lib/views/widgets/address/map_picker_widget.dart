@@ -29,31 +29,32 @@ class _MapPickerWidgetState extends State<MapPickerWidget> {
   Widget build(BuildContext context) {
     bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    return Obx(
-      () => GoogleMap(
-        key: const ValueKey('map_picker_stable'),
-        style: isDarkMode ? AppTheme.darkMapStyle : null,
-        onMapCreated: (controller) {
-          widget.controller.onMapCreated(controller);
-        },
-        initialCameraPosition: _initialPosition,
-        onTap: widget.controller.onMapTap,
-        markers: {
-          Marker(
-            markerId: const MarkerId('selected-location'),
-            position: widget.controller.selectedLocation.value,
-            icon: BitmapDescriptor.defaultMarkerWithHue(
-              BitmapDescriptor.hueRed,
+    return GetBuilder<AddressController>(
+      id: 'map-ui',
+      builder: (controller) {
+        return GoogleMap(
+          key: const ValueKey('map_picker_stable'),
+          style: isDarkMode ? AppTheme.darkMapStyle : null,
+          onMapCreated: controller.onMapCreated,
+          initialCameraPosition: _initialPosition,
+          onTap: controller.onMapTap,
+          markers: {
+            Marker(
+              markerId: const MarkerId('selected-location'),
+              position: controller.selectedLocation.value,
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                BitmapDescriptor.hueRed,
+              ),
             ),
-          ),
-        },
-        myLocationEnabled: true,
-        myLocationButtonEnabled: false,
-        zoomControlsEnabled: false,
-        compassEnabled: true,
-        mapToolbarEnabled: false,
-        mapType: MapType.normal,
-      ),
+          },
+          myLocationEnabled: true,
+          myLocationButtonEnabled: false,
+          zoomControlsEnabled: false,
+          compassEnabled: true,
+          mapToolbarEnabled: false,
+          mapType: MapType.normal,
+        );
+      },
     );
   }
 }

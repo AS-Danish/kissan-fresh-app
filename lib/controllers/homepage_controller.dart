@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'dart:async';
+
 import 'package:kissanfresh/services/location_service.dart';
 import 'package:kissanfresh/views/screens/product_details_screen.dart';
 import 'package:kissanfresh/model/product_card_model.dart';
@@ -21,6 +22,7 @@ class HomepageController extends GetxController {
   final RxBool isLoadingSpecials = false.obs;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final CacheService _cacheService = Get.find<CacheService>();
+  StreamSubscription? _specialsSubscription;
 
   @override
   void onInit() {
@@ -56,7 +58,7 @@ class HomepageController extends GetxController {
           "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
 
       // Use a listener for the specials document itself
-      _firestore
+      _specialsSubscription = _firestore
           .collection('todays_specials')
           .doc(dateStr)
           .snapshots()
@@ -210,108 +212,103 @@ class HomepageController extends GetxController {
   final categories = [
     CategoryItemModel(
       label: "All",
-      icon: FontAwesomeIcons.tableCells,
+      icon: Icons.grid_view,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Vegetables",
-      icon: FontAwesomeIcons.carrot,
+      icon: Icons.eco,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Chicken",
-      icon: FontAwesomeIcons.drumstickBite,
+      icon: Icons.set_meal,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Meat",
-      icon: FontAwesomeIcons.bacon,
+      icon: Icons.restaurant,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Winter",
-      icon: FontAwesomeIcons.snowflake,
+      icon: Icons.ac_unit,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Electronics",
-      icon: FontAwesomeIcons.desktop,
+      icon: Icons.devices,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Beauty",
-      icon: FontAwesomeIcons.spa,
+      icon: Icons.spa,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Groceries",
-      icon: FontAwesomeIcons.basketShopping,
+      icon: Icons.shopping_basket,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Fashion",
-      icon: FontAwesomeIcons.shirt,
+      icon: Icons.checkroom,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Footwear",
-      icon: FontAwesomeIcons.shoePrints,
+      icon: Icons.storefront,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Home",
-      icon: FontAwesomeIcons.couch,
+      icon: Icons.chair,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Kitchen",
-      icon: FontAwesomeIcons.utensils,
+      icon: Icons.kitchen,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Fitness",
-      icon: FontAwesomeIcons.dumbbell,
+      icon: Icons.fitness_center,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Books",
-      icon: FontAwesomeIcons.book,
+      icon: Icons.menu_book,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Toys",
-      icon: FontAwesomeIcons.puzzlePiece,
+      icon: Icons.extension,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Gaming",
-      icon: FontAwesomeIcons.gamepad,
+      icon: Icons.sports_esports,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Music",
-      icon: FontAwesomeIcons.music,
+      icon: Icons.music_note,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Travel",
-      icon: FontAwesomeIcons.suitcaseRolling,
+      icon: Icons.card_travel,
       onTap: () {},
     ),
-    CategoryItemModel(label: "Pets", icon: FontAwesomeIcons.paw, onTap: () {}),
+    CategoryItemModel(label: "Pets", icon: Icons.pets, onTap: () {}),
     CategoryItemModel(
       label: "Pharmacy",
-      icon: FontAwesomeIcons.pills,
+      icon: Icons.medical_services,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Gifts",
-      icon: FontAwesomeIcons.gift,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Gifts",
-      icon: FontAwesomeIcons.gift,
+      icon: Icons.card_giftcard,
       onTap: () {},
     ),
   ];
@@ -319,42 +316,42 @@ class HomepageController extends GetxController {
   final homeFoodCategories = [
     CategoryItemModel(
       label: "All",
-      icon: FontAwesomeIcons.utensils,
+      icon: Icons.restaurant,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Tiffins",
-      icon: FontAwesomeIcons.boxOpen,
+      icon: Icons.inventory_2,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Thali",
-      icon: FontAwesomeIcons.plateWheat,
+      icon: Icons.dinner_dining,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Snacks",
-      icon: FontAwesomeIcons.cookieBite,
+      icon: Icons.cookie,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Sweets",
-      icon: FontAwesomeIcons.candyCane,
+      icon: Icons.icecream,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Pickles",
-      icon: FontAwesomeIcons.jar,
+      icon: Icons.kitchen,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Spices",
-      icon: FontAwesomeIcons.pepperHot,
+      icon: Icons.whatshot,
       onTap: () {},
     ),
     CategoryItemModel(
       label: "Bakery",
-      icon: FontAwesomeIcons.breadSlice,
+      icon: Icons.bakery_dining,
       onTap: () {},
     ),
   ];
@@ -605,4 +602,9 @@ class HomepageController extends GetxController {
       },
     ),
   ];
+  @override
+  void onClose() {
+    _specialsSubscription?.cancel();
+    super.onClose();
+  }
 }

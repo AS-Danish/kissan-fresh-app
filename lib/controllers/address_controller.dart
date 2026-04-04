@@ -20,7 +20,7 @@ class AddressController extends GetxController {
   var isSearching = false.obs;
 
   // Google Maps Controller
-  final Completer<GoogleMapController> mapCompleter = Completer();
+  Completer<GoogleMapController> mapCompleter = Completer();
   GoogleMapController? _mapController;
 
   final TextEditingController searchController = TextEditingController();
@@ -68,9 +68,11 @@ class AddressController extends GetxController {
 
   void onMapCreated(GoogleMapController controller) {
     _mapController = controller;
-    if (!mapCompleter.isCompleted) {
-      mapCompleter.complete(controller);
+    if (mapCompleter.isCompleted) {
+      mapCompleter = Completer();
     }
+    mapCompleter.complete(controller);
+    debugPrint('Google Map Created & Controller Assigned');
   }
 
   Future<void> _moveMap(LatLng latLng, {double zoom = 15.0}) async {
@@ -108,6 +110,7 @@ class AddressController extends GetxController {
 
     isLocationEnabled.value = true;
     await getCurrentLocation();
+    update(['map-ui']);
   }
 
   Future<void> getCurrentLocation() async {
@@ -128,6 +131,7 @@ class AddressController extends GetxController {
       selectedLocation.value = latLng;
       await _moveMap(latLng, zoom: 16.0);
       await _reverseGeocode(latLng);
+      update(['map-ui']);
     } catch (e) {
       debugPrint('Error getting location: $e');
       Get.snackbar('Error', 'Failed to get current location');
@@ -141,6 +145,7 @@ class AddressController extends GetxController {
     selectedLocation.value = position;
     currentAddress.value = 'Fetching address...';
     _reverseGeocode(position);
+    update(['map-ui']);
   }
 
   Future<void> _reverseGeocode(LatLng point) async {
@@ -221,6 +226,7 @@ class AddressController extends GetxController {
         isSearching.value = false;
 
         await _moveMap(latLng);
+        update(['map-ui']);
       } else {
         Get.snackbar('Not Found', 'No results for "$trimmed"');
       }

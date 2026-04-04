@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/homepage_controller.dart';
@@ -128,8 +128,8 @@ class HomeHeader extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
-                                const FaIcon(
-                                  FontAwesomeIcons.locationDot,
+                                const Icon(
+                                  Icons.location_on,
                                   color: Colors.white,
                                   size: 13,
                                 ),
