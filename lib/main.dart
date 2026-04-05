@@ -12,17 +12,24 @@ import 'package:kissanfresh/views/layout/main_layout.dart';
 import 'firebase_options.dart';
 
 import 'package:kissanfresh/controllers/auth_controller.dart';
+import 'package:kissanfresh/controllers/address_controller.dart';
 import 'package:kissanfresh/controllers/cart_controller.dart';
 import 'package:kissanfresh/services/location_service.dart';
 import 'package:kissanfresh/controllers/theme_controller.dart';
 import 'package:kissanfresh/controllers/update_controller.dart';
 import 'package:kissanfresh/services/cache_service.dart';
+import 'package:kissanfresh/services/notification_service.dart';
 import 'package:kissanfresh/utils/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  
+  // Initialize Notification Service
+  final notificationService = NotificationService();
+  await notificationService.initialize();
+
   try {
     await FirebaseAppCheck.instance.activate(
       // ignore: deprecated_member_use
@@ -46,6 +53,7 @@ void main() async {
   Get.put(LocationService(), permanent: true); // Add LocationService
   Get.put(AuthController(), permanent: true);
   Get.put(CartController(), permanent: true);
+  Get.put(AddressController(), permanent: true);
   runApp(const MyApp());
 }
 

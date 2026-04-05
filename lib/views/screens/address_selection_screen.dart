@@ -11,7 +11,7 @@ class AddressSelectionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AddressController controller = Get.put(AddressController());
+    final AddressController controller = Get.find<AddressController>();
 
     return Scaffold(
       appBar: AppBar(

@@ -6,6 +6,7 @@ import 'package:kissanfresh/routes/app_routes.dart';
 import 'package:kissanfresh/services/auth_service.dart';
 import 'package:kissanfresh/services/user_service.dart';
 import 'package:kissanfresh/services/location_service.dart';
+import 'package:kissanfresh/services/notification_service.dart';
 
 class AuthController extends GetxController {
   static AuthController get instance => Get.find();
@@ -200,6 +201,9 @@ class AuthController extends GetxController {
           userModel != null && userModel.onboardingCompleted;
 
       if (isFullyOnboarded) {
+        // Save FCM token after successful login
+        await NotificationService().saveTokenToFirestore();
+
         // Populate global location logic via Firestore Profile
         if (userModel.address != null && userModel.address!.isNotEmpty) {
           Get.find<LocationService>().currentAddress.value = userModel.address!;

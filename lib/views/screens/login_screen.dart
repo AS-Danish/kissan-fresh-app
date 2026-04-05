@@ -231,7 +231,7 @@ class LoginScreen extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('ðŸ‡®ðŸ‡³', style: TextStyle(fontSize: 20)),
+                    const Text('🇮🇳', style: TextStyle(fontSize: 20)),
                     const SizedBox(width: 8),
                     Text(
                       '+91',

@@ -18,6 +18,7 @@ class AddressController extends GetxController {
   var isLocationEnabled = false.obs;
   var predictions = <Map<String, dynamic>>[].obs;
   var isSearching = false.obs;
+  var searchInput = ''.obs; // Mirror for searchController.text to satisfy Obx
 
   // Google Maps Controller
   Completer<GoogleMapController> mapCompleter = Completer();
@@ -67,6 +68,8 @@ class AddressController extends GetxController {
   }
 
   void onMapCreated(GoogleMapController controller) {
+    if (_mapController == controller) return; // Already assigned
+    
     _mapController = controller;
     if (mapCompleter.isCompleted) {
       mapCompleter = Completer();
@@ -172,6 +175,7 @@ class AddressController extends GetxController {
   Timer? _autocompleteDebounce;
 
   void onSearchChanged(String query) {
+    searchInput.value = query; // Update observable for Obx
     if (query.trim().isEmpty) {
       predictions.clear();
       isSearching.value = false;
