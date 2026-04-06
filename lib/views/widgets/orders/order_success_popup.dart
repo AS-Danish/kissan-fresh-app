@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:kissanfresh/routes/app_routes.dart';
 
 class OrderSuccessPopup {
-  static void show(BuildContext context, String orderType, String? paymentId) {
+  static void show(BuildContext context, String orderType, String? paymentId, {String? orderId}) {
     final bool isCod =
         orderType.toUpperCase() == 'COD' ||
         orderType.toUpperCase() == 'CASH ON DELIVERY';
@@ -99,42 +99,80 @@ class OrderSuccessPopup {
               const SizedBox(height: 14),
 
               // Order type badge
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: isCod
-                      ? const Color(0xFF10B981).withValues(alpha: 0.1)
-                      : const Color(0xFF6366F1).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      isCod
-                          ? Icons.money_rounded
-                          : Icons.account_balance_wallet_rounded,
-                      size: 16,
-                      color: isCod
-                          ? const Color(0xFF10B981)
-                          : const Color(0xFF6366F1),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      isCod ? 'Cash on Delivery' : 'Paid Online',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: isCod
-                            ? const Color(0xFF10B981)
-                            : const Color(0xFF6366F1),
+                    decoration: BoxDecoration(
+                      color: isCod
+                          ? const Color(0xFF10B981).withValues(alpha: 0.1)
+                          : const Color(0xFF6366F1).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isCod
+                              ? Icons.money_rounded
+                              : Icons.account_balance_wallet_rounded,
+                          size: 16,
+                          color: isCod
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFF6366F1),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          isCod ? 'Cash on Delivery' : 'Paid Online',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: isCod
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFF6366F1),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (orderId != null && orderId.isNotEmpty) ...[
+                    const SizedBox(width: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.assignment_rounded,
+                            size: 16,
+                            color: Colors.grey,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'ID: $orderId',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.grey.shade800,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
-                ),
+                ],
               ),
 
               const SizedBox(height: 28),

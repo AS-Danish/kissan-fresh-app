@@ -47,7 +47,7 @@ class OrderCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        order.orderNumber,
+                        'ID: ${order.id}',
                         style: GoogleFonts.montserrat(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,

@@ -16,7 +16,6 @@ import '../services/location_service.dart';
 import '../model/order_model.dart';
 import 'address_controller.dart';
 import 'orders_controller.dart';
-import 'package:uuid/uuid.dart';
 import 'slot_selection_controller.dart';
 
 class CartController extends GetxController {
@@ -412,6 +411,7 @@ class CartController extends GetxController {
           arguments: {
             'showSuccessPopup': true,
             'paymentId': response.paymentId,
+            'orderId': success, // This now contains the server-generated order ID
             'orderType': 'Online',
           },
         );
@@ -541,7 +541,7 @@ class CartController extends GetxController {
     }
   }
 
-  Future<bool> placeOrder({
+  Future<String?> placeOrder({
     String? paymentId,
     String paymentStatus = 'paid',
     String orderType = 'Online',
@@ -549,14 +549,13 @@ class CartController extends GetxController {
     final user = _authController.firebaseUser.value;
     if (user == null) throw Exception('User not logged in');
 
-    final String orderId = const Uuid().v4();
     final String orderNumber = 'ORD${DateTime.now().millisecondsSinceEpoch}';
 
     // Resolve delivery address from multiple sources
     final resolved = _resolveDeliveryAddressData();
 
     final order = OrderModel(
-      id: orderId,
+      id: '',
       userId: user.uid,
       orderNumber: orderNumber,
       paymentId: paymentId, // Added paymentId to track post-payment
@@ -592,11 +591,15 @@ class CartController extends GetxController {
       );
 
       // We pass the order data. The CF expects {'order': orderMap}
-      await httpsCallable.call({'order': order.toJson()});
+      final HttpsCallableResult result = await httpsCallable.call({'order': order.toJson()});
 
-      // Function execution successful
-      clearCart();
-      return true;
+      // The CF returns { success: true, orderId: "KF-XXXXXX", ... }
+      if (result.data != null && result.data['success'] == true) {
+        final String? serverOrderId = result.data['orderId'];
+        clearCart();
+        return serverOrderId ?? ''; // Return the actual ID from server
+      }
+      return null;
     } catch (e) {
       debugPrint("Order processing failed: $e");
 
@@ -647,7 +650,7 @@ class CartController extends GetxController {
 
       // Trigger a refresh of stock in cart
       validateCartItems();
-      return false;
+      return null;
     }
   }
 
@@ -823,14 +826,14 @@ class CartController extends GetxController {
     );
 
     try {
-      final success = await placeOrder(
+      final serverOrderId = await placeOrder(
         paymentStatus: 'pending',
         orderType: 'COD',
       );
 
       if (Get.isDialogOpen ?? false) Get.back();
 
-      if (success) {
+      if (serverOrderId != null) {
         if (Get.isRegistered<OrdersController>()) {
           Get.find<OrdersController>().loadOrders();
         }
@@ -838,7 +841,11 @@ class CartController extends GetxController {
         // Navigate to My Orders with success popup flag
         Get.offAllNamed(
           AppRoutes.myOrdersRoute,
-          arguments: {'showSuccessPopup': true, 'orderType': 'COD'},
+          arguments: {
+            'showSuccessPopup': true,
+            'orderId': serverOrderId,
+            'orderType': 'COD',
+          },
         );
       }
     } catch (e) {

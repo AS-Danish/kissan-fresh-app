@@ -73,7 +73,12 @@ class OrderDetailsSheet {
                       const SizedBox(height: 12),
                       _buildDetailRow(
                         context,
-                        'Order Number',
+                        'Order ID',
+                        order.id,
+                      ),
+                      _buildDetailRow(
+                        context,
+                        'Internal Ref', // renamed from Order Number to keep it as secondary
                         order.orderNumber,
                       ),
                       _buildDetailRow(

@@ -28,7 +28,13 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
       if (args is Map && args['showSuccessPopup'] == true && !_popupShown) {
         final orderType = args['orderType'] ?? 'Online';
         final paymentId = args['paymentId'];
-        OrderSuccessPopup.show(context, orderType, paymentId);
+        final orderId = args['orderId'];
+        OrderSuccessPopup.show(
+          context,
+          orderType,
+          paymentId,
+          orderId: orderId,
+        );
         _popupShown = true;
       }
     });
