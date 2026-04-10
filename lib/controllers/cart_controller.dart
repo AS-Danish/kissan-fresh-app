@@ -397,9 +397,9 @@ class CartController extends GetxController {
     );
 
     try {
-      final success = await placeOrder(paymentId: response.paymentId);
+      final orderId = await placeOrder(paymentId: response.paymentId);
 
-      if (success) {
+      if (orderId != null) {
         // Refresh orders list
         if (Get.isRegistered<OrdersController>()) {
           Get.find<OrdersController>().loadOrders();
@@ -411,7 +411,7 @@ class CartController extends GetxController {
           arguments: {
             'showSuccessPopup': true,
             'paymentId': response.paymentId,
-            'orderId': success, // This now contains the server-generated order ID
+            'orderId': orderId,
             'orderType': 'Online',
           },
         );

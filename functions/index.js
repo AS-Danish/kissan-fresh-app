@@ -250,6 +250,7 @@ exports.createOrder = require("firebase-functions/v2/https")
                   {reason: "out_of_service_area", distance: distance});
             }
           }
+          // ... rest of your existing transaction logic ...
 
           if (!auth) {
             throw new HttpsError("unauthenticated",
@@ -338,6 +339,25 @@ exports.createOrder = require("firebase-functions/v2/https")
               const selectedSlotDoc = slotSnap;
               const selectedRiderDoc = ridersSnap.docs[0];
 
+              // 4. Generate New Short Order ID (KF-XXXXXX)
+              const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+              let shortId = "KF-";
+              for (let i = 0; i < 6; i++) {
+                const idx = Math.floor(Math.random() * chars.length);
+                shortId += chars.charAt(idx);
+              }
+
+              const orderRef = db.collection("orders").doc(shortId);
+              const orderSnap = await transaction.get(orderRef);
+              if (orderSnap.exists) {
+                // If collision, regenerate (though unlikely)
+                shortId = "KF-"; // Reset and try again
+                for (let i = 0; i < 6; i++) {
+                  const idx = Math.floor(Math.random() * chars.length);
+                  shortId += chars.charAt(idx);
+                }
+              }
+
               for (const update of stockUpdates) {
                 transaction.update(update.ref, {stockCount: update.newStock});
               }
@@ -352,13 +372,9 @@ exports.createOrder = require("firebase-functions/v2/https")
               transaction.update(selectedRiderDoc.ref,
                   {assignedOrders: newRiderAssignedOrders});
 
-              // Use auto-generated Firestore document ID for order
-              const orderRef = db.collection("orders").doc();
-              const orderId = orderRef.id;
-
               const enrichedOrderData = {
                 ...orderData,
-                id: orderId,
+                id: shortId, // use new short ID
                 slotId: selectedSlotDoc.id,
                 riderId: selectedRiderDoc.id,
                 status: "assigned",
@@ -416,7 +432,7 @@ exports.createOrder = require("firebase-functions/v2/https")
             if (error instanceof HttpsError) {
               throw error;
             }
-            console.error(`🚨 Error creating order ${orderData.id || "unknown"}:`, error);
+            console.error(`🚨 Error creating order ${orderData.id}:`, error);
             throw new HttpsError("internal",
                 "An unexpected error occurred while placing your order.",
                 error.message);
