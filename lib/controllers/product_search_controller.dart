@@ -8,6 +8,7 @@ import '../model/product_card_model.dart';
 import '../routes/app_routes.dart';
 import 'homepage_controller.dart';
 import 'cart_controller.dart';
+import 'user_activity_controller.dart';
 
 class ProductSearchController extends GetxController {
   final HomepageController homepageController = Get.find<HomepageController>();
@@ -388,6 +389,28 @@ class ProductSearchController extends GetxController {
     bool inStock = true,
     int stockCount = 0,
   }) {
+    try {
+      Get.find<UserActivityController>().trackView(
+        ProductCardModel(
+          id: id,
+          image: image,
+          images: images,
+          title: title,
+          description: description,
+          price: price,
+          unit: unit,
+          category: category,
+          tags: tags,
+          inStock: inStock,
+          stockCount: stockCount,
+          onTap: () {},
+          onAddToCart: () {},
+        ),
+      );
+    } catch (e) {
+      debugPrint("UserActivityController tracking error: $e");
+    }
+
     Get.toNamed(
       AppRoutes.productDetailsRoute,
       arguments: ProductCardModel(

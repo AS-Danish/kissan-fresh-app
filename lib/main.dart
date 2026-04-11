@@ -17,6 +17,8 @@ import 'package:kissanfresh/controllers/cart_controller.dart';
 import 'package:kissanfresh/services/location_service.dart';
 import 'package:kissanfresh/controllers/theme_controller.dart';
 import 'package:kissanfresh/controllers/update_controller.dart';
+import 'package:kissanfresh/controllers/user_activity_controller.dart';
+import 'package:kissanfresh/controllers/orders_controller.dart';
 import 'package:kissanfresh/services/cache_service.dart';
 import 'package:kissanfresh/services/notification_service.dart';
 import 'package:kissanfresh/utils/app_theme.dart';
@@ -47,6 +49,7 @@ void main() async {
   await Hive.openBox('wishlist_box');
   await Hive.openBox('orders_cache');
   await Hive.openBox('products_cache');
+  await Hive.openBox('user_activity'); // Add this for personalized recommendations
   Get.put(UpdateController(), permanent: true); // Check for updates immediately
   Get.put(ThemeController()); // Initialize theme early
   Get.put(CacheService(), permanent: true); // Register CacheService
@@ -54,6 +57,8 @@ void main() async {
   Get.put(AuthController(), permanent: true);
   Get.put(CartController(), permanent: true);
   Get.put(AddressController(), permanent: true);
+  Get.put(OrdersController(), permanent: true);
+  Get.put(UserActivityController(), permanent: true);
   runApp(const MyApp());
 }
 

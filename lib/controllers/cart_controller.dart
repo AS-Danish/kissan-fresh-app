@@ -564,6 +564,7 @@ class CartController extends GetxController {
             (item) => OrderItem(
               productId: item.id,
               title: item.name,
+              unit: item.quantity,
               image: item.image,
               quantity: item.count,
               price: item.price,

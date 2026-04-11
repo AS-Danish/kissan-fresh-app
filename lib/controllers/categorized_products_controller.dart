@@ -24,6 +24,25 @@ class CategorizedProductsController extends GetxController {
     ever(homepageController.currentTab, (_) {
       fetchCategorizedProducts();
     });
+    
+    // TEMPORARY: Clear cache once to fix "Unknown" mapping transition
+    _cacheService.clearCache();
+    
+    // Also listen to categories loading for the first time
+    ever(homepageController.categories, (_) {
+      if (homepageController.currentTab.value == 'Grocery') {
+        fetchCategorizedProducts();
+      }
+    });
+    ever(homepageController.homeFoodCategories, (_) {
+      if (homepageController.currentTab.value == 'HomeFood') {
+        fetchCategorizedProducts();
+      }
+    });
+
+    // One-time cache clear for data consistency
+    _cacheService.clearCache();
+    
     fetchCategorizedProducts();
   }
 
@@ -56,8 +75,32 @@ class CategorizedProductsController extends GetxController {
       // Load from cache first
       final cachedData = _cacheService.getCategorizedProducts(origin);
       if (cachedData.isNotEmpty) {
-        categorizedProducts.assignAll(cachedData);
-        // Skip Firestore fetch to massively reduce reads on startup
+        // Re-bind onTap handlers because they are lost during serialization
+        final boundData = cachedData.map((category, products) {
+          return MapEntry(
+            category,
+            products.map((p) {
+              return p.copyWith(
+                onTap: () => _navigateToProductDetails(
+                  id: p.id,
+                  image: p.image,
+                  images: p.images,
+                  title: p.title,
+                  description: p.description,
+                  price: p.price,
+                  unit: p.unit,
+                  category: p.category,
+                  tags: p.tags,
+                  inStock: p.inStock,
+                  stockCount: p.stockCount,
+                ),
+              );
+            }).toList(),
+          );
+        });
+        categorizedProducts.assignAll(boundData);
+        // We still proceed to fetch in background if cache is old? 
+        // For now, return early as intended to save reads.
         return;
       } else {
         isLoading.value = true;
@@ -147,7 +190,7 @@ class CategorizedProductsController extends GetxController {
       id: doc.id,
       image: imageUrl,
       images: imagesList,
-      title: data['title'] ?? 'Unknown',
+      title: data['name'] ?? 'Unknown',
       description: data['description'] ?? '',
       price: (data['price'] ?? 0).toDouble(),
       unit: data['unit'] ?? 'unit',
@@ -159,7 +202,7 @@ class CategorizedProductsController extends GetxController {
         id: doc.id,
         image: imageUrl,
         images: imagesList,
-        title: data['title'] ?? 'Unknown',
+        title: data['name'] ?? 'Unknown',
         description: data['description'] ?? '',
         price: (data['price'] ?? 0).toDouble(),
         unit: data['unit'] ?? 'unit',
@@ -176,7 +219,7 @@ class CategorizedProductsController extends GetxController {
           if (added) {
             Get.snackbar(
               'Added to Cart',
-              '${data['title'] ?? 'Product'} added to cart',
+              '${data['name'] ?? 'Product'} added to cart',
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: const Color(0xFF10B981),
               colorText: Colors.white,

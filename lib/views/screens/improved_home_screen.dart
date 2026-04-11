@@ -5,6 +5,7 @@ import '../../controllers/theme_controller.dart';
 import '../widgets/all_products_section.dart';
 import '../widgets/bestseller_section.dart';
 import '../widgets/categories_section.dart';
+import '../widgets/your_choice_section.dart';
 import '../widgets/home_food_section.dart';
 import '../widgets/offer_section.dart';
 import '../widgets/welcome_section.dart';
@@ -30,11 +31,14 @@ class ImprovedHomeScreen extends StatelessWidget {
               // Ensure real-time theme updates
               Get.find<ThemeController>().isDarkMode.value;
               if (controller.currentTab.value == 'Grocery') {
-                final isAll =
-                    controller
-                        .categories[controller.selectedIndex.value]
-                        .label ==
-                    'All';
+                if (controller.categories.isEmpty) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                
+                final int selectedIdx = controller.selectedIndex.value;
+                final bool isValidIndex = selectedIdx >= 0 && selectedIdx < controller.categories.length;
+                final isAll = isValidIndex && 
+                    controller.categories[selectedIdx].label == 'All';
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -44,6 +48,8 @@ class ImprovedHomeScreen extends StatelessWidget {
                       onCategorySelected: controller.selectCategory,
                     ),
                     const SizedBox(height: 32),
+                    YourChoiceSection(), // Personalized Section
+                    const SizedBox(height: 8),
                     if (isAll) ...[
                       WelcomeSection(),
                       const SizedBox(height: 24),
@@ -68,20 +74,31 @@ class ImprovedHomeScreen extends StatelessWidget {
                         title: 'Daily Groceries',
                       ),
                     ],
-                    AllProductsSection(),
-                    const SizedBox(height: 32),
                     if (isAll) ...[
                       CategorizedProductsSection(),
                       const SizedBox(height: 32),
                     ],
+                    AllProductsSection(),
+                    const SizedBox(height: 32),
                   ],
                 );
               } else {
                 return Column(
                   children: [
+                    CategoriesSection(
+                      categories: controller.homeFoodCategories,
+                      selectedIndex: controller.selectedHomeFoodIndex.value,
+                      onCategorySelected: controller.selectHomeFoodCategory,
+                    ),
+                    const SizedBox(height: 32),
+                    YourChoiceSection(), // Personalized Section
+                    const SizedBox(height: 8),
                     const HomeFoodSection(),
                     const SizedBox(height: 32),
                     CategorizedProductsSection(),
+                    const SizedBox(height: 32),
+                    AllProductsSection(),
+                    const SizedBox(height: 32),
                   ],
                 );
               }

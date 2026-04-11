@@ -219,6 +219,7 @@ class OrderModel {
 class OrderItem {
   final String productId;
   final String title;
+  final String unit;
   final String image;
   final int quantity;
   final double price;
@@ -226,6 +227,7 @@ class OrderItem {
   OrderItem({
     required this.productId,
     required this.title,
+    required this.unit,
     required this.image,
     required this.quantity,
     required this.price,
@@ -235,6 +237,7 @@ class OrderItem {
     return {
       'productId': productId,
       'title': title,
+      'unit': unit,
       'image': image,
       'quantity': quantity,
       'price': price,
@@ -245,6 +248,7 @@ class OrderItem {
     return OrderItem(
       productId: json['productId'] ?? '',
       title: json['title'] ?? '',
+      unit: json['unit'] ?? 'unit',
       image: json['image'] ?? '',
       quantity: json['quantity'] ?? 0,
       price: (json['price'] ?? 0.0).toDouble(),

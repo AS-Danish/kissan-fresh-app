@@ -9,6 +9,8 @@ import 'package:kissanfresh/controllers/cart_controller.dart';
 import '../model/category_item_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/cache_service.dart';
+import '../utils/icon_utils.dart';
+import 'user_activity_controller.dart';
 
 class HomepageController extends GetxController {
   RxInt selectedIndex = 0.obs;
@@ -29,6 +31,7 @@ class HomepageController extends GetxController {
     super.onInit();
     _loadCachedSpecials();
     fetchTodaysSpecials();
+    fetchCategories();
   }
 
   void _loadCachedSpecials() {
@@ -171,9 +174,15 @@ class HomepageController extends GetxController {
       inStock: inStock,
       stockCount: stockCount,
       onTap: () {
+        final product = _mapDocToModel(productDoc);
+        try {
+          Get.find<UserActivityController>().trackView(product);
+        } catch (e) {
+          debugPrint("UserActivityController error: $e");
+        }
         Get.to(
           () => ProductDetailsScreen(
-            product: _mapDocToModel(productDoc), // Re-map to ensure fresh data
+            product: product, // Re-map to ensure fresh data
           ),
         );
       },
@@ -209,152 +218,147 @@ class HomepageController extends GetxController {
     Get.find<LocationService>().currentAddress.value = newAddress;
   }
 
-  final categories = [
-    CategoryItemModel(
-      label: "All",
-      icon: Icons.grid_view,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Vegetables",
-      icon: Icons.eco,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Chicken",
-      icon: Icons.set_meal,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Meat",
-      icon: Icons.restaurant,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Winter",
-      icon: Icons.ac_unit,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Electronics",
-      icon: Icons.devices,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Beauty",
-      icon: Icons.spa,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Groceries",
-      icon: Icons.shopping_basket,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Fashion",
-      icon: Icons.checkroom,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Footwear",
-      icon: Icons.storefront,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Home",
-      icon: Icons.chair,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Kitchen",
-      icon: Icons.kitchen,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Fitness",
-      icon: Icons.fitness_center,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Books",
-      icon: Icons.menu_book,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Toys",
-      icon: Icons.extension,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Gaming",
-      icon: Icons.sports_esports,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Music",
-      icon: Icons.music_note,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Travel",
-      icon: Icons.card_travel,
-      onTap: () {},
-    ),
-    CategoryItemModel(label: "Pets", icon: Icons.pets, onTap: () {}),
-    CategoryItemModel(
-      label: "Pharmacy",
-      icon: Icons.medical_services,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Gifts",
-      icon: Icons.card_giftcard,
-      onTap: () {},
-    ),
-  ];
+  // Reactive categories
+  late RxList<CategoryItemModel> categories;
+  late RxList<CategoryItemModel> homeFoodCategories;
 
-  final homeFoodCategories = [
-    CategoryItemModel(
-      label: "All",
-      icon: Icons.restaurant,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Tiffins",
-      icon: Icons.inventory_2,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Thali",
-      icon: Icons.dinner_dining,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Snacks",
-      icon: Icons.cookie,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Sweets",
-      icon: Icons.icecream,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Pickles",
-      icon: Icons.kitchen,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Spices",
-      icon: Icons.whatshot,
-      onTap: () {},
-    ),
-    CategoryItemModel(
-      label: "Bakery",
-      icon: Icons.bakery_dining,
-      onTap: () {},
-    ),
-  ];
+  HomepageController() {
+    // Initialize with "All" to prevent RangeError in UI before first fetch
+    categories = <CategoryItemModel>[
+      CategoryItemModel(
+        label: "All",
+        icon: Icons.grid_view,
+        onTap: () {},
+      ),
+    ].obs;
+
+    homeFoodCategories = <CategoryItemModel>[
+      CategoryItemModel(
+        label: "All",
+        icon: Icons.restaurant,
+        onTap: () {},
+      ),
+    ].obs;
+  }
+
+  Future<void> fetchCategories() async {
+    // 1. Fetch Grocery (kissan-fresh)
+    await _fetchAndMapCategories('kissan-fresh', categories, 'Grocery');
+    // 2. Fetch Home Food (home-food)
+    await _fetchAndMapCategories('home-food', homeFoodCategories, 'HomeFood');
+  }
+
+  Future<void> _fetchAndMapCategories(
+    String type,
+    RxList<CategoryItemModel> targetList,
+    String tabName,
+  ) async {
+    final cacheKey = 'categories_$type';
+    final timestampKey = '${cacheKey}_timestamp';
+
+    try {
+      // 1. Check Cache
+      final cachedJson = _cacheService.getRaw(cacheKey);
+      final cachedTimeStr = _cacheService.getRaw(timestampKey);
+
+      bool shouldUseCache = false;
+      if (cachedJson != null && cachedTimeStr != null) {
+        final cachedTime = DateTime.parse(cachedTimeStr.toString());
+        if (DateTime.now().difference(cachedTime).inMinutes < 2) {
+          shouldUseCache = true;
+        }
+      }
+
+      if (shouldUseCache) {
+        debugPrint("Loading categories for $type from local cache (within 2 min)");
+        _mapJsonToCategories(cachedJson, targetList, tabName);
+        return;
+      }
+
+      // 2. Fetch from Firestore
+      debugPrint("Fetching categories for $type from Firestore...");
+      final snapshot = await _firestore
+          .collection('categories')
+          .where('type', isEqualTo: type)
+          .limit(50)
+          .get();
+
+      final dataList = snapshot.docs.map((doc) => _sanitizeFirestoreData(doc.data())).toList();
+
+      // 3. Save to Cache
+      await _cacheService.saveRaw(cacheKey, dataList);
+      await _cacheService.saveRaw(
+        timestampKey,
+        DateTime.now().toIso8601String(),
+      );
+
+      // 4. Update UI
+      _mapJsonToCategories(dataList, targetList, tabName);
+    } catch (e) {
+      debugPrint("Error fetching categories for $type: $e");
+      // Fallback to cache if Firestore fails even if expired
+      final cachedJson = _cacheService.getRaw(cacheKey);
+      if (cachedJson != null) {
+        _mapJsonToCategories(cachedJson, targetList, tabName);
+      }
+    }
+  }
+
+  void _mapJsonToCategories(
+    dynamic json,
+    RxList<CategoryItemModel> targetList,
+    String tabName,
+  ) {
+    if (json is! List) return;
+
+    final List<CategoryItemModel> items = [];
+
+    // Always prepend "All"
+    items.add(
+      CategoryItemModel(
+        label: "All",
+        icon: tabName == 'Grocery' ? Icons.grid_view : Icons.restaurant,
+        onTap: () {},
+      ),
+    );
+
+    for (var entry in json) {
+      if (entry is Map) {
+        final name = entry['name']?.toString() ?? 'Unknown';
+        items.add(
+          CategoryItemModel(
+            label: name,
+            icon: IconUtils.getCategoryIcon(name),
+            onTap: () {},
+          ),
+        );
+      }
+    }
+
+    targetList.assignAll(items);
+  }
+
+  Map<String, dynamic> _sanitizeFirestoreData(Map<String, dynamic> data) {
+    final Map<String, dynamic> sanitized = {};
+    data.forEach((key, value) {
+      if (value is Timestamp) {
+        sanitized[key] = value.toDate().toIso8601String();
+      } else if (value is Map<String, dynamic>) {
+        sanitized[key] = _sanitizeFirestoreData(value);
+      } else if (value is List) {
+        sanitized[key] = value.map((e) {
+          if (e is Map<String, dynamic>) return _sanitizeFirestoreData(e);
+          if (e is Timestamp) return e.toDate().toIso8601String();
+          return e;
+        }).toList();
+      } else {
+        sanitized[key] = value;
+      }
+    });
+    return sanitized;
+  }
+
+  // REMOVED: Static final lists replaced by RxLists above.
 
   RxInt selectedHomeFoodIndex = 0.obs;
 

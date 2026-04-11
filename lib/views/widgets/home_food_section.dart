@@ -28,11 +28,17 @@ class HomeFoodSection extends StatelessWidget {
 
         // Today's Special
         Obx(() {
+          if (controller.homeFoodCategories.isEmpty) {
+            return const SizedBox.shrink();
+          }
+
+          final int selectedIdx = controller.selectedHomeFoodIndex.value;
+          final bool isValidIndex =
+              selectedIdx >= 0 && selectedIdx < controller.homeFoodCategories.length;
+
           final isAll =
-              controller
-                  .homeFoodCategories[controller.selectedHomeFoodIndex.value]
-                  .label ==
-              'All';
+              isValidIndex &&
+              controller.homeFoodCategories[selectedIdx].label == 'All';
           if (!isAll) return const SizedBox.shrink();
 
           if (controller.isLoadingSpecials.value) {
@@ -142,18 +148,7 @@ class HomeFoodSection extends StatelessWidget {
           );
         }),
 
-        // Explore Home Foods List
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Grid of products
-              AllProductsSection(),
-            ],
-          ),
-        ),
-        const SizedBox(height: 100), // Bottom padding
+        const SizedBox(height: 32),
       ],
     );
   }

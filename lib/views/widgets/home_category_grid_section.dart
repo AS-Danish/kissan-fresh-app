@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/categorized_products_controller.dart';
 import '../../controllers/homepage_controller.dart';
+import '../../routes/app_routes.dart';
 import 'product_card_widget.dart';
 
 class HomeCategoryGridSection extends StatelessWidget {
@@ -82,11 +83,10 @@ class HomeCategoryGridSection extends StatelessWidget {
               height: 50,
               child: OutlinedButton(
                 onPressed: () {
-                  // Navigate to category view
-                  Get.find<HomepageController>().selectCategory(
-                    Get.find<HomepageController>().categories.indexWhere(
-                      (c) => c.label == categoryName,
-                    ),
+                  // Navigate to search screen with selected category
+                  Get.toNamed(
+                    AppRoutes.searchRoute,
+                    arguments: {'category': categoryName},
                   );
                 },
                 style: OutlinedButton.styleFrom(

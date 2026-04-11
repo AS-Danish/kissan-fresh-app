@@ -69,4 +69,36 @@ class ProductCardModel {
       onAddToCart: onAddToCart ?? () {},
     );
   }
+
+  ProductCardModel copyWith({
+    String? id,
+    String? image,
+    List<String>? images,
+    String? title,
+    String? description,
+    double? price,
+    String? unit,
+    String? category,
+    List<String>? tags,
+    bool? inStock,
+    int? stockCount,
+    VoidCallback? onTap,
+    VoidCallback? onAddToCart,
+  }) {
+    return ProductCardModel(
+      id: id ?? this.id,
+      image: image ?? this.image,
+      images: images ?? this.images,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      price: price ?? this.price,
+      unit: unit ?? this.unit,
+      category: category ?? this.category,
+      tags: tags ?? this.tags,
+      inStock: inStock ?? this.inStock,
+      stockCount: stockCount ?? this.stockCount,
+      onTap: onTap ?? this.onTap,
+      onAddToCart: onAddToCart ?? this.onAddToCart,
+    );
+  }
 }
