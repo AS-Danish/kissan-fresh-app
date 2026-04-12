@@ -28,9 +28,6 @@ void main() async {
   await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   
-  // Initialize Notification Service
-  final notificationService = NotificationService();
-  await notificationService.initialize();
 
   try {
     await FirebaseAppCheck.instance.activate(
@@ -50,9 +47,14 @@ void main() async {
   await Hive.openBox('orders_cache');
   await Hive.openBox('products_cache');
   await Hive.openBox('user_activity'); // Add this for personalized recommendations
-  Get.put(UpdateController(), permanent: true); // Check for updates immediately
+  
+  // Initialize Notification Service
+  final notificationService = NotificationService();
+  await notificationService.initialize();
+  
   Get.put(ThemeController()); // Initialize theme early
   Get.put(CacheService(), permanent: true); // Register CacheService
+  Get.put(UpdateController(), permanent: true); // Check for updates immediately
   Get.put(LocationService(), permanent: true); // Add LocationService
   Get.put(AuthController(), permanent: true);
   Get.put(CartController(), permanent: true);

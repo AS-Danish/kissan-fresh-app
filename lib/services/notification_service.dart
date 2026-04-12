@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:hive/hive.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -106,10 +107,18 @@ class NotificationService {
       String? uid = _auth.currentUser?.uid;
 
       if (token != null && uid != null) {
+        final box = Hive.box('user_settings');
+        final savedToken = box.get('fcm_token_$uid');
+        if (savedToken == token) {
+           debugPrint('FCM Token unchanged, skipping Firestore write.');
+           return;
+        }
+
         await _firestore.collection('users').doc(uid).set(
           {'fcmToken': token},
           SetOptions(merge: true),
         );
+        await box.put('fcm_token_$uid', token);
         debugPrint('FCM Token saved to Firestore: $token');
       }
     } catch (e) {

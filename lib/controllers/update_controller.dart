@@ -5,6 +5,9 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../views/screens/update/force_update_screen.dart';
+import '../services/cache_service.dart';
+import 'homepage_controller.dart';
+import 'categorized_products_controller.dart';
 
 import 'dart:math' as math;
 
@@ -38,6 +41,39 @@ class UpdateController extends GetxController {
       
       if (doc.exists) {
         final data = doc.data()!;
+        
+        // --- Added check for remote catalog updates ---
+        if (data.containsKey('catalog_status_last_updated_time')) {
+          final dynamic catalogTimestampRaw = data['catalog_status_last_updated_time'];
+          String remoteTimeStr = '';
+          
+          if (catalogTimestampRaw is Timestamp) {
+            remoteTimeStr = catalogTimestampRaw.toDate().toIso8601String();
+          } else if (catalogTimestampRaw != null) {
+            remoteTimeStr = catalogTimestampRaw.toString();
+          }
+          
+          if (remoteTimeStr.isNotEmpty) {
+            final cacheService = Get.find<CacheService>();
+            final localTimestamp = cacheService.getRaw('local_catalog_timestamp');
+            
+            if (localTimestamp != remoteTimeStr) {
+               debugPrint("Catalog data changed on server, clearing cache...");
+               await cacheService.clearCache();
+               await cacheService.saveRaw('local_catalog_timestamp', remoteTimeStr);
+               
+               // Trigger a refresh if controllers are active
+               if (Get.isRegistered<HomepageController>()) {
+                   Get.find<HomepageController>().fetchCategories();
+               }
+               if (Get.isRegistered<CategorizedProductsController>()) {
+                   Get.find<CategorizedProductsController>().fetchCategorizedProducts();
+               }
+            }
+          }
+        }
+        // ---------------------------------------------
+        
         final String minVersion = data['min_version'] ?? '1.0.0';
         final String storeUrl = data['store_url'] ?? '';
         final bool forceUpdateEnabled = data['force_update'] ?? false;

@@ -25,9 +25,6 @@ class CategorizedProductsController extends GetxController {
       fetchCategorizedProducts();
     });
     
-    // TEMPORARY: Clear cache once to fix "Unknown" mapping transition
-    _cacheService.clearCache();
-    
     // Also listen to categories loading for the first time
     ever(homepageController.categories, (_) {
       if (homepageController.currentTab.value == 'Grocery') {
@@ -40,9 +37,6 @@ class CategorizedProductsController extends GetxController {
       }
     });
 
-    // One-time cache clear for data consistency
-    _cacheService.clearCache();
-    
     fetchCategorizedProducts();
   }
 
