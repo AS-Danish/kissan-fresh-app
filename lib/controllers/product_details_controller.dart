@@ -8,6 +8,7 @@ import 'wishlist_controller.dart';
 import 'auth_controller.dart';
 import '../routes/app_routes.dart';
 import '../views/widgets/cart_success_popup.dart';
+import 'user_activity_controller.dart';
 
 class ProductDetailsController extends GetxController {
   // Observable quantity
@@ -28,6 +29,14 @@ class ProductDetailsController extends GetxController {
   // Initialize with product passed as parameter
   void initializeProduct(ProductCardModel productData) {
     observableProduct.value = productData;
+    
+    // Universally track product view whenever product details are opened
+    try {
+      Get.find<UserActivityController>().trackView(productData);
+    } catch (e) {
+      debugPrint("Error tracking product view: $e");
+    }
+    
     _startProductListener();
     // Check if product is already in wishlist using safe Get.put
     Get.put(WishlistController());
