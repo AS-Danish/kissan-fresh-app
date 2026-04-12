@@ -12,6 +12,8 @@ class LocationService extends GetxService {
   var isLocationEnabled = false.obs;
   var locationPermissionDenied = false.obs;
   
+  Future<void>? initializationFuture;
+  
   // Service Area Configuration
   static const double serviceCenterLat = 19.8762;
   static const double serviceCenterLng = 75.3433;
@@ -20,7 +22,7 @@ class LocationService extends GetxService {
   @override
   void onInit() {
     super.onInit();
-    _checkPermissionAndFetchLocation();
+    initializationFuture = _checkPermissionAndFetchLocation();
   }
 
   Future<void> _checkPermissionAndFetchLocation() async {

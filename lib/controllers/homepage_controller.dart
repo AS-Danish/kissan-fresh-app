@@ -25,13 +25,15 @@ class HomepageController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final CacheService _cacheService = Get.find<CacheService>();
   StreamSubscription? _specialsSubscription;
+  
+  Future<void>? categoriesFuture;
 
   @override
   void onInit() {
     super.onInit();
     _loadCachedSpecials();
     fetchTodaysSpecials();
-    fetchCategories();
+    categoriesFuture = fetchCategories();
   }
 
   void _loadCachedSpecials() {

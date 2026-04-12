@@ -9,6 +9,9 @@ import 'package:kissanfresh/bindings/bottom_bar_binding.dart';
 import 'package:kissanfresh/routes/app_routes.dart';
 import 'package:kissanfresh/views/layout/main_layout.dart';
 
+import 'package:flutter_native_splash/flutter_native_splash.dart';
+import 'package:kissanfresh/controllers/homepage_controller.dart';
+
 import 'firebase_options.dart';
 
 import 'package:kissanfresh/controllers/auth_controller.dart';
@@ -24,7 +27,9 @@ import 'package:kissanfresh/services/notification_service.dart';
 import 'package:kissanfresh/utils/app_theme.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  
   await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   
@@ -54,14 +59,35 @@ void main() async {
   
   Get.put(ThemeController()); // Initialize theme early
   Get.put(CacheService(), permanent: true); // Register CacheService
-  Get.put(UpdateController(), permanent: true); // Check for updates immediately
-  Get.put(LocationService(), permanent: true); // Add LocationService
+  final updateController = Get.put(UpdateController(), permanent: true); // Check for updates immediately
+  final locationService = Get.put(LocationService(), permanent: true); // Add LocationService
+  
   Get.put(AuthController(), permanent: true);
   Get.put(CartController(), permanent: true);
   Get.put(AddressController(), permanent: true);
   Get.put(OrdersController(), permanent: true);
   Get.put(UserActivityController(), permanent: true);
+  
+  // Start initializing HomepageController as well
+  final homepageController = Get.put(HomepageController(), permanent: true);
+
+  // We call runApp immediately so the Get widget tree is mounted (required for navigation in UpdateController etc).
+  // The UI is hidden behind the native splash screen.
   runApp(const MyApp());
+  
+  // Wait for critical background initializations
+  try {
+    await Future.wait([
+      if (updateController.initializationFuture != null) updateController.initializationFuture!,
+      if (locationService.initializationFuture != null) locationService.initializationFuture!,
+      if (homepageController.categoriesFuture != null) homepageController.categoriesFuture!,
+    ]);
+  } catch (e) {
+    debugPrint("Background initialization error: $e");
+  }
+
+  // Once everything is ready, reveal the app
+  FlutterNativeSplash.remove();
 }
 
 class MyApp extends StatelessWidget {

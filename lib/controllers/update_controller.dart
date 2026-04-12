@@ -18,12 +18,14 @@ class UpdateController extends GetxController {
   RxBool isCheckingForUpdate = false.obs;
   RxBool isUpdateAvailable = false.obs;
   RxBool isDownloading = false.obs;
+  
+  Future<void>? initializationFuture;
 
   @override
   void onInit() {
     super.onInit();
     // Start update checks immediately
-    checkUpdates();
+    initializationFuture = checkUpdates();
   }
 
   Future<void> checkUpdates() async {
