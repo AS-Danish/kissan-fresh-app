@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:kissanfresh/model/order_model.dart';
 import 'package:kissanfresh/services/pdf_receipt_service.dart';
 import 'package:kissanfresh/views/widgets/orders/order_badges.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class OrderDetailsSheet {
   static void show(BuildContext context, OrderModel order) {
@@ -193,7 +194,34 @@ class OrderDetailsSheet {
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(12),
                                 child: InkWell(
-                                  onTap: () {}, // Implement call functionality
+                                  onTap: () async {
+                                    final phone = order.rider!.phone;
+                                    final Uri launchUri = Uri(
+                                      scheme: 'tel',
+                                      path: phone,
+                                    );
+                                    try {
+                                      if (await canLaunchUrl(launchUri)) {
+                                        await launchUrl(launchUri);
+                                      } else {
+                                        Get.snackbar(
+                                          'Error',
+                                          'Could not launch dialer for $phone',
+                                          snackPosition: SnackPosition.BOTTOM,
+                                          margin: const EdgeInsets.all(16),
+                                          borderRadius: 12,
+                                        );
+                                      }
+                                    } catch (e) {
+                                      Get.snackbar(
+                                        'Error',
+                                        'An error occurred while launching the dialer',
+                                        snackPosition: SnackPosition.BOTTOM,
+                                        margin: const EdgeInsets.all(16),
+                                        borderRadius: 12,
+                                      );
+                                    }
+                                  },
                                   borderRadius: BorderRadius.circular(12),
                                   child: Container(
                                     padding: const EdgeInsets.all(8),

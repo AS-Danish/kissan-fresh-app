@@ -10,9 +10,15 @@ import 'homepage_controller.dart';
 import 'cart_controller.dart';
 import 'user_activity_controller.dart';
 
+import '../services/cache_service.dart';
+
 class ProductSearchController extends GetxController {
   final HomepageController homepageController = Get.find<HomepageController>();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final CacheService _cacheService = Get.find<CacheService>();
+
+  StreamSubscription? _catalogSubscription;
+  RxList<ProductCardModel> searchCatalog = <ProductCardModel>[].obs;
 
   RxString searchQuery = ''.obs;
   RxString selectedCategory = 'All'.obs;
@@ -61,10 +67,12 @@ class ProductSearchController extends GetxController {
     // Listen to category changes
     ever(selectedCategory, (_) => _performSearch());
     ever(homepageController.currentTab, (_) {
+      _listenToSearchCatalog();
       _setCategories();
       selectedCategory.value = 'All'; // Will trigger search
     });
 
+    _listenToSearchCatalog();
     _initSpeech();
     _performSearch();
 
@@ -73,6 +81,41 @@ class ProductSearchController extends GetxController {
       // Small delay to allow transition before triggering mic popup
       Future.delayed(const Duration(milliseconds: 300), startListening);
     }
+  }
+
+
+
+  void _listenToSearchCatalog() {
+    _catalogSubscription?.cancel();
+    
+    final origin = _currentOrigin;
+    final cacheKey = 'search_catalog_$origin';
+
+    // 1. Instantly load from local Hive cache
+    final cachedData = _cacheService.getProducts(cacheKey);
+    if (cachedData.isNotEmpty) {
+      searchCatalog.assignAll(cachedData);
+      if (searchQuery.isNotEmpty) _performSearch();
+    }
+
+    // 2. Open real-time listener to keep the catalog fresh
+    _catalogSubscription = _firestore
+        .collection('products')
+        .where('productOrigin', isEqualTo: origin)
+        .limit(400)
+        .snapshots()
+        .listen((snapshot) {
+      final mapped = snapshot.docs.map((doc) => _mapToProductCardModel(doc)).toList();
+      searchCatalog.assignAll(mapped);
+      _cacheService.saveProducts(cacheKey, mapped);
+      
+      // Re-trigger active search to update UI if user is searching
+      if (searchQuery.isNotEmpty) {
+        _performSearch();
+      }
+    }, onError: (e) {
+      debugPrint("Error listening to search catalog: $e");
+    });
   }
 
   Future<void> _loadRecentSearches() async {
@@ -239,58 +282,54 @@ class ProductSearchController extends GetxController {
 
   Future<void> _fetchData(int token) async {
     try {
-      Query query = _firestore
-          .collection('products')
-          .where('productOrigin', isEqualTo: _currentOrigin);
-
-      if (selectedCategory.value != 'All') {
-        query = query.where('category', isEqualTo: selectedCategory.value);
-      }
-
-      final sq = searchQuery.value.trim();
+      final sq = searchQuery.value.trim().toLowerCase();
+      
       if (sq.isNotEmpty) {
-        String prefix = sq;
-        if (sq.length > 1) {
-          prefix = sq[0].toUpperCase() + sq.substring(1).toLowerCase();
-        } else {
-          prefix = sq.toUpperCase();
+        // Search mode: Synchronous local filtering against the real-time cache
+        if (token != _searchToken) return;
+
+        final filtered = searchCatalog.where((p) {
+          // If a category is selected, filter by it first
+          if (selectedCategory.value != 'All' && p.category != selectedCategory.value) {
+            return false;
+          }
+          final name = p.title.toLowerCase();
+          return name.contains(sq);
+        }).toList();
+
+        searchResults.assignAll(filtered);
+        hasMoreProducts.value = false;
+      } else {
+        // Browse mode: Standard pagination from Firestore
+        Query query = _firestore
+            .collection('products')
+            .where('productOrigin', isEqualTo: _currentOrigin);
+
+        if (selectedCategory.value != 'All') {
+          query = query.where('category', isEqualTo: selectedCategory.value);
         }
+        if (_lastDocument != null) {
+          query = query.startAfterDocument(_lastDocument!);
+        }
+        
+        final snapshot = await query.limit(limit).get();
+        if (token != _searchToken) return;
 
-        query = query
-            .where('name', isGreaterThanOrEqualTo: prefix)
-            .where('name', isLessThan: '$prefix\u{f8ff}');
-      }
+        if (snapshot.docs.isNotEmpty) {
+          _lastDocument = snapshot.docs.last;
+          if (snapshot.docs.length < limit) {
+            hasMoreProducts.value = false;
+          }
 
-      query = query.limit(limit);
-
-      if (_lastDocument != null) {
-        query = query.startAfterDocument(_lastDocument!);
-      }
-
-      final snapshot = await query.get();
-
-      if (token != _searchToken) return;
-
-      if (snapshot.docs.isEmpty) {
-        hasMoreProducts.value = false;
-        return;
-      }
-
-      _lastDocument = snapshot.docs.last;
-
-      final mappedProducts = snapshot.docs
-          .map((doc) => _mapToProductCardModel(doc))
-          .toList();
-      searchResults.addAll(mappedProducts);
-
-      if (snapshot.docs.length < limit) {
-        hasMoreProducts.value = false;
+          final mapped = snapshot.docs.map((doc) => _mapToProductCardModel(doc)).toList();
+          searchResults.addAll(mapped);
+        } else {
+          hasMoreProducts.value = false;
+        }
       }
     } catch (e) {
-      debugPrint("Search Error: $e");
-      if (token == _searchToken) {
-        hasMoreProducts.value = false;
-      }
+      debugPrint("Error in search fetch: $e");
+      hasMoreProducts.value = false;
     }
   }
 
@@ -433,6 +472,7 @@ class ProductSearchController extends GetxController {
 
   @override
   void onClose() {
+    _catalogSubscription?.cancel();
     _speechTimeoutTimer?.cancel();
     speechToText.stop();
     super.onClose();
