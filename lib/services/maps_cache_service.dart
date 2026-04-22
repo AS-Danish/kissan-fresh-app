@@ -71,6 +71,10 @@ class MapsCacheService {
     }
   }
 
+  String _cleanAddress(String address) {
+    return address.replaceAll(RegExp(r'^[a-zA-Z0-9]{2,8}\+[a-zA-Z0-9]{2,3}[\s,]+'), '');
+  }
+
   Future<void> _saveToCache(String key, dynamic resultData) async {
     debugPrint('Saved to Firebase and Hive: $key');
     final cacheWrapper = {
@@ -108,7 +112,8 @@ class MapsCacheService {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'OK' && data['results'].isNotEmpty) {
-          final address = data['results'][0]['formatted_address'];
+          String address = data['results'][0]['formatted_address'];
+          address = _cleanAddress(address);
 
           // Save to Both Caches
           await _saveToCache(key, {'address': address});
@@ -151,7 +156,8 @@ class MapsCacheService {
         final data = json.decode(response.body);
         if (data['status'] == 'OK' && data['results'].isNotEmpty) {
           final loc = data['results'][0]['geometry']['location'];
-          final address = data['results'][0]['formatted_address'];
+          String address = data['results'][0]['formatted_address'];
+          address = _cleanAddress(address);
 
           final resultData = {
             'lat': loc['lat'],
@@ -209,7 +215,7 @@ class MapsCacheService {
               (data['predictions'] as List)
                   .map(
                     (p) => {
-                      'description': p['description'],
+                      'description': _cleanAddress(p['description'] as String),
                       'place_id': p['place_id'],
                     },
                   )
@@ -263,11 +269,13 @@ class MapsCacheService {
         if (data['status'] == 'OK' && data['result'] != null) {
           final result = data['result'];
           final loc = result['geometry']['location'];
+          String address = result['formatted_address'];
+          address = _cleanAddress(address);
 
           final resultData = {
             'lat': loc['lat'],
             'lng': loc['lng'],
-            'address': result['formatted_address'],
+            'address': address,
           };
 
           await _saveToCache(key, resultData);
