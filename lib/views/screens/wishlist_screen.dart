@@ -6,6 +6,7 @@ import '../../controllers/cart_controller.dart';
 import '../../model/product_card_model.dart';
 import '../../routes/app_routes.dart';
 import '../widgets/product_card_widget.dart';
+import '../widgets/floating_cart_snackbar.dart';
 
 class WishlistScreen extends StatelessWidget {
   const WishlistScreen({super.key});
@@ -148,6 +149,7 @@ class WishlistScreen extends StatelessWidget {
           },
         );
       }),
+      bottomNavigationBar: const FloatingCartSnackbar(bottomPadding: 16.0),
     );
   }
 }

@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import '../views/screens/update/force_update_screen.dart';
 import '../services/cache_service.dart';
 import 'homepage_controller.dart';
@@ -91,47 +93,120 @@ class UpdateController extends GetxController {
 
   /// Checks for Shorebird OTA patches
   Future<void> checkShorebirdUpdate() async {
+    if (kDebugMode) {
+      debugPrint("UpdateController: Shorebird check skipped in debug mode.");
+      return;
+    }
+
     try {
+      debugPrint("UpdateController: Checking for Shorebird updates...");
       final status = await _updater.checkForUpdate();
+      debugPrint("UpdateController: Shorebird status: $status");
       
       if (status == UpdateStatus.outdated) {
         isUpdateAvailable.value = true;
         
-        // Auto-download the update in background
+        debugPrint("UpdateController: New patch found. Downloading...");
         isDownloading.value = true;
         await _updater.update();
         isDownloading.value = false;
+        debugPrint("UpdateController: Patch downloaded successfully.");
 
         // Notify user to restart
-        _showRestartSnackbar();
+        _showRestartDialog();
+      } else {
+        debugPrint("UpdateController: App is up to date.");
       }
     } catch (e) {
-      debugPrint("Error checking Shorebird update: $e");
+      debugPrint("UpdateController: Error checking Shorebird update: $e");
       isDownloading.value = false;
     }
   }
 
-  void _showRestartSnackbar() {
-    Get.snackbar(
-      'Update Available',
-      'A new version has been downloaded. Please restart the app to apply the changes.',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFF10B981),
-      colorText: Colors.white,
-      duration: const Duration(days: 1), // Keep it visible
-      isDismissible: false,
-      mainButton: TextButton(
-        onPressed: () {
-          Get.back();
-        },
-        child: const Text(
-          'OK',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+  void _showRestartDialog() {
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.system_update_rounded,
+                  color: Color(0xFF10B981),
+                  size: 40,
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Update Ready!',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'A new update has been downloaded and is ready to be applied. Restart the app now to see the latest changes.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Get.back(),
+                      child: const Text(
+                        'Later',
+                        style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (GetPlatform.isAndroid) {
+                          SystemNavigator.pop();
+                        } else {
+                          Get.back();
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Restart Now',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 12,
-      icon: const Icon(Icons.system_update, color: Colors.white),
+      barrierDismissible: false,
     );
   }
 

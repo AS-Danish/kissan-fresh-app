@@ -17,6 +17,7 @@ import '../model/order_model.dart';
 import 'address_controller.dart';
 import 'orders_controller.dart';
 import 'slot_selection_controller.dart';
+import 'user_activity_controller.dart';
 
 class CartController extends GetxController {
   final AuthController _authController = Get.find<AuthController>();
@@ -27,6 +28,9 @@ class CartController extends GetxController {
 
   // Observable list of cart items
   RxList<CartItem> cartItems = <CartItem>[].obs;
+
+  // Track current route to show/hide global cart snackbar
+  RxString currentRoute = ''.obs;
 
   final Box _cartBox = Hive.box('cart_box');
 
@@ -134,6 +138,15 @@ class CartController extends GetxController {
 
   // Add product to cart from ProductCardModel
   bool addToCart(ProductCardModel product, int quantity) {
+    // Track activity
+    try {
+      if (Get.isRegistered<UserActivityController>()) {
+        Get.find<UserActivityController>().trackAddToCart(product);
+      }
+    } catch (e) {
+      debugPrint("Error tracking cart activity: $e");
+    }
+
     if (_authController.firebaseUser.value == null) {
       Get.toNamed(AppRoutes.loginScreen);
       Get.snackbar(

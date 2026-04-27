@@ -5,6 +5,7 @@ import '../../controllers/product_search_controller.dart';
 import '../widgets/product_card_widget.dart';
 import '../widgets/selectable_category_card.dart';
 import '../widgets/empty_state_widget.dart';
+import '../widgets/floating_cart_snackbar.dart';
 
 class SearchScreen extends StatelessWidget {
   final ProductSearchController controller =
@@ -379,6 +380,7 @@ class SearchScreen extends StatelessWidget {
           ],
         ),
       ),
+      bottomNavigationBar: const FloatingCartSnackbar(bottomPadding: 16.0),
     );
   }
 }

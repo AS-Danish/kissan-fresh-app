@@ -11,7 +11,9 @@ class UserActivityController extends GetxController {
   final RxList<ProductCardModel> personalizedProducts = <ProductCardModel>[].obs;
   
   static const String _recentViewsKey = 'recent_views';
+  static const String _viewCountsKey = 'view_counts';
   static const int _maxItems = 12;
+  static const int _viewThreshold = 3;
 
   @override
   void onInit() {
@@ -98,6 +100,35 @@ class UserActivityController extends GetxController {
   }
 
   void trackView(ProductCardModel product) {
+    if (product.id == null) return;
+
+    // 1. Update view count
+    final String? cachedCounts = _activityBox.get(_viewCountsKey);
+    Map<String, dynamic> viewCounts = {};
+    if (cachedCounts != null) {
+      try {
+        viewCounts = Map<String, dynamic>.from(jsonDecode(cachedCounts));
+      } catch (e) {
+        debugPrint('Error decoding view counts: $e');
+      }
+    }
+
+    final int currentCount = (viewCounts[product.id] ?? 0) + 1;
+    viewCounts[product.id!] = currentCount;
+    _activityBox.put(_viewCountsKey, jsonEncode(viewCounts));
+
+    // 2. If threshold reached, add/update in recent views
+    if (currentCount >= _viewThreshold) {
+      _addToRecentViews(product);
+    }
+  }
+
+  void trackAddToCart(ProductCardModel product) {
+    // Adding to cart directly qualifies the product
+    _addToRecentViews(product);
+  }
+
+  void _addToRecentViews(ProductCardModel product) {
     if (product.id == null) return;
 
     final String? cachedViews = _activityBox.get(_recentViewsKey);

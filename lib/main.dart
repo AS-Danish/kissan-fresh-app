@@ -25,6 +25,7 @@ import 'package:kissanfresh/controllers/orders_controller.dart';
 import 'package:kissanfresh/services/cache_service.dart';
 import 'package:kissanfresh/services/notification_service.dart';
 import 'package:kissanfresh/utils/app_theme.dart';
+import 'package:kissanfresh/utils/app_theme.dart';
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -109,6 +110,16 @@ class MyApp extends StatelessWidget {
         home: MainLayout(),
         defaultTransition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),
+        builder: (context, child) {
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              // Remove bottom padding so SafeArea inside routes doesn't double-pad
+              padding: MediaQuery.of(context).padding.copyWith(bottom: 0),
+              viewPadding: MediaQuery.of(context).viewPadding.copyWith(bottom: 0),
+            ),
+            child: child ?? const SizedBox.shrink(),
+          );
+        },
       ),
     );
   }

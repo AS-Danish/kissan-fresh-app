@@ -6,6 +6,7 @@ import 'package:kissanfresh/routes/app_routes.dart';
 import 'package:kissanfresh/views/widgets/orders/empty_orders_state.dart';
 import 'package:kissanfresh/views/widgets/orders/order_card.dart';
 import 'package:kissanfresh/views/widgets/orders/order_success_popup.dart';
+import 'package:kissanfresh/views/widgets/floating_cart_snackbar.dart';
 
 class MyOrdersScreen extends StatefulWidget {
   const MyOrdersScreen({super.key});
@@ -88,6 +89,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
           },
         );
       }),
+      bottomNavigationBar: const FloatingCartSnackbar(bottomPadding: 16.0),
     );
   }
 }

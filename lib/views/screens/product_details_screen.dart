@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import '../../model/product_card_model.dart';
 import '../../controllers/product_details_controller.dart';
 import '../../controllers/wishlist_controller.dart';
+import '../widgets/floating_cart_snackbar.dart';
 
 class ProductDetailsScreen extends StatelessWidget {
   final ProductCardModel product;
@@ -352,7 +353,13 @@ class ProductDetailsScreen extends StatelessWidget {
       ),
 
       // Bottom Add to Cart Bar
-      bottomNavigationBar: _buildBottomBar(context, controller),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const FloatingCartSnackbar(bottomPadding: 16.0),
+          _buildBottomBar(context, controller),
+        ],
+      ),
     );
   }
 
