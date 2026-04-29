@@ -34,6 +34,9 @@ class UserActivityController extends GetxController {
     _personalizedWorker = ever(personalizedProducts, (_) {
       _updateProductsSubscription();
     });
+
+    // Manually trigger initial subscription to ensure real-time data from start
+    _updateProductsSubscription();
     
     // Refresh when orders change
     final ordersController = Get.find<OrdersController>();
