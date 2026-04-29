@@ -440,13 +440,31 @@ class HomepageController extends GetxController {
       final snapshot = await _firestore
           .collection('products')
           .where('category', whereIn: section.categories.take(10).toList()) // whereIn limit is 10
-          .limit(4) // Only need up to 4 for the 2x2 layout
+          .limit(5) // Fetch 5 to check if "More" exists without loading everything
           .get();
       
       final products = snapshot.docs.map(_mapDocToModel).toList();
       sectionProducts[section.id] = products;
     } catch (e) {
       debugPrint("Error fetching products for section ${section.name}: $e");
+    }
+  }
+
+  Future<void> fetchFullProductsForSection(SectionModel section) async {
+    try {
+      // If we already have more than 5 products, we likely already fetched the full list
+      if ((sectionProducts[section.id]?.length ?? 0) > 5) return;
+
+      final snapshot = await _firestore
+          .collection('products')
+          .where('category', whereIn: section.categories.take(10).toList())
+          .limit(50) // Fetch a reasonably full list for the section page
+          .get();
+      
+      final products = snapshot.docs.map(_mapDocToModel).toList();
+      sectionProducts[section.id] = products;
+    } catch (e) {
+      debugPrint("Error fetching full products for section ${section.name}: $e");
     }
   }
 

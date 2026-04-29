@@ -16,16 +16,6 @@ class HomeFoodSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Categories
-        Obx(
-          () => CategoriesSection(
-            categories: controller.homeFoodCategories,
-            selectedIndex: controller.selectedHomeFoodIndex.value,
-            onCategorySelected: controller.selectHomeFoodCategory,
-          ),
-        ),
-        const SizedBox(height: 32),
-
         // Today's Special
         Obx(() {
           if (controller.homeFoodCategories.isEmpty) {
@@ -100,7 +90,7 @@ class HomeFoodSection extends StatelessWidget {
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.1),
+                                  color: Colors.black.withOpacity(0.1),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
@@ -115,8 +105,8 @@ class HomeFoodSection extends StatelessWidget {
                                   stops: const [0.3, 0.7, 1.0],
                                   colors: [
                                     Colors.transparent,
-                                    Colors.black.withValues(alpha: 0.6),
-                                    Colors.black.withValues(alpha: 0.9),
+                                    Colors.black.withOpacity(0.6),
+                                    Colors.black.withOpacity(0.9),
                                   ],
                                 ),
                               ),

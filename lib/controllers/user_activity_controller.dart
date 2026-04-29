@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
@@ -9,11 +11,18 @@ import 'orders_controller.dart';
 class UserActivityController extends GetxController {
   late Box _activityBox;
   final RxList<ProductCardModel> personalizedProducts = <ProductCardModel>[].obs;
+  // Real-time product data map: productId -> product data
+  RxMap<String, Map<String, dynamic>> realTimeProductData =
+      <String, Map<String, dynamic>>{}.obs;
   
   static const String _recentViewsKey = 'recent_views';
   static const String _viewCountsKey = 'view_counts';
   static const int _maxItems = 12;
   static const int _viewThreshold = 3;
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  StreamSubscription? _productsSubscription;
+  Worker? _personalizedWorker;
 
   @override
   void onInit() {
@@ -21,9 +30,53 @@ class UserActivityController extends GetxController {
     _activityBox = Hive.box('user_activity');
     _loadPersonalizedData();
     
+    // Start listening to product changes whenever personalizedProducts changes
+    _personalizedWorker = ever(personalizedProducts, (_) {
+      _updateProductsSubscription();
+    });
+    
     // Refresh when orders change
     final ordersController = Get.find<OrdersController>();
     ever(ordersController.orders, (_) => _loadPersonalizedData());
+  }
+
+  @override
+  void onClose() {
+    _productsSubscription?.cancel();
+    _personalizedWorker?.dispose();
+    super.onClose();
+  }
+
+  void _updateProductsSubscription() {
+    _productsSubscription?.cancel();
+
+    final productIds =
+        personalizedProducts
+            .map((item) => item.id)
+            .where((id) => id != null)
+            .cast<String>()
+            .toList();
+
+    if (productIds.isEmpty) {
+      realTimeProductData.clear();
+      return;
+    }
+
+    _productsSubscription =
+        _firestore
+            .collection('products')
+            .where(FieldPath.documentId, whereIn: productIds)
+            .snapshots()
+            .listen(
+              (snapshot) {
+                final Map<String, Map<String, dynamic>> newData = {};
+                for (var doc in snapshot.docs) {
+                  newData[doc.id] = doc.data();
+                }
+                realTimeProductData.assignAll(newData);
+              },
+              onError: (e) => debugPrint("Error in personalized products stream: $e"),
+            );
   }
 
   void _loadPersonalizedData() {

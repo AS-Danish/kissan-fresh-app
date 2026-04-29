@@ -40,14 +40,14 @@ class SelectableCategoryCard extends StatelessWidget {
           border: Border.all(
             color: isSelected
                 ? Colors.transparent
-                : Theme.of(context).dividerColor.withValues(alpha: 0.5),
+                : Theme.of(context).dividerColor.withOpacity(0.5),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
               color: isSelected
-                  ? Theme.of(context).primaryColor.withValues(alpha: 0.3)
-                  : Colors.black.withValues(alpha: 0.05),
+                  ? Theme.of(context).primaryColor.withOpacity(0.3)
+                  : Colors.black.withOpacity(0.05),
               blurRadius: isSelected ? 12 : 8,
               offset: Offset(0, isSelected ? 4 : 2),
             ),
@@ -62,7 +62,7 @@ class SelectableCategoryCard extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? Colors.white.withValues(alpha: 0.2)
+                    ? Colors.white.withOpacity(0.2)
                     : (iconColor ?? Theme.of(context).primaryColor).withValues(
                         alpha: 0.1,
                       ),

@@ -23,7 +23,7 @@ class OrderDetailsSheet {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: Colors.black.withOpacity(0.1),
               blurRadius: 20,
               offset: const Offset(0, -5),
             ),
@@ -122,12 +122,12 @@ class OrderDetailsSheet {
                           decoration: BoxDecoration(
                             color: Theme.of(
                               context,
-                            ).primaryColor.withValues(alpha: 0.05),
+                            ).primaryColor.withOpacity(0.05),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: Theme.of(
                                 context,
-                              ).primaryColor.withValues(alpha: 0.1),
+                              ).primaryColor.withOpacity(0.1),
                             ),
                           ),
                           child: Row(
@@ -138,7 +138,7 @@ class OrderDetailsSheet {
                                 decoration: BoxDecoration(
                                   color: Theme.of(
                                     context,
-                                  ).primaryColor.withValues(alpha: 0.1),
+                                  ).primaryColor.withOpacity(0.1),
                                   shape: BoxShape.circle,
                                 ),
                                 child: ClipOval(
@@ -264,10 +264,10 @@ class OrderDetailsSheet {
                                 color: isCod
                                     ? const Color(
                                         0xFF10B981,
-                                      ).withValues(alpha: 0.1)
+                                      ).withOpacity(0.1)
                                     : const Color(
                                         0xFF6366F1,
-                                      ).withValues(alpha: 0.1),
+                                      ).withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Row(
@@ -491,7 +491,7 @@ class OrderDetailsSheet {
                 color: Theme.of(context).scaffoldBackgroundColor,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: Colors.black.withOpacity(0.05),
                     blurRadius: 10,
                     offset: const Offset(0, -2),
                   ),
@@ -571,7 +571,7 @@ class OrderDetailsSheet {
         style: GoogleFonts.montserrat(
           fontSize: 12,
           fontWeight: FontWeight.w800,
-          color: Theme.of(context).primaryColor.withValues(alpha: 0.8),
+          color: Theme.of(context).primaryColor.withOpacity(0.8),
           letterSpacing: 1.2,
         ),
       ),

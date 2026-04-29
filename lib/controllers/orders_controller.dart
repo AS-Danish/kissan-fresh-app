@@ -15,6 +15,17 @@ class OrdersController extends GetxController {
 
   RxList<OrderModel> orders = <OrderModel>[].obs;
   RxBool isLoading = false.obs;
+  
+  // Filtering
+  RxString selectedFilter = 'Current Month'.obs;
+  final List<String> filterOptions = [
+    'Current Month',
+    'Past 3 Months',
+    'Past 6 Months',
+    '2024',
+    '2023',
+    'All Time'
+  ];
 
   // Caches to avoid redundant Firestore reads
   final Map<String, RiderModel> _riderCache = {};
@@ -46,6 +57,13 @@ class OrdersController extends GetxController {
     _ordersBox = Hive.box('orders_cache');
     _loadOrdersFromCache();
     loadOrders();
+    
+    // Watch for filter changes
+    ever(selectedFilter, (_) => loadOrders());
+  }
+
+  void setFilter(String filter) {
+    selectedFilter.value = filter;
   }
 
   void _loadOrdersFromCache() {
@@ -83,11 +101,36 @@ class OrdersController extends GetxController {
     }
 
     try {
-      _firestore
+      Query query = _firestore
           .collection('orders')
           .where('userId', isEqualTo: user.uid)
-          .orderBy('orderDate', descending: true)
-          .limit(20)
+          .orderBy('orderDate', descending: true);
+
+      // Apply date filter
+      DateTime now = DateTime.now();
+      if (selectedFilter.value == 'Current Month') {
+        DateTime startOfMonth = DateTime(now.year, now.month, 1);
+        query = query.where('orderDate', isGreaterThanOrEqualTo: startOfMonth.toIso8601String());
+      } else if (selectedFilter.value == 'Past 3 Months') {
+        DateTime threeMonthsAgo = now.subtract(const Duration(days: 90));
+        query = query.where('orderDate', isGreaterThanOrEqualTo: threeMonthsAgo.toIso8601String());
+      } else if (selectedFilter.value == 'Past 6 Months') {
+        DateTime sixMonthsAgo = now.subtract(const Duration(days: 180));
+        query = query.where('orderDate', isGreaterThanOrEqualTo: sixMonthsAgo.toIso8601String());
+      } else if (selectedFilter.value == '2024') {
+        DateTime startOfYear = DateTime(2024, 1, 1);
+        DateTime endOfYear = DateTime(2024, 12, 31, 23, 59, 59);
+        query = query.where('orderDate', isGreaterThanOrEqualTo: startOfYear.toIso8601String())
+                     .where('orderDate', isLessThanOrEqualTo: endOfYear.toIso8601String());
+      } else if (selectedFilter.value == '2023') {
+        DateTime startOfYear = DateTime(2023, 1, 1);
+        DateTime endOfYear = DateTime(2023, 12, 31, 23, 59, 59);
+        query = query.where('orderDate', isGreaterThanOrEqualTo: startOfYear.toIso8601String())
+                     .where('orderDate', isLessThanOrEqualTo: endOfYear.toIso8601String());
+      }
+
+      query
+          .limit(50)
           .snapshots()
           .listen(
             (snapshot) async {
@@ -95,7 +138,7 @@ class OrdersController extends GetxController {
 
               for (var doc in snapshot.docs) {
                 try {
-                  final data = doc.data();
+                  final data = doc.data() as Map<String, dynamic>;
                   final orderId = doc.id;
                   OrderModel order = OrderModel.fromJson({
                     ...data,

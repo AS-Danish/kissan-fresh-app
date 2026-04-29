@@ -45,18 +45,18 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
             borderRadius: BorderRadius.circular(18),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
+                color: Colors.black.withOpacity(0.1),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
               BoxShadow(
-                color: primaryColor.withValues(alpha: 0.02),
+                color: primaryColor.withOpacity(0.1),
                 blurRadius: 30,
                 offset: const Offset(0, 5),
               ),
             ],
             border: Border.all(
-              color: colorScheme.outline.withValues(alpha: 0.08),
+              color: colorScheme.outline.withOpacity(0.1),
               width: 1.5,
             ),
           ),
@@ -115,8 +115,8 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              Colors.white.withValues(alpha: 0.05),
-                              Colors.black.withValues(alpha: 0.03),
+                              Colors.white.withOpacity(0.1),
+                              Colors.black.withOpacity(0.1),
                             ],
                           ),
                         ),
@@ -140,7 +140,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: primaryColor.withValues(alpha: 0.9),
+                                    color: primaryColor.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(8),
                                     boxShadow: [
                                       BoxShadow(
@@ -260,13 +260,13 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                                 ),
                                 decoration: BoxDecoration(
                                   color: (widget.product.inStock && widget.product.stockCount > 0)
-                                      ? primaryColor.withValues(alpha: 0.08)
-                                      : Colors.grey.withValues(alpha: 0.08),
+                                      ? primaryColor.withOpacity(0.1)
+                                      : Colors.grey.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
                                     color: (widget.product.inStock && widget.product.stockCount > 0)
-                                        ? primaryColor.withValues(alpha: 0.1)
-                                        : Colors.grey.withValues(alpha: 0.1),
+                                        ? primaryColor.withOpacity(0.1)
+                                        : Colors.grey.withOpacity(0.1),
                                     width: 1,
                                   ),
                                 ),
@@ -318,7 +318,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                                             fontSize: 8,
                                             fontWeight: FontWeight.w600,
                                             color: (widget.product.inStock && widget.product.stockCount > 0)
-                                                ? primaryColor.withValues(alpha: 0.7)
+                                                ? primaryColor.withOpacity(0.1)
                                                 : Colors.grey.shade500,
                                           ),
                                         ),
@@ -393,7 +393,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
           width: 24,
           height: 24,
           child: CircularProgressIndicator(
-            color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
+            color: Theme.of(context).primaryColor.withOpacity(0.1),
             strokeWidth: 2,
           ),
         ),
@@ -414,3 +414,4 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
     );
   }
 }
+

@@ -24,7 +24,7 @@ class OrderSuccessPopup {
                 height: 90,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                  color: const Color(0xFF10B981).withOpacity(0.12),
                 ),
                 child: const Center(
                   child: Icon(
@@ -70,8 +70,8 @@ class OrderSuccessPopup {
                 ),
                 decoration: BoxDecoration(
                   color: isCod
-                      ? const Color(0xFF10B981).withValues(alpha: 0.1)
-                      : const Color(0xFF6366F1).withValues(alpha: 0.1),
+                      ? const Color(0xFF10B981).withOpacity(0.1)
+                      : const Color(0xFF6366F1).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(

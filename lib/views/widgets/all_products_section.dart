@@ -91,7 +91,7 @@ class AllProductsSection extends StatelessWidget {
                   ),
                   backgroundColor: Theme.of(
                     context,
-                  ).primaryColor.withValues(alpha: 0.1),
+                  ).primaryColor.withOpacity(0.1),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),

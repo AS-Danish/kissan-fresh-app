@@ -36,12 +36,12 @@ class FloatingCartSnackbar extends StatelessWidget {
               color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
+                color: Theme.of(context).dividerColor.withOpacity(0.5),
                 width: 1,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
+                  color: Colors.black.withOpacity(0.1),
                   blurRadius: 10,
                   offset: const Offset(0, 5),
                 ),
@@ -59,7 +59,7 @@ class FloatingCartSnackbar extends StatelessWidget {
                       color: Theme.of(context).scaffoldBackgroundColor,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
+                        color: Theme.of(context).dividerColor.withOpacity(0.5),
                       ),
                     ),
                     child: Row(
@@ -143,7 +143,7 @@ class FloatingCartSnackbar extends StatelessWidget {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0284c7), // Ocean Blue to match image
+                      backgroundColor: Theme.of(context).primaryColor,
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(

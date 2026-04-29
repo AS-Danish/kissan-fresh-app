@@ -60,7 +60,7 @@ class SearchScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
+                      color: Colors.black.withOpacity(0.08),
                       blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),
@@ -78,7 +78,7 @@ class SearchScreen extends StatelessWidget {
                       fontSize: 14,
                       color: Theme.of(
                         context,
-                      ).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
+                      ).textTheme.bodyMedium?.color?.withOpacity(0.5),
                       fontWeight: FontWeight.w500,
                     ),
                     border: InputBorder.none,
@@ -187,7 +187,7 @@ class SearchScreen extends StatelessWidget {
                                           .textTheme
                                           .bodyMedium
                                           ?.color
-                                          ?.withValues(alpha: 0.6),
+                                          ?.withOpacity(0.6),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8),
                                         side: BorderSide(

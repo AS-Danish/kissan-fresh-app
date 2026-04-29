@@ -117,12 +117,6 @@ class CartController extends GetxController {
   // Coupon Methods
   Future<void> applyCoupon(String code) async {
     if (code.isEmpty) return;
-    
-    if (_authController.firebaseUser.value == null) {
-       Get.snackbar('Login Required', 'Please login to apply coupons');
-       return;
-    }
-
     final normalizedCode = code.trim().toUpperCase();
 
     try {
@@ -136,101 +130,79 @@ class CartController extends GetxController {
           .get();
 
       if (querySnapshot.docs.isEmpty) {
-        Get.snackbar(
-          'Invalid Coupon',
-          'The coupon code you entered is not valid.',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
+        Get.snackbar('Invalid Coupon', 'The coupon code you entered is not valid.',
+            backgroundColor: Colors.red, colorText: Colors.white);
         return;
       }
 
-      final couponDoc = querySnapshot.docs.first;
-      final couponData = couponDoc.data();
-      final coupon = CouponModel.fromJson(couponData);
-
-      if (!coupon.isActive) {
-        Get.snackbar(
-          'Expired Coupon',
-          'This coupon is no longer active.',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-        return;
-      }
-
-      if (coupon.minOrderValue != null && subtotal < coupon.minOrderValue!) {
-        Get.snackbar(
-          'Minimum Order',
-          'This coupon requires a minimum order of ₹${coupon.minOrderValue}',
-          backgroundColor: Colors.orange,
-          colorText: Colors.white,
-        );
-        return;
-      }
-      
-      if (coupon.totalUsageLimit != null && coupon.currentUsageCount >= coupon.totalUsageLimit!) {
-        Get.snackbar(
-          'Usage Limit Reached',
-          'This coupon has reached its maximum usage limit.',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-        return;
-      }
-
-      if (coupon.maxUsesPerUser != null) {
-        // Use count() to check user's past usage of this coupon
-        final userOrders = await _firestore
-            .collection('orders')
-            .where('userId', isEqualTo: _authController.firebaseUser.value!.uid)
-            .where('couponCode', isEqualTo: normalizedCode)
-            .count()
-            .get();
-        if (userOrders.count != null && userOrders.count! >= coupon.maxUsesPerUser!) {
-          Get.snackbar(
-            'Limit Exceeded',
-            'You have already used this coupon the maximum number of times.',
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
-          );
-          return;
-        }
-      }
-      
-      // Check if there are applicable products in the cart
-      double applicableSubtotal = _calculateApplicableSubtotal(coupon);
-      if (applicableSubtotal == 0) {
-        Get.snackbar(
-          'Not Applicable',
-          'This coupon is not applicable to the items in your cart.',
-          backgroundColor: Colors.orange,
-          colorText: Colors.white,
-        );
-        return;
-      }
-
-      activeCouponModel.value = coupon;
-      appliedCoupon.value = normalizedCode;
-      
-      Get.snackbar(
-        'Coupon Applied',
-        'Discount applied successfully!',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
-      cartItems.refresh(); // Trigger total re-calc
+      final coupon = CouponModel.fromJson(querySnapshot.docs.first.data());
+      await applyCouponModel(coupon);
     } catch (e) {
       debugPrint("Error applying coupon: $e");
-      Get.snackbar(
-        'Error',
-        'Failed to apply coupon. Please try again.',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
     } finally {
       isApplyingCoupon.value = false;
     }
+  }
+
+  Future<void> applyCouponModel(CouponModel coupon) async {
+    final validationError = getCouponValidation(coupon);
+    if (validationError != null) {
+      Get.snackbar('Cannot Apply', validationError,
+          backgroundColor: Colors.orange, colorText: Colors.white);
+      return;
+    }
+
+    // Secondary check for per-user limit (requires DB fetch)
+    if (coupon.maxUsesPerUser != null) {
+      final userOrders = await _firestore
+          .collection('orders')
+          .where('userId', isEqualTo: _authController.firebaseUser.value!.uid)
+          .where('couponCode', isEqualTo: coupon.code)
+          .count()
+          .get();
+      if (userOrders.count != null && userOrders.count! >= coupon.maxUsesPerUser!) {
+        Get.snackbar('Limit Exceeded', 'You have already used this coupon maximum times.',
+            backgroundColor: Colors.red, colorText: Colors.white);
+        return;
+      }
+    }
+
+    activeCouponModel.value = coupon;
+    appliedCoupon.value = coupon.code;
+    cartItems.refresh();
+    
+    Get.snackbar('Coupon Applied', 'Discount applied successfully!',
+        backgroundColor: Colors.green, colorText: Colors.white, snackPosition: SnackPosition.TOP);
+  }
+
+  String? getCouponValidation(CouponModel coupon) {
+    if (_authController.firebaseUser.value == null) {
+      return 'Login Required';
+    }
+
+    if (!coupon.isActive) {
+      return 'Coupon is no longer active';
+    }
+
+    if (coupon.productType != currentOrigin) {
+      return 'Not applicable for $currentOrigin';
+    }
+
+    if (coupon.minOrderValue != null && subtotal < coupon.minOrderValue!) {
+      return 'Min order ₹${coupon.minOrderValue?.toStringAsFixed(0)} required';
+    }
+
+    if (coupon.totalUsageLimit != null && coupon.currentUsageCount >= coupon.totalUsageLimit!) {
+      return 'Coupon usage limit reached';
+    }
+
+    // Check if there are applicable products in the cart
+    double applicableSubtotal = _calculateApplicableSubtotal(coupon);
+    if (applicableSubtotal == 0) {
+      return 'No applicable products in cart';
+    }
+
+    return null; // Valid
   }
 
   double _calculateApplicableSubtotal(CouponModel coupon) {

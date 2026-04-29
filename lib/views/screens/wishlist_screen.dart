@@ -44,7 +44,7 @@ class WishlistScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Theme.of(
                       context,
-                    ).dividerColor.withValues(alpha: 0.1),
+                    ).dividerColor.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -52,7 +52,7 @@ class WishlistScreen extends StatelessWidget {
                     size: 60,
                     color: Theme.of(
                       context,
-                    ).dividerColor.withValues(alpha: 0.5),
+                    ).dividerColor.withOpacity(0.5),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -81,10 +81,10 @@ class WishlistScreen extends StatelessWidget {
         return GridView.builder(
           padding: const EdgeInsets.all(20),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 0.68,
+            crossAxisCount: 3,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 0.58,
           ),
           itemCount: controller.wishlistItems.length,
           itemBuilder: (context, index) {
@@ -93,31 +93,30 @@ class WishlistScreen extends StatelessWidget {
             // Get real-time data if available
             final realTimeData = controller.realTimeProductData[product.id];
 
-            // Primary logic: use real-time inStock boolean, if available.
-            // User requested to ignore stockCount for wishlist availability.
             bool effectiveInStock = product.inStock;
+            double effectivePrice = product.price;
+            double? effectiveMrp = product.mrp;
+            
             if (realTimeData != null) {
               effectiveInStock = realTimeData['inStock'] ?? true;
+              if (realTimeData['price'] != null) {
+                effectivePrice = (realTimeData['price'] as num).toDouble();
+              }
+              if (realTimeData['mrp'] != null) {
+                effectiveMrp = (realTimeData['mrp'] as num).toDouble();
+              }
             }
 
-            // Create a wrapper product with functional callbacks and real-time stock
-            final functionalProduct = ProductCardModel(
-              id: product.id,
-              image: product.image,
-              images: product.images,
-              title: product.title,
-              description: product.description,
-              price: product.price,
-              unit: product.unit,
-              category: product.category,
+            // Create a wrapper product with functional callbacks and real-time data
+            final functionalProduct = product.copyWith(
               inStock: effectiveInStock,
-              // We set stockCount to 1 if inStock is true to satisfy ProductCardWidget's UI logic
-              // which checks both inStock AND stockCount > 0.
-              stockCount: effectiveInStock ? 1 : 0,
+              price: effectivePrice,
+              mrp: effectiveMrp,
+              stockCount: effectiveInStock ? 99 : 0,
               onTap: () {
                 Get.toNamed(
                   AppRoutes.productDetailsRoute,
-                  arguments: product, // Pass the original product or update it too if needed
+                  arguments: product,
                 );
               },
               onAddToCart: () {

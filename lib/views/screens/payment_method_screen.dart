@@ -104,10 +104,10 @@ class PaymentMethodScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
+        border: Border.all(color: theme.dividerColor.withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 12,
             offset: const Offset(0, 3),
           ),
@@ -119,7 +119,7 @@ class PaymentMethodScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: theme.primaryColor.withValues(alpha: 0.1),
+              color: theme.primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -172,10 +172,10 @@ class PaymentMethodScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
+        border: Border.all(color: theme.dividerColor.withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 12,
             offset: const Offset(0, 3),
           ),
@@ -192,7 +192,7 @@ class PaymentMethodScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                        color: const Color(0xFFF59E0B).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
@@ -244,7 +244,7 @@ class PaymentMethodScreen extends StatelessWidget {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.08),
+                  color: const Color(0xFF10B981).withOpacity(0.08),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
@@ -291,26 +291,26 @@ class PaymentMethodScreen extends StatelessWidget {
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: isSelected
-              ? theme.primaryColor.withValues(alpha: 0.06)
+              ? theme.primaryColor.withOpacity(0.06)
               : theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: isSelected
                 ? theme.primaryColor
-                : theme.dividerColor.withValues(alpha: 0.5),
+                : theme.dividerColor.withOpacity(0.5),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: theme.primaryColor.withValues(alpha: 0.12),
+                    color: theme.primaryColor.withOpacity(0.12),
                     blurRadius: 16,
                     offset: const Offset(0, 4),
                   ),
                 ]
               : [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
+                    color: Colors.black.withOpacity(0.03),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -321,7 +321,7 @@ class PaymentMethodScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: 0.12),
+                color: iconColor.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(icon, color: iconColor, size: 26),
@@ -381,7 +381,7 @@ class PaymentMethodScreen extends StatelessWidget {
         color: theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: Colors.black.withOpacity(0.08),
             blurRadius: 16,
             offset: const Offset(0, -4),
           ),
@@ -415,8 +415,8 @@ class PaymentMethodScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   shadowColor: isCod
-                      ? const Color(0xFF10B981).withValues(alpha: 0.3)
-                      : const Color(0xFF6366F1).withValues(alpha: 0.3),
+                      ? const Color(0xFF10B981).withOpacity(0.3)
+                      : const Color(0xFF6366F1).withOpacity(0.3),
                 ),
                 child: cartController.isProcessingOrder.value
                     ? const SizedBox(

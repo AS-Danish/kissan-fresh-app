@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/user_activity_controller.dart';
+import '../../model/product_card_model.dart';
 import 'product_card_widget.dart';
 
 class YourChoiceSection extends StatelessWidget {
@@ -42,7 +43,7 @@ class YourChoiceSection extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                        color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
                         letterSpacing: 0.1,
                       ),
                     ),
@@ -51,7 +52,7 @@ class YourChoiceSection extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -76,10 +77,24 @@ class YourChoiceSection extends StatelessWidget {
               separatorBuilder: (context, index) => const SizedBox(width: 16),
               itemBuilder: (context, index) {
                 final product = controller.personalizedProducts[index];
+                
+                // Get real-time data if available
+                final realTimeData = controller.realTimeProductData[product.id];
+                
+                ProductCardModel displayProduct = product;
+                if (realTimeData != null) {
+                  displayProduct = product.copyWith(
+                    inStock: realTimeData['inStock'] ?? true,
+                    stockCount: (realTimeData['stockCount'] ?? 0).toInt(),
+                    price: (realTimeData['price'] ?? product.price).toDouble(),
+                    mrp: realTimeData['mrp'] != null ? (realTimeData['mrp'] as num).toDouble() : null,
+                  );
+                }
+
                 return SizedBox(
                   width: 130, // Optimized width for horizontal scroll
                   child: ProductCardWidget(
-                    product: product,
+                    product: displayProduct,
                     showAddButton: true,
                   ),
                 );

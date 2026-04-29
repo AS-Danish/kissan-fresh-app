@@ -11,6 +11,7 @@ class CouponModel {
   final int currentUsageCount;
   final String applyTo; // "all", "specific"
   final String productType; // "kissan-fresh", "home-food", etc.
+  final String description;
 
   CouponModel({
     required this.code,
@@ -25,6 +26,7 @@ class CouponModel {
     this.currentUsageCount = 0,
     required this.applyTo,
     required this.productType,
+    this.description = '',
   });
 
   factory CouponModel.fromJson(Map<String, dynamic> json) {
@@ -41,6 +43,8 @@ class CouponModel {
       currentUsageCount: (json['currentUsageCount'] ?? 0).toInt(),
       applyTo: json['applyTo'] ?? 'all',
       productType: json['productType'] ?? 'kissan-fresh',
+      description: json['description'] ?? 
+          "Get ${(json['discountValue'] ?? 0).toInt()}${json['discountType'] == 'percentage' ? '%' : '₹'} off on your order",
     );
   }
 
@@ -58,6 +62,7 @@ class CouponModel {
       'currentUsageCount': currentUsageCount,
       'applyTo': applyTo,
       'productType': productType,
+      'description': description,
     };
   }
 }

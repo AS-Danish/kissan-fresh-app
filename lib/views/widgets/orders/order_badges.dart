@@ -16,8 +16,8 @@ class OrderTypeBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: isCod
-            ? const Color(0xFF10B981).withValues(alpha: 0.12)
-            : const Color(0xFF6366F1).withValues(alpha: 0.12),
+            ? const Color(0xFF10B981).withOpacity(0.12)
+            : const Color(0xFF6366F1).withOpacity(0.12),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -70,22 +70,22 @@ class OrderStatusBadge extends StatelessWidget {
 
     switch (status) {
       case OrderStatus.processing:
-        backgroundColor = Colors.orange.withValues(alpha: 0.1);
+        backgroundColor = Colors.orange.withOpacity(0.1);
         textColor = Colors.orange;
         icon = Icons.hourglass_empty;
         break;
       case OrderStatus.outForDelivery:
-        backgroundColor = Colors.blue.withValues(alpha: 0.1);
+        backgroundColor = Colors.blue.withOpacity(0.1);
         textColor = Colors.blue;
         icon = Icons.local_shipping_outlined;
         break;
       case OrderStatus.delivered:
-        backgroundColor = Colors.green.withValues(alpha: 0.1);
+        backgroundColor = Colors.green.withOpacity(0.1);
         textColor = Colors.green;
         icon = Icons.check_circle;
         break;
       case OrderStatus.cancelled:
-        backgroundColor = Colors.red.withValues(alpha: 0.1);
+        backgroundColor = Colors.red.withOpacity(0.1);
         textColor = Colors.red;
         icon = Icons.cancel_outlined;
         break;

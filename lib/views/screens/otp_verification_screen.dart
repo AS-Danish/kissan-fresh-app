@@ -34,7 +34,7 @@ class OtpVerificationScreen extends StatelessWidget {
 
     final submittedPinTheme = defaultPinTheme.copyWith(
       decoration: defaultPinTheme.decoration!.copyWith(
-        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+        color: Theme.of(context).primaryColor.withOpacity(0.1),
       ),
     );
 
@@ -78,7 +78,7 @@ class OtpVerificationScreen extends StatelessWidget {
                           'We sent a code to +91 $phoneNumber',
                           style: GoogleFonts.montserrat(
                             fontSize: 16,
-                            color: Colors.white.withValues(alpha: 0.9),
+                            color: Colors.white.withOpacity(0.9),
                           ),
                         ),
                       ],
@@ -213,7 +213,7 @@ class OtpVerificationScreen extends StatelessWidget {
                                     ).primaryColor,
                                     disabledBackgroundColor: Theme.of(
                                       context,
-                                    ).primaryColor.withValues(alpha: 0.6),
+                                    ).primaryColor.withOpacity(0.6),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(14),
                                     ),
@@ -264,7 +264,7 @@ class OtpVerificationScreen extends StatelessWidget {
                                             .textTheme
                                             .bodyMedium
                                             ?.color
-                                            ?.withValues(alpha: 0.5),
+                                            ?.withOpacity(0.5),
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
                                       ),

@@ -205,7 +205,7 @@ class ProfileController extends GetxController {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
+                color: Colors.red.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -238,7 +238,7 @@ class ProfileController extends GetxController {
                 fontWeight: FontWeight.w500,
                 color: Theme.of(
                   Get.context!,
-                ).colorScheme.onSurface.withValues(alpha: 0.7),
+                ).colorScheme.onSurface.withOpacity(0.7),
                 height: 1.5,
               ),
             ),
@@ -264,7 +264,7 @@ class ProfileController extends GetxController {
                       fontWeight: FontWeight.w700,
                       color: Theme.of(
                         Get.context!,
-                      ).colorScheme.onSurface.withValues(alpha: 0.6),
+                      ).colorScheme.onSurface.withOpacity(0.6),
                     ),
                   ),
                 ),

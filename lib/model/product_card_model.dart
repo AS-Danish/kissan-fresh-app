@@ -68,7 +68,9 @@ class ProductCardModel {
       category: json['category'],
       tags: json['tags'] != null ? List<String>.from(json['tags']) : null,
       inStock: json['inStock'] ?? true,
-      stockCount: (json['stockCount'] ?? 0).toInt(),
+      stockCount: json['stockCount'] != null 
+          ? (json['stockCount'] as num).toInt() 
+          : (json['inStock'] == false ? 0 : 99),
       onTap: onTap ?? () {},
       onAddToCart: onAddToCart ?? () {},
     );

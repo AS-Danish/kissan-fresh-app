@@ -30,7 +30,7 @@ class HomeHeader extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
+            color: Theme.of(context).primaryColor.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -176,7 +176,7 @@ class HomeHeader extends StatelessWidget {
                         height: 48,
                         decoration: BoxDecoration(
                           color: profileController.profileImage.value.isEmpty
-                              ? Colors.white.withValues(alpha: 0.2)
+                              ? Colors.white.withOpacity(0.2)
                               : Colors.transparent,
                           shape: BoxShape.circle,
                         ),
@@ -219,7 +219,7 @@ class HomeHeader extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
+                    color: Colors.black.withOpacity(0.08),
                     blurRadius: 16,
                     offset: const Offset(0, 4),
                   ),

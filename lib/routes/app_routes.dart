@@ -25,6 +25,7 @@ import 'package:kissanfresh/views/screens/help_support_screen.dart';
 import 'package:kissanfresh/views/screens/slot_selection_screen.dart';
 import 'package:kissanfresh/bindings/onboarding_binding.dart';
 import 'package:kissanfresh/middleware/auth_middleware.dart';
+import 'package:kissanfresh/views/screens/section_products_screen.dart';
 
 abstract class AppRoutes {
   static const auth = '/';
@@ -47,6 +48,7 @@ abstract class AppRoutes {
   static const termsConditionsRoute = '/terms-conditions';
   static const helpSupportRoute = '/help-support';
   static const slotSelectionRoute = '/slot-selection';
+  static const sectionProductsRoute = '/section-products';
   static final pages = [
     GetPage(name: mainLayout, page: () => MainLayout()),
     GetPage(
@@ -108,5 +110,12 @@ abstract class AppRoutes {
     ),
     GetPage(name: helpSupportRoute, page: () => const HelpSupportScreen()),
     GetPage(name: slotSelectionRoute, page: () => SlotSelectionScreen()),
+    GetPage(
+      name: sectionProductsRoute,
+      page: () {
+        final section = Get.arguments;
+        return SectionProductsScreen(section: section);
+      },
+    ),
   ];
 }

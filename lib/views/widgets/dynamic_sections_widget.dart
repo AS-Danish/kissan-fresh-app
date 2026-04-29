@@ -5,6 +5,8 @@ import '../../controllers/homepage_controller.dart';
 import '../../controllers/theme_controller.dart';
 import '../../model/section_model.dart';
 import '../../model/product_card_model.dart';
+import '../../routes/app_routes.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class DynamicSectionsWidget extends StatelessWidget {
   DynamicSectionsWidget({super.key});
@@ -59,7 +61,7 @@ class DynamicSectionsWidget extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                        color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
                         letterSpacing: 0.1,
                       ),
                     ),
@@ -68,7 +70,7 @@ class DynamicSectionsWidget extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -113,14 +115,13 @@ class DynamicSectionsWidget extends StatelessWidget {
     String img3 = products.length > 2 ? products[2].image : '';
     String img4 = products.length > 3 ? products[3].image : '';
     
-    // Simulate count if there are many products in those categories, or just default to +20 etc.
-    // For now, since we only fetch 4, we don't know total count. We can hardcode or leave blank.
-    String moreCount = '+20'; 
-
+    // Show "View All" only if we have 5 products (meaning more exist in DB)
+    int fetchedCount = products.length;
+    String moreCount = fetchedCount > 4 ? 'VIEW' : ''; 
+    bool showMoreOverlay = fetchedCount > 4;
     return GestureDetector(
       onTap: () {
-        // Could navigate to a search screen or category screen filtered by section.categories
-        debugPrint('Tapped section ${section.name}');
+        Get.toNamed(AppRoutes.sectionProductsRoute, arguments: section);
       },
       child: Container(
         decoration: BoxDecoration(
@@ -128,13 +129,13 @@ class DynamicSectionsWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
+              color: Colors.black.withOpacity(0.06),
               blurRadius: 16,
               offset: const Offset(0, 4),
             ),
           ],
           border: Border.all(
-            color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
+            color: Theme.of(context).dividerColor.withOpacity(0.5),
             width: 1,
           ),
         ),
@@ -174,7 +175,8 @@ class DynamicSectionsWidget extends StatelessWidget {
                             child: _buildMoreContainer(
                               context,
                               img4,
-                              products.length > 4 ? '+${products.length - 3}' : '+10',
+                              moreCount,
+                              showOverlay: showMoreOverlay,
                             ),
                           ),
                         ],
@@ -212,7 +214,7 @@ class DynamicSectionsWidget extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Theme.of(
                         context,
-                      ).primaryColor.withValues(alpha: 0.1),
+                      ).primaryColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
@@ -246,32 +248,23 @@ class DynamicSectionsWidget extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: Image.network(
-          imageUrl,
+        child: CachedNetworkImage(
+          imageUrl: imageUrl,
           fit: BoxFit.cover,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Center(
-              child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded /
-                          loadingProgress.expectedTotalBytes!
-                    : null,
-                strokeWidth: 2,
-                color: Theme.of(context).primaryColor,
-              ),
-            );
-          },
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: Theme.of(context).colorScheme.surface,
-              child: Icon(
-                Icons.image_not_supported_outlined,
-                color: Theme.of(context).dividerColor,
-                size: 24,
-              ),
-            );
-          },
+          placeholder: (context, url) => Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Theme.of(context).primaryColor,
+            ),
+          ),
+          errorWidget: (context, url, error) => Container(
+            color: Theme.of(context).colorScheme.surface,
+            child: Icon(
+              Icons.image_not_supported_outlined,
+              color: Theme.of(context).dividerColor,
+              size: 24,
+            ),
+          ),
         ),
       ),
     );
@@ -280,8 +273,9 @@ class DynamicSectionsWidget extends StatelessWidget {
   Widget _buildMoreContainer(
     BuildContext context,
     String imageUrl,
-    String count,
-  ) {
+    String count, {
+    bool showOverlay = true,
+  }) {
     if (imageUrl.isEmpty) {
        return Container(
           decoration: BoxDecoration(
@@ -300,76 +294,68 @@ class DynamicSectionsWidget extends StatelessWidget {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              imageUrl,
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
               fit: BoxFit.cover,
               width: double.infinity,
               height: double.infinity,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Center(
-                  child: CircularProgressIndicator(
-                    value: loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                        : null,
-                    strokeWidth: 2,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  color: Colors.grey.shade200,
-                  child: const Icon(
-                    Icons.image_not_supported_outlined,
-                    color: Colors.grey,
-                    size: 24,
-                  ),
-                );
-              },
+              placeholder: (context, url) => Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+              errorWidget: (context, url, error) => Container(
+                color: Colors.grey.shade200,
+                child: const Icon(
+                  Icons.image_not_supported_outlined,
+                  color: Colors.grey,
+                  size: 24,
+                ),
+              ),
             ),
           ),
         ),
         // Overlay with gradient
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Theme.of(context).primaryColor.withValues(alpha: 0.85),
-                Theme.of(context).primaryColor.withValues(alpha: 0.95),
-              ],
+        if (showOverlay)
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Theme.of(context).primaryColor.withOpacity(0.85),
+                  Theme.of(context).primaryColor.withOpacity(0.95),
+                ],
+              ),
+            ),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    count,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  Text(
+                    'ALL',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 7,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white.withOpacity(0.9),
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  count,
-                  style: GoogleFonts.montserrat(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                Text(
-                  'MORE',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 7,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white.withValues(alpha: 0.9),
-                    letterSpacing: 1.2,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ],
     );
   }

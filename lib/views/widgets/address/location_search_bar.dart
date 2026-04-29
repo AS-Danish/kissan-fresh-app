@@ -19,7 +19,7 @@ class LocationSearchBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: Colors.black.withOpacity(0.08),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
@@ -46,7 +46,7 @@ class LocationSearchBar extends StatelessWidget {
                       fontSize: 14,
                       color: Theme.of(
                         context,
-                      ).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
+                      ).textTheme.bodyMedium?.color?.withOpacity(0.5),
                     ),
                     border: InputBorder.none,
                     isDense: true,
@@ -88,7 +88,7 @@ class LocationSearchBar extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black.withOpacity(0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
