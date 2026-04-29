@@ -62,6 +62,7 @@ class ProductDetailsController extends GetxController {
               title: current.title,
               description: current.description,
               price: (data['price'] ?? 0).toDouble(),
+              mrp: data['mrp'] != null ? (data['mrp'] as num).toDouble() : null,
               image: current.image,
               images: current.images,
               unit: current.unit,

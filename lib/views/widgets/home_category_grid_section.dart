@@ -67,7 +67,7 @@ class HomeCategoryGridSection extends StatelessWidget {
               itemBuilder: (context, index) {
                 return ProductCardWidget(
                   product: displayProducts[index],
-                  showAddButton: false,
+                  showAddButton: true,
                 );
               },
             ),

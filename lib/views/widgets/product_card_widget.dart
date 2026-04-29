@@ -216,14 +216,14 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                             Text(
                               widget.product.title,
                               style: GoogleFonts.outfit(
-                                fontSize: 11.5,
+                                fontSize: 12, // Slightly larger for better readability
                                 fontWeight: FontWeight.w700,
                                 color: widget.product.inStock
                                     ? colorScheme.onSurface
                                     : Colors.grey.shade600,
                                 height: 1.1,
                               ),
-                              maxLines: 1,
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
                             const SizedBox(height: 2),
@@ -255,61 +255,74 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                               alignment: Alignment.centerLeft,
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 4,
+                                  horizontal: 8,
+                                  vertical: 5,
                                 ),
                                 decoration: BoxDecoration(
-                                  color:
-                                      (widget.product.inStock &&
-                                          widget.product.stockCount > 0)
-                                      ? primaryColor.withValues(alpha: 0.1)
-                                      : Colors.grey.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(8),
+                                  color: (widget.product.inStock && widget.product.stockCount > 0)
+                                      ? primaryColor.withValues(alpha: 0.08)
+                                      : Colors.grey.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: (widget.product.inStock && widget.product.stockCount > 0)
+                                        ? primaryColor.withValues(alpha: 0.1)
+                                        : Colors.grey.withValues(alpha: 0.1),
+                                    width: 1,
+                                  ),
                                 ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.baseline,
-                                  textBaseline: TextBaseline.alphabetic,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Text(
-                                      '₹',
-                                      style: GoogleFonts.outfit(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w600,
-                                        color:
-                                            (widget.product.inStock &&
-                                                widget.product.stockCount > 0)
-                                            ? primaryColor
-                                            : Colors.grey,
+                                    if (widget.product.mrp != null &&
+                                        widget.product.mrp! > widget.product.price) ...[
+                                      Text(
+                                        '₹${widget.product.mrp!.toStringAsFixed(0)}',
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey.shade500,
+                                          decoration: TextDecoration.lineThrough,
+                                        ),
                                       ),
-                                    ),
-                                    Text(
-                                      widget.product.price.toStringAsFixed(0),
-                                      style: GoogleFonts.outfit(
-                                        fontSize: 13.5,
-                                        fontWeight: FontWeight.w800,
-                                        color:
-                                            (widget.product.inStock &&
-                                                widget.product.stockCount > 0)
-                                            ? primaryColor
-                                            : Colors.grey,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 1),
-                                    Text(
-                                      '/${widget.product.unit}',
-                                      style: GoogleFonts.outfit(
-                                        fontSize: 7,
-                                        fontWeight: FontWeight.w500,
-                                        color:
-                                            (widget.product.inStock &&
-                                                widget.product.stockCount > 0)
-                                            ? primaryColor.withValues(
-                                                alpha: 0.7,
-                                              )
-                                            : Colors.grey.shade500,
-                                      ),
+                                      const SizedBox(width: 6), // More space
+                                    ],
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                                      textBaseline: TextBaseline.alphabetic,
+                                      children: [
+                                        Text(
+                                          '₹',
+                                          style: GoogleFonts.outfit(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                            color: (widget.product.inStock && widget.product.stockCount > 0)
+                                                ? primaryColor
+                                                : Colors.grey,
+                                          ),
+                                        ),
+                                        Text(
+                                          widget.product.price.toStringAsFixed(0),
+                                          style: GoogleFonts.outfit(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w800,
+                                            color: (widget.product.inStock && widget.product.stockCount > 0)
+                                                ? primaryColor
+                                                : Colors.grey,
+                                          ),
+                                        ),
+                                        Text(
+                                          '/${widget.product.unit}',
+                                          style: GoogleFonts.outfit(
+                                            fontSize: 8,
+                                            fontWeight: FontWeight.w600,
+                                            color: (widget.product.inStock && widget.product.stockCount > 0)
+                                                ? primaryColor.withValues(alpha: 0.7)
+                                                : Colors.grey.shade500,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),

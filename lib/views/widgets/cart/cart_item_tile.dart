@@ -179,7 +179,22 @@ class CartItemTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
                     children: [
+                      if (item.mrp != null && item.mrp! > item.price)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 6.0),
+                          child: Text(
+                            '₹${item.mrp!.toStringAsFixed(0)}',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey.shade500,
+                              decoration: TextDecoration.lineThrough,
+                            ),
+                          ),
+                        ),
                       Text(
                         '₹${item.price.toStringAsFixed(0)}',
                         style: GoogleFonts.montserrat(

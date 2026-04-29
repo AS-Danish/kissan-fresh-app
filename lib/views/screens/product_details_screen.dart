@@ -172,7 +172,22 @@ class ProductDetailsScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
                             children: [
+                              if (p.mrp != null && p.mrp! > p.price)
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8.0),
+                                  child: Text(
+                                    '₹${p.mrp!.toStringAsFixed(0)}',
+                                    style: GoogleFonts.montserrat(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey.shade500,
+                                      decoration: TextDecoration.lineThrough,
+                                    ),
+                                  ),
+                                ),
                               Text(
                                 '₹${p.price.toStringAsFixed(0)}',
                                 style: GoogleFonts.montserrat(
@@ -318,7 +333,7 @@ class ProductDetailsScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
                           SizedBox(
-                            height: 135,
+                            height: 150, // Increased height to prevent overflow
                             child: ListView.separated(
                               clipBehavior: Clip.none,
                               scrollDirection: Axis.horizontal,
@@ -406,15 +421,18 @@ class ProductDetailsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 2),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.montserrat(
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-              color: Theme.of(context).colorScheme.onSurface,
+          Flexible(
+            child: Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.montserrat(
+                fontSize: 13, // Slightly smaller font to fit better
+                fontWeight: FontWeight.w800,
+                color: Theme.of(context).colorScheme.onSurface,
+                height: 1.1,
+              ),
             ),
           ),
         ],

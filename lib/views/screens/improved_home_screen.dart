@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import '../../controllers/homepage_controller.dart';
 import '../../controllers/theme_controller.dart';
 import '../widgets/all_products_section.dart';
-import '../widgets/bestseller_section.dart';
+import '../widgets/dynamic_sections_widget.dart';
 import '../widgets/categories_section.dart';
 import '../widgets/your_choice_section.dart';
 import '../widgets/home_food_section.dart';
@@ -55,7 +55,7 @@ class ImprovedHomeScreen extends StatelessWidget {
                       const SizedBox(height: 24),
                       OffersSection(),
                       const SizedBox(height: 32),
-                      BestsellersSection(),
+                      DynamicSectionsWidget(),
                       const SizedBox(height: 32),
                       HomeCategoryGridSection(
                         categoryName: 'Vegetables',
@@ -94,6 +94,8 @@ class ImprovedHomeScreen extends StatelessWidget {
                     YourChoiceSection(), // Personalized Section
                     const SizedBox(height: 8),
                     const HomeFoodSection(),
+                    const SizedBox(height: 32),
+                    DynamicSectionsWidget(),
                     const SizedBox(height: 32),
                     CategorizedProductsSection(),
                     const SizedBox(height: 32),

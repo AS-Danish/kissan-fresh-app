@@ -24,6 +24,7 @@ class OrderModel {
   final String? slotId;
   final RiderModel? rider;
   final SlotModel? slot;
+  final String? couponCode;
 
   OrderModel({
     required this.id,
@@ -48,6 +49,7 @@ class OrderModel {
     this.slotId,
     this.rider,
     this.slot,
+    this.couponCode,
   });
 
   bool get isDelivered => status == OrderStatus.delivered;
@@ -176,6 +178,7 @@ class OrderModel {
       'slotId': slotId,
       'rider': rider?.toJson(),
       'slot': slot?.toJson(),
+      'couponCode': couponCode,
     };
   }
 
@@ -210,6 +213,7 @@ class OrderModel {
       orderType: json['orderType'] ?? 'Online',
       riderId: json['riderId'],
       slotId: json['slotId'],
+      couponCode: json['couponCode'],
       rider: json['rider'] != null ? RiderModel.fromJson(json['rider']) : null,
       slot: json['slot'] != null ? SlotModel.fromJson(json['slot']) : null,
     );
@@ -223,6 +227,7 @@ class OrderItem {
   final String image;
   final int quantity;
   final double price;
+  final double? mrp;
 
   OrderItem({
     required this.productId,
@@ -231,6 +236,7 @@ class OrderItem {
     required this.image,
     required this.quantity,
     required this.price,
+    this.mrp,
   });
 
   Map<String, dynamic> toJson() {
@@ -241,6 +247,7 @@ class OrderItem {
       'image': image,
       'quantity': quantity,
       'price': price,
+      'mrp': mrp,
     };
   }
 
@@ -252,6 +259,7 @@ class OrderItem {
       image: json['image'] ?? '',
       quantity: json['quantity'] ?? 0,
       price: (json['price'] ?? 0.0).toDouble(),
+      mrp: json['mrp'] != null ? (json['mrp']).toDouble() : null,
     );
   }
 }

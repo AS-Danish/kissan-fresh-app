@@ -7,6 +7,8 @@ import 'package:kissanfresh/views/screens/product_details_screen.dart';
 import 'package:kissanfresh/model/product_card_model.dart';
 import 'package:kissanfresh/controllers/cart_controller.dart';
 import '../model/category_item_model.dart';
+import '../model/coupon_model.dart';
+import '../model/section_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/cache_service.dart';
 import '../utils/icon_utils.dart';
@@ -16,15 +18,29 @@ class HomepageController extends GetxController {
   RxInt selectedIndex = 0.obs;
   RxString currentTab = 'Grocery'.obs; // 'Grocery' or 'HomeFood'
 
+  String get currentOrigin => currentTab.value == 'Grocery' ? 'kissan-fresh' : 'home-food';
+
   // Expose LocationService address
   RxnString get currentAddress => Get.find<LocationService>().currentAddress;
 
   // Today's Specials observables
   RxList<ProductCardModel> todaysSpecials = <ProductCardModel>[].obs;
   final RxBool isLoadingSpecials = false.obs;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // Sections observables
+  RxList<SectionModel> sections = <SectionModel>[].obs;
+  RxMap<String, List<ProductCardModel>> sectionProducts = <String, List<ProductCardModel>>{}.obs;
+  final RxBool isLoadingSections = false.obs;
+
+  // Active Coupons observables
+  final RxList<CouponModel> activeCoupons = <CouponModel>[].obs;
+  final RxBool isLoadingCoupons = false.obs;
+
   final CacheService _cacheService = Get.find<CacheService>();
   StreamSubscription? _specialsSubscription;
+  StreamSubscription? _sectionsSubscription;
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   
   Future<void>? categoriesFuture;
 
@@ -34,6 +50,8 @@ class HomepageController extends GetxController {
     _loadCachedSpecials();
     fetchTodaysSpecials();
     categoriesFuture = fetchCategories();
+    _setupSectionsListener();
+    fetchActiveCoupons();
   }
 
   void _loadCachedSpecials() {
@@ -170,6 +188,7 @@ class HomepageController extends GetxController {
       title: productData['name'] ?? 'Unknown',
       description: productData['description'] ?? '',
       price: (productData['price'] ?? 0).toDouble(),
+      mrp: productData['mrp'] != null ? (productData['mrp'] as num).toDouble() : null,
       unit: productData['unit'] ?? 'unit',
       category: category,
       tags: dynamicTags.isNotEmpty ? dynamicTags : null,
@@ -282,6 +301,7 @@ class HomepageController extends GetxController {
       final snapshot = await _firestore
           .collection('categories')
           .where('type', isEqualTo: type)
+          .orderBy('name')
           .limit(50)
           .get();
 
@@ -358,6 +378,76 @@ class HomepageController extends GetxController {
       }
     });
     return sanitized;
+  }
+
+  void _setupSectionsListener() {
+    _sectionsSubscription?.cancel();
+    isLoadingSections.value = true;
+
+    // We fetch all sections but we'll filter in the UI by type
+    // This allows smooth tab switching without re-fetching
+    _sectionsSubscription = _firestore
+        .collection('sections')
+        .orderBy('rank')
+        .snapshots()
+        .listen((snapshot) {
+      final fetchedSections = snapshot.docs
+          .map((doc) => SectionModel.fromJson(doc.data(), doc.id))
+          .toList();
+      
+      sections.assignAll(fetchedSections);
+
+      // Fetch products for each section if not already fetching
+      for (var section in fetchedSections) {
+        if (section.categories.isNotEmpty) {
+          _fetchProductsForSection(section);
+        }
+      }
+      isLoadingSections.value = false;
+    }, onError: (e) {
+      debugPrint("Error in sections listener: $e");
+      isLoadingSections.value = false;
+    });
+  }
+
+  // Deprecated - kept for compatibility if called elsewhere temporarily
+  Future<void> fetchSections() async {
+    _setupSectionsListener();
+  }
+
+  Future<void> fetchActiveCoupons() async {
+    try {
+      isLoadingCoupons.value = true;
+      final snapshot = await _firestore
+          .collection('coupons')
+          .where('isActive', isEqualTo: true)
+          .get();
+
+      final fetchedCoupons = snapshot.docs
+          .map((doc) => CouponModel.fromJson(doc.data()))
+          .toList();
+
+      activeCoupons.assignAll(fetchedCoupons);
+    } catch (e) {
+      debugPrint("Error fetching active coupons: $e");
+    } finally {
+      isLoadingCoupons.value = false;
+    }
+  }
+
+  Future<void> _fetchProductsForSection(SectionModel section) async {
+    try {
+      final snapshot = await _firestore
+          .collection('products')
+          .where('category', whereIn: section.categories.take(10).toList()) // whereIn limit is 10
+          .limit(4) // Only need up to 4 for the 2x2 layout
+          .get();
+      
+      final products = snapshot.docs.map(_mapDocToModel).toList();
+      sectionProducts[section.id] = products;
+    } catch (e) {
+      debugPrint("Error fetching products for section ${section.name}: $e");
+    }
   }
 
   // REMOVED: Static final lists replaced by RxLists above.

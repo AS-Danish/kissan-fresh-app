@@ -12,119 +12,68 @@ class OffersSection extends StatelessWidget {
     return SizedBox(
       height: 105,
       child: Obx(() {
-        // Force rebuild on theme change for card/badge colors
-        Get.find<ThemeController>().isDarkMode.value;
-        final isGrocery =
-            Get.find<HomepageController>().currentTab.value == 'Grocery';
+        final controller = Get.find<HomepageController>();
+        final isGrocery = controller.currentTab.value == 'Grocery';
+        final type = isGrocery ? 'kissan-fresh' : 'home-food';
+        
+        final filteredCoupons = controller.activeCoupons
+            .where((c) => c.productType == type)
+            .toList();
+
+        if (controller.isLoadingCoupons.value && filteredCoupons.isEmpty) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (filteredCoupons.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
         return ListView.separated(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          itemCount: 3,
+          itemCount: filteredCoupons.length,
           separatorBuilder: (_, _) => const SizedBox(width: 16),
           itemBuilder: (context, index) {
-            if (index == 0) {
-              return _buildOfferCard(
-                context: context,
-                icon: Icons.percent,
-                iconBgColor: Theme.of(
-                  context,
-                ).primaryColor.withValues(alpha: 0.1),
-                iconColor: Theme.of(context).primaryColor,
-                badge: 'EXCLUSIVE DEAL',
-                badgeColor: Theme.of(context).primaryColor,
-                title: isGrocery ? 'FLAT ₹100 OFF' : 'FLAT ₹50 OFF',
-                subtitle: isGrocery
-                    ? 'On orders above ₹499'
-                    : 'On orders above ₹299',
-                onTap: () => _showCouponDetails(
-                  context,
-                  title: isGrocery ? 'FLAT ₹100 OFF' : 'FLAT ₹50 OFF',
-                  badge: 'EXCLUSIVE DEAL',
-                  code: isGrocery ? 'KISSAN100' : 'FOOD50',
-                  description: isGrocery
-                      ? 'Get a flat ₹100 discount on your grocery order when you spend ₹499 or more.'
-                      : 'Get a flat ₹50 discount on your food order when you spend ₹299 or more.',
-                  howToApply: [
-                    'Add products to your cart.',
-                    'Go to the checkout page.',
-                    'Tap on "Apply Coupon".',
-                    'Select or enter ${isGrocery ? 'KISSAN100' : 'FOOD50'}.',
-                  ],
-                  limits: [
-                    'Minimum order value: ${isGrocery ? '₹499' : '₹299'}.',
-                    'Valid once per user.',
-                    'Maximum discount: ${isGrocery ? '₹100' : '₹50'}.',
-                  ],
-                  criteria: 'Applicable on all items except dairy products.',
-                ),
-              );
-            } else if (index == 1) {
-              return _buildOfferCard(
-                context: context,
-                icon: Icons.local_shipping_outlined,
-                iconBgColor: Theme.of(
-                  context,
-                ).colorScheme.secondary.withValues(alpha: 0.2),
-                iconColor: Theme.of(context).colorScheme.secondary,
-                badge: 'FREE DELIVERY',
-                badgeColor: Theme.of(context).colorScheme.secondary,
-                title: 'FREE Shipping',
-                subtitle: isGrocery
-                    ? 'On orders above ₹299'
-                    : 'On orders above ₹199',
-                onTap: () => _showCouponDetails(
-                  context,
-                  title: 'FREE Shipping',
-                  badge: 'FREE DELIVERY',
-                  code: 'FREESHIP',
-                  description: 'Enjoy free delivery on your orders. No delivery fees applied!',
-                  howToApply: [
-                    'Add items to your cart.',
-                    'The free shipping will be automatically applied at checkout if criteria is met.',
-                  ],
-                  limits: [
-                    'Minimum order value: ${isGrocery ? '₹299' : '₹199'}.',
-                    'Valid for all users.',
-                    'Applicable within 10km radius.',
-                  ],
-                  criteria: 'Available for both Grocery and Home Food orders.',
-                ),
-              );
-            } else {
-              return _buildOfferCard(
-                context: context,
-                icon: Icons.card_giftcard,
-                iconBgColor: Theme.of(
-                  context,
-                ).primaryColor.withValues(alpha: 0.2),
-                iconColor: Theme.of(context).primaryColor,
-                badge: 'NEW USER',
-                badgeColor: Theme.of(context).primaryColor,
-                title: isGrocery ? 'Get FLAT ₹50 OFF' : 'FREE DESSERT',
-                subtitle: isGrocery
-                    ? 'On first order above ₹199'
-                    : 'On first order above ₹249',
-                onTap: () => _showCouponDetails(
-                  context,
-                  title: isGrocery ? 'FLAT ₹50 OFF' : 'FREE DESSERT',
-                  badge: 'NEW USER OFFER',
-                  code: 'WELCOME',
-                  description: isGrocery
-                      ? 'Welcome to Kissanfresh! Get flat ₹50 off on your first grocery shopping.'
-                      : 'Treat yourself! Get a free dessert on your first home food order.',
-                  howToApply: [
-                    'Create a new account.',
-                    'Place your first order.',
-                    'Use code WELCOME at checkout.',
-                  ],
-                  limits: [
-                    'Minimum order value: ${isGrocery ? '₹199' : '₹249'}.',
-                    'Valid for first order only.',
-                  ],
-                  criteria: 'Valid for new registered users only.',
-                ),
-              );
-            }
+            final coupon = filteredCoupons[index];
+            final discountText = coupon.discountType == 'percentage'
+                ? 'FLAT ${coupon.discountValue.toStringAsFixed(0)}% OFF'
+                : 'FLAT ₹${coupon.discountValue.toStringAsFixed(0)} OFF';
+            
+            final subtitle = coupon.minOrderValue != null && coupon.minOrderValue! > 0
+                ? 'On orders above ₹${coupon.minOrderValue!.toStringAsFixed(0)}'
+                : 'On all orders';
+
+            return _buildOfferCard(
+              context: context,
+              icon: coupon.discountType == 'percentage' ? Icons.percent : Icons.local_offer,
+              iconBgColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+              iconColor: Theme.of(context).primaryColor,
+              badge: coupon.applyTo == 'all' ? 'EXCLUSIVE DEAL' : 'SPECIAL OFFER',
+              badgeColor: Theme.of(context).primaryColor,
+              title: discountText,
+              subtitle: subtitle,
+              onTap: () => _showCouponDetails(
+                context,
+                title: discountText,
+                badge: coupon.applyTo == 'all' ? 'EXCLUSIVE DEAL' : 'SPECIAL OFFER',
+                code: coupon.code,
+                description: 'Get ${discountText.toLowerCase()} on your ${isGrocery ? 'grocery' : 'food'} order. ${coupon.applyTo != 'all' ? 'Valid on specific products/categories.' : ''}',
+                howToApply: [
+                  'Add products to your cart.',
+                  'Go to the checkout page.',
+                  'Tap on "Apply Coupon".',
+                  'Select or enter ${coupon.code}.',
+                ],
+                limits: [
+                  if (coupon.minOrderValue != null) 'Minimum order value: ₹${coupon.minOrderValue!.toStringAsFixed(0)}.',
+                  if (coupon.maxUsesPerUser != null) 'Valid ${coupon.maxUsesPerUser} times per user.',
+                  'Subject to availability.',
+                ],
+                criteria: coupon.applicableCategory != null 
+                    ? 'Applicable on ${coupon.applicableCategory} category.'
+                    : 'Applicable on all items.',
+              ),
+            );
           },
         );
       }),

@@ -137,7 +137,7 @@ class CategorizedProductsSection extends StatelessWidget {
                           stockCount: 99,
                           inStock: true,
                         ),
-                        showAddButton: false,
+                        showAddButton: true,
                       ),
                     );
                   },

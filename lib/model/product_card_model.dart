@@ -6,7 +6,8 @@ class ProductCardModel {
   final List<String>? images;
   final String title;
   final String description;
-  final double price;
+  final double price; // discount price
+  final double? mrp; // original price
   final String unit;
   final String? category; // Added category field
   final List<String>? tags; // Dynamic tags
@@ -23,6 +24,7 @@ class ProductCardModel {
     required this.title,
     required this.description,
     required this.price,
+    this.mrp,
     required this.unit,
     this.category,
     this.tags,
@@ -40,6 +42,7 @@ class ProductCardModel {
       'title': title,
       'description': description,
       'price': price,
+      'mrp': mrp,
       'unit': unit,
       'category': category,
       'tags': tags,
@@ -60,6 +63,7 @@ class ProductCardModel {
       title: json['title'] ?? 'Unknown',
       description: json['description'] ?? '',
       price: (json['price'] ?? 0).toDouble(),
+      mrp: json['mrp'] != null ? (json['mrp']).toDouble() : null,
       unit: json['unit'] ?? 'unit',
       category: json['category'],
       tags: json['tags'] != null ? List<String>.from(json['tags']) : null,
@@ -77,6 +81,7 @@ class ProductCardModel {
     String? title,
     String? description,
     double? price,
+    double? mrp,
     String? unit,
     String? category,
     List<String>? tags,
@@ -92,6 +97,7 @@ class ProductCardModel {
       title: title ?? this.title,
       description: description ?? this.description,
       price: price ?? this.price,
+      mrp: mrp ?? this.mrp,
       unit: unit ?? this.unit,
       category: category ?? this.category,
       tags: tags ?? this.tags,

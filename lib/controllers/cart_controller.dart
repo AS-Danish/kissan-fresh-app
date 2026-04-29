@@ -15,9 +15,11 @@ import '../services/location_service.dart';
 
 import '../model/order_model.dart';
 import 'address_controller.dart';
+import 'homepage_controller.dart';
 import 'orders_controller.dart';
 import 'slot_selection_controller.dart';
 import 'user_activity_controller.dart';
+import '../model/coupon_model.dart';
 
 class CartController extends GetxController {
   final AuthController _authController = Get.find<AuthController>();
@@ -39,6 +41,8 @@ class CartController extends GetxController {
 
   // Coupon State
   RxString appliedCoupon = ''.obs;
+  Rxn<CouponModel> activeCouponModel = Rxn<CouponModel>();
+  RxBool isApplyingCoupon = false.obs;
 
   // Computed values
   double get subtotal {
@@ -54,11 +58,18 @@ class CartController extends GetxController {
   }
 
   double get discount {
-    // Priority: Applied Coupon (calculated dynamically)
-    if (appliedCoupon.value == 'KISSAN20') {
-      return subtotal * 0.20;
-    } else if (appliedCoupon.value == 'FRESH50') {
-      return (subtotal >= 50) ? 50.0 : subtotal;
+    if (activeCouponModel.value != null) {
+      double applicableSubtotal = _calculateApplicableSubtotal(activeCouponModel.value!);
+      if (applicableSubtotal == 0) return 0;
+      
+      double calculatedDiscount = 0;
+      if (activeCouponModel.value!.discountType == 'percentage') {
+        calculatedDiscount = applicableSubtotal * (activeCouponModel.value!.discountValue / 100);
+      } else {
+        // flat/fixed
+        calculatedDiscount = activeCouponModel.value!.discountValue;
+      }
+      return calculatedDiscount > applicableSubtotal ? applicableSubtotal : calculatedDiscount;
     }
 
     // Legacy auto-applied discount (15% off above ₹499)
@@ -69,16 +80,23 @@ class CartController extends GetxController {
   }
 
   double get couponDiscountValue {
-    if (appliedCoupon.value == 'KISSAN20') {
-      return subtotal * 0.20;
-    } else if (appliedCoupon.value == 'FRESH50') {
-      return (subtotal >= 50) ? 50.0 : subtotal;
+    if (activeCouponModel.value != null) {
+      double applicableSubtotal = _calculateApplicableSubtotal(activeCouponModel.value!);
+      if (applicableSubtotal == 0) return 0;
+      
+      double calculatedDiscount = 0;
+      if (activeCouponModel.value!.discountType == 'percentage') {
+        calculatedDiscount = applicableSubtotal * (activeCouponModel.value!.discountValue / 100);
+      } else {
+        calculatedDiscount = activeCouponModel.value!.discountValue;
+      }
+      return calculatedDiscount > applicableSubtotal ? applicableSubtotal : calculatedDiscount;
     }
     return 0;
   }
 
   double get autoDiscountValue {
-    if (appliedCoupon.value.isEmpty && subtotal >= 499) {
+    if (activeCouponModel.value == null && subtotal >= 499) {
       return subtotal * 0.15;
     }
     return 0;
@@ -92,41 +110,155 @@ class CartController extends GetxController {
     return cartItems.length;
   }
 
+  String get currentOrigin {
+    return Get.find<HomepageController>().currentOrigin;
+  }
+
   // Coupon Methods
-  void applyCoupon(String code) {
+  Future<void> applyCoupon(String code) async {
     if (code.isEmpty) return;
+    
+    if (_authController.firebaseUser.value == null) {
+       Get.snackbar('Login Required', 'Please login to apply coupons');
+       return;
+    }
 
     final normalizedCode = code.trim().toUpperCase();
 
-    if (normalizedCode == 'KISSAN20') {
+    try {
+      isApplyingCoupon.value = true;
+      final querySnapshot = await _firestore
+          .collection('coupons')
+          .where('code', isEqualTo: normalizedCode)
+          .where('isActive', isEqualTo: true)
+          .where('productType', isEqualTo: currentOrigin)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        Get.snackbar(
+          'Invalid Coupon',
+          'The coupon code you entered is not valid.',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      final couponDoc = querySnapshot.docs.first;
+      final couponData = couponDoc.data();
+      final coupon = CouponModel.fromJson(couponData);
+
+      if (!coupon.isActive) {
+        Get.snackbar(
+          'Expired Coupon',
+          'This coupon is no longer active.',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      if (coupon.minOrderValue != null && subtotal < coupon.minOrderValue!) {
+        Get.snackbar(
+          'Minimum Order',
+          'This coupon requires a minimum order of ₹${coupon.minOrderValue}',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
+        return;
+      }
+      
+      if (coupon.totalUsageLimit != null && coupon.currentUsageCount >= coupon.totalUsageLimit!) {
+        Get.snackbar(
+          'Usage Limit Reached',
+          'This coupon has reached its maximum usage limit.',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      if (coupon.maxUsesPerUser != null) {
+        // Use count() to check user's past usage of this coupon
+        final userOrders = await _firestore
+            .collection('orders')
+            .where('userId', isEqualTo: _authController.firebaseUser.value!.uid)
+            .where('couponCode', isEqualTo: normalizedCode)
+            .count()
+            .get();
+        if (userOrders.count != null && userOrders.count! >= coupon.maxUsesPerUser!) {
+          Get.snackbar(
+            'Limit Exceeded',
+            'You have already used this coupon the maximum number of times.',
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+          return;
+        }
+      }
+      
+      // Check if there are applicable products in the cart
+      double applicableSubtotal = _calculateApplicableSubtotal(coupon);
+      if (applicableSubtotal == 0) {
+        Get.snackbar(
+          'Not Applicable',
+          'This coupon is not applicable to the items in your cart.',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      activeCouponModel.value = coupon;
       appliedCoupon.value = normalizedCode;
+      
       Get.snackbar(
         'Coupon Applied',
-        '20% discount applied successfully!',
+        'Discount applied successfully!',
         backgroundColor: Colors.green,
         colorText: Colors.white,
       );
-    } else if (normalizedCode == 'FRESH50') {
-      appliedCoupon.value = normalizedCode;
+      cartItems.refresh(); // Trigger total re-calc
+    } catch (e) {
+      debugPrint("Error applying coupon: $e");
       Get.snackbar(
-        'Coupon Applied',
-        '₹50 discount applied successfully!',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
-    } else {
-      Get.snackbar(
-        'Invalid Coupon',
-        'The coupon code you entered is not valid.',
+        'Error',
+        'Failed to apply coupon. Please try again.',
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+    } finally {
+      isApplyingCoupon.value = false;
     }
-    cartItems.refresh(); // Trigger total re-calc
+  }
+
+  double _calculateApplicableSubtotal(CouponModel coupon) {
+    // If applyTo is "all" or specific restrictions are null, apply to all items
+    if (coupon.applyTo == 'all' || (coupon.applicableCategory == null && coupon.applicableProduct == null)) {
+      return subtotal;
+    }
+    
+    double appSubtotal = 0;
+    for (var item in cartItems) {
+      bool isApplicable = false;
+      
+      if (coupon.applicableCategory != null && item.category == coupon.applicableCategory) {
+        isApplicable = true;
+      } else if (coupon.applicableProduct != null && item.id == coupon.applicableProduct) {
+        isApplicable = true;
+      }
+      
+      if (isApplicable) {
+        appSubtotal += (item.price * item.count);
+      }
+    }
+    return appSubtotal;
   }
 
   void removeCoupon() {
     appliedCoupon.value = '';
+    activeCouponModel.value = null;
     cartItems.refresh();
     Get.snackbar(
       'Coupon Removed',
@@ -173,15 +305,18 @@ class CartController extends GetxController {
 
     // Use product ID if available, otherwise use title
     final productId = product.id ?? product.title;
+
     final cartItem = CartItem(
       id: productId,
       name: product.title,
       quantity: product.unit,
       price: product.price,
+      mrp: product.mrp,
       image: product.image,
       count: quantity,
       availableStock: product.stockCount,
       inStock: product.inStock,
+      category: product.category,
     );
 
     final existingIndex = cartItems.indexWhere((i) => i.id == productId);
@@ -203,10 +338,6 @@ class CartController extends GetxController {
       cartItems.refresh();
     } else {
       // New item, add to cart
-      // Need a way to get availableStock for new item without waiting for validation
-      // For now, assume product has it or fetch it.
-      // Actually, I'll update CartItem to have a fallback or pass it from ProductCardModel if added.
-      // Since ProductCardModel doesn't have it, I'll trigger a validation or assume a default and update.
       cartItems.add(cartItem);
       validateCartItems(); // Re-validate to get correct stock
     }
@@ -581,6 +712,7 @@ class CartController extends GetxController {
               image: item.image,
               quantity: item.count,
               price: item.price,
+              mrp: item.mrp,
             ),
           )
           .toList(),
@@ -597,6 +729,7 @@ class CartController extends GetxController {
       paymentStatus: paymentStatus,
       orderType: orderType,
       slotId: Get.find<SlotSelectionController>().selectedSlotId.value,
+      couponCode: appliedCoupon.value.isEmpty ? null : appliedCoupon.value,
     );
     // 4. Call Cloud Function to process order creation and assignment transactionally
     try {
@@ -610,6 +743,26 @@ class CartController extends GetxController {
       // The CF returns { success: true, orderId: "KF-XXXXXX", ... }
       if (result.data != null && result.data['success'] == true) {
         final String? serverOrderId = result.data['orderId'];
+        
+        // Increment coupon usage if applied
+        if (activeCouponModel.value != null && appliedCoupon.value.isNotEmpty) {
+          try {
+            final querySnapshot = await _firestore
+                .collection('coupons')
+                .where('code', isEqualTo: appliedCoupon.value)
+                .limit(1)
+                .get();
+            if (querySnapshot.docs.isNotEmpty) {
+              final docRef = querySnapshot.docs.first.reference;
+              await docRef.update({
+                'currentUsageCount': FieldValue.increment(1)
+              });
+            }
+          } catch (e) {
+            debugPrint("Failed to update coupon usage: $e");
+          }
+        }
+        
         clearCart();
         return serverOrderId ?? ''; // Return the actual ID from server
       }
@@ -987,20 +1140,24 @@ class CartItem {
   final String name;
   final String quantity;
   double price;
+  double? mrp;
   final String image;
   int count;
   int availableStock;
   bool inStock;
+  String? category;
 
   CartItem({
     required this.id,
     required this.name,
     required this.quantity,
     required this.price,
+    this.mrp,
     required this.image,
     this.count = 1,
     this.availableStock = 0,
     this.inStock = true,
+    this.category,
   });
 
   // Convert CartItem to Map for storage/serialization
@@ -1010,10 +1167,12 @@ class CartItem {
       'name': name,
       'quantity': quantity,
       'price': price,
+      'mrp': mrp,
       'image': image,
       'count': count,
       'availableStock': availableStock,
       'inStock': inStock,
+      'category': category,
     };
   }
 
@@ -1024,10 +1183,12 @@ class CartItem {
       name: json['name'],
       quantity: json['quantity'],
       price: (json['price'] ?? 0).toDouble(),
+      mrp: json['mrp'] != null ? (json['mrp']).toDouble() : null,
       image: json['image'],
       count: json['count'] ?? 1,
       availableStock: json['availableStock'] ?? 0,
       inStock: json['inStock'] ?? true,
+      category: json['category'],
     );
   }
 }

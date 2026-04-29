@@ -173,7 +173,7 @@ class AllProductsSection extends StatelessWidget {
                   itemBuilder: (context, index) {
                     return ProductCardWidget(
                       product: controller.products[index],
-                      showAddButton: false,
+                      showAddButton: true,
                     );
                   },
                 ),

@@ -369,13 +369,29 @@ class OrderDetailsSheet {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    Text(
-                                      '${item.quantity} x ₹${item.price.toStringAsFixed(0)}',
-                                      style: GoogleFonts.montserrat(
-                                        fontSize: 12,
-                                        color: Colors.grey.shade600,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          '${item.quantity} x ₹${item.price.toStringAsFixed(0)}',
+                                          style: GoogleFonts.montserrat(
+                                            fontSize: 12,
+                                            color: Colors.grey.shade600,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        if (item.mrp != null && item.mrp! > item.price) ...[
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            '₹${item.mrp!.toStringAsFixed(0)}',
+                                            style: GoogleFonts.montserrat(
+                                              fontSize: 10,
+                                              color: Colors.grey.shade400,
+                                              fontWeight: FontWeight.w500,
+                                              decoration: TextDecoration.lineThrough,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
                                     ),
                                   ],
                                 ),
