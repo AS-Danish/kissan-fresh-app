@@ -13,29 +13,34 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Theme.of(context).primaryColor,
-            Theme.of(context).colorScheme.secondary,
+    final controller = Get.find<HomepageController>();
+    return Obx(() {
+      final imageUrl = controller.headerImageUrl.value;
+      return Container(
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: imageUrl.isNotEmpty
+                ? NetworkImage(imageUrl) as ImageProvider
+                : const AssetImage('assets/images/header_bg.png'),
+            fit: BoxFit.cover,
+            colorFilter: const ColorFilter.mode(
+              Colors.black45,
+              BlendMode.darken,
+            ),
+          ),
+          borderRadius: const BorderRadius.only(
+            bottomLeft: Radius.circular(32),
+            bottomRight: Radius.circular(32),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).primaryColor.withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
           ],
         ),
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(32),
-          bottomRight: Radius.circular(32),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).primaryColor.withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,5 +291,6 @@ class HomeHeader extends StatelessWidget {
         ),
       ),
     );
+    });
   }
 }

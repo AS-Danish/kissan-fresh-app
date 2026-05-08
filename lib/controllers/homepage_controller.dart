@@ -44,6 +44,9 @@ class HomepageController extends GetxController {
   
   Future<void>? categoriesFuture;
 
+  // Header Background observable
+  RxString headerImageUrl = ''.obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -52,6 +55,46 @@ class HomepageController extends GetxController {
     categoriesFuture = fetchCategories();
     _setupSectionsListener();
     fetchActiveCoupons();
+    _setupHeaderConfigListener();
+  }
+
+  void _setupHeaderConfigListener() {
+    _firestore.collection('app_config').doc('versioning').snapshots().listen((doc) {
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data()!;
+        final themes = data['themes'] as List<dynamic>?;
+
+        String activeImageUrl = '';
+
+        if (themes != null) {
+          for (var item in themes) {
+            if (item is Map<String, dynamic>) {
+              String themeName = '';
+              bool isActive = false;
+              String imageUrl = '';
+
+              for (var key in item.keys) {
+                if (key == 'imageURL') {
+                  imageUrl = item[key]?.toString() ?? '';
+                } else {
+                  themeName = key;
+                  isActive = item[key] == true;
+                }
+              }
+
+              if (isActive) {
+                if (themeName.toLowerCase() != 'normal') {
+                  activeImageUrl = imageUrl;
+                }
+                break; // Found the active theme
+              }
+            }
+          }
+        }
+
+        headerImageUrl.value = activeImageUrl;
+      }
+    });
   }
 
   void _loadCachedSpecials() {

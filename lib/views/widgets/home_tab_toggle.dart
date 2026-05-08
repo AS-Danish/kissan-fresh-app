@@ -11,13 +11,13 @@ class HomeTabToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 52,
+      height: 54,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withOpacity(0.2),
+        color: Colors.black.withOpacity(0.2),
         borderRadius: BorderRadius.circular(30),
         border: Border.all(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withOpacity(0.15),
           width: 1,
         ),
       ),
@@ -30,19 +30,19 @@ class HomeTabToggle extends StatelessWidget {
               alignment: isGrocery
                   ? Alignment.centerLeft
                   : Alignment.centerRight,
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeInOut,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.elasticOut,
               child: Container(
                 width: (MediaQuery.of(context).size.width - 48) / 2,
-                height: 44,
+                height: 46,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(26),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
@@ -56,16 +56,28 @@ class HomeTabToggle extends StatelessWidget {
                         Get.find<HomepageController>().switchTab('Grocery'),
                     behavior: HitTestBehavior.translucent,
                     child: Center(
-                      child: Text(
-                        "Groceries",
-                        style: GoogleFonts.montserrat(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: isGrocery
-                              ? Theme.of(context).primaryColor
-                              : Theme.of(context).textTheme.bodyLarge?.color
-                                    ?.withOpacity(0.9),
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.shopping_basket_rounded,
+                            size: 16,
+                            color: isGrocery
+                                ? Theme.of(context).primaryColor
+                                : Colors.white.withOpacity(0.7),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            "Groceries",
+                            style: GoogleFonts.montserrat(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: isGrocery
+                                  ? Theme.of(context).primaryColor
+                                  : Colors.white.withOpacity(0.8),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -76,16 +88,28 @@ class HomeTabToggle extends StatelessWidget {
                         Get.find<HomepageController>().switchTab('HomeFood'),
                     behavior: HitTestBehavior.translucent,
                     child: Center(
-                      child: Text(
-                        "Home Food",
-                        style: GoogleFonts.montserrat(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: !isGrocery
-                              ? Theme.of(context).primaryColor
-                              : Theme.of(context).textTheme.bodyLarge?.color
-                                    ?.withOpacity(0.9),
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.restaurant_rounded,
+                            size: 16,
+                            color: !isGrocery
+                                ? Theme.of(context).primaryColor
+                                : Colors.white.withOpacity(0.7),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            "Home Food",
+                            style: GoogleFonts.montserrat(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: !isGrocery
+                                  ? Theme.of(context).primaryColor
+                                  : Colors.white.withOpacity(0.8),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
