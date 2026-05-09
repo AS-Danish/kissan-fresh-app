@@ -135,12 +135,12 @@ class UpdateController extends GetxController {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  color: const Color(0xFF14B8A6).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.system_update_rounded,
-                  color: Color(0xFF10B981),
+                  color: Color(0xFF14B8A6),
                   size: 40,
                 ),
               ),
@@ -186,7 +186,7 @@ class UpdateController extends GetxController {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF10B981),
+                        backgroundColor: const Color(0xFF14B8A6),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(

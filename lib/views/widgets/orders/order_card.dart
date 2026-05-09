@@ -294,7 +294,7 @@ class OrderCard extends StatelessWidget {
                             style: GoogleFonts.montserrat(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF10B981),
+                              color: const Color(0xFF14B8A6),
                               letterSpacing: 0.2,
                             ),
                           ),

@@ -173,7 +173,7 @@ class ProfileController extends GetxController {
             'Success',
             'Profile updated successfully',
             snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: const Color(0xFF10B981),
+            backgroundColor: const Color(0xFF14B8A6),
             colorText: Colors.white,
             margin: const EdgeInsets.all(16),
             borderRadius: 12,
@@ -420,7 +420,7 @@ class ProfileController extends GetxController {
           'Success',
           'Profile picture updated!',
           snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: const Color(0xFF10B981),
+          backgroundColor: const Color(0xFF14B8A6),
           colorText: Colors.white,
         );
       }

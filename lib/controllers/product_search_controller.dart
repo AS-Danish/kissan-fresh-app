@@ -218,7 +218,7 @@ class ProductSearchController extends GetxController {
             (c) => {
               'name': c.label,
               'icon': c.icon,
-              'color': const Color(0xFF0d9488),
+              'color': const Color(0xFF14B8A6),
             },
           )
           .toList(),
@@ -403,7 +403,7 @@ class ProductSearchController extends GetxController {
               'Added to Cart',
               '${data['name'] ?? 'Product'} added to cart',
               snackPosition: SnackPosition.BOTTOM,
-              backgroundColor: const Color(0xFF10B981),
+              backgroundColor: const Color(0xFF14B8A6),
               colorText: Colors.white,
               duration: const Duration(seconds: 2),
               margin: const EdgeInsets.all(16),

@@ -59,7 +59,7 @@ class HomeHeader extends StatelessWidget {
                           fontSize: 11.5,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 1,
-                          color: const Color(0xFFc6f8ee),
+                          color: Colors.white.withOpacity(0.9),
                         ),
                       ),
                       const SizedBox(height: 2),

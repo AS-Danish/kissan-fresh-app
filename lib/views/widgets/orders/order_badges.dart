@@ -16,7 +16,7 @@ class OrderTypeBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: isCod
-            ? const Color(0xFF10B981).withOpacity(0.12)
+            ? const Color(0xFF14B8A6).withOpacity(0.12)
             : const Color(0xFF6366F1).withOpacity(0.12),
         borderRadius: BorderRadius.circular(8),
       ),
@@ -26,7 +26,7 @@ class OrderTypeBadge extends StatelessWidget {
           Icon(
             isCod ? Icons.money_rounded : Icons.account_balance_wallet_rounded,
             size: 12,
-            color: isCod ? const Color(0xFF10B981) : const Color(0xFF6366F1),
+            color: isCod ? const Color(0xFF14B8A6) : const Color(0xFF6366F1),
           ),
           const SizedBox(width: 4),
           Text(
@@ -34,7 +34,7 @@ class OrderTypeBadge extends StatelessWidget {
             style: GoogleFonts.montserrat(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: isCod ? const Color(0xFF10B981) : const Color(0xFF6366F1),
+              color: isCod ? const Color(0xFF14B8A6) : const Color(0xFF6366F1),
               letterSpacing: 0.3,
             ),
           ),

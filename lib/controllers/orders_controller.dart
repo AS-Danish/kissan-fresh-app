@@ -194,7 +194,7 @@ class OrdersController extends GetxController {
       'Reorder',
       'Adding items to cart...',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: const Color(0xFF10B981),
+      backgroundColor: const Color(0xFF14B8A6),
       colorText: const Color(0xFFFFFFFF),
       duration: const Duration(seconds: 2),
       margin: const EdgeInsets.all(16),

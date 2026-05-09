@@ -263,7 +263,7 @@ class OrderDetailsSheet {
                               decoration: BoxDecoration(
                                 color: isCod
                                     ? const Color(
-                                        0xFF10B981,
+                                        0xFF14B8A6,
                                       ).withOpacity(0.1)
                                     : const Color(
                                         0xFF6366F1,
@@ -279,7 +279,7 @@ class OrderDetailsSheet {
                                         : Icons.account_balance_wallet_rounded,
                                     size: 14,
                                     color: isCod
-                                        ? const Color(0xFF10B981)
+                                        ? const Color(0xFF14B8A6)
                                         : const Color(0xFF6366F1),
                                   ),
                                   const SizedBox(width: 6),
@@ -291,7 +291,7 @@ class OrderDetailsSheet {
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
                                       color: isCod
-                                          ? const Color(0xFF10B981)
+                                          ? const Color(0xFF14B8A6)
                                           : const Color(0xFF6366F1),
                                     ),
                                   ),
@@ -638,7 +638,7 @@ class OrderDetailsSheet {
               fontSize: 14,
               fontWeight: isGreen ? FontWeight.w700 : FontWeight.w600,
               color: isGreen
-                  ? const Color(0xFF10B981)
+                  ? const Color(0xFF14B8A6)
                   : Theme.of(context).colorScheme.onSurface,
             ),
           ),

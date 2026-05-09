@@ -284,7 +284,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                         : 'In Stock (${p.stockCount})')
                                   : 'Out of Stock',
                               valueColor: p.stockCount > 0
-                                  ? const Color(0xFF10B981)
+                                  ? const Color(0xFF14B8A6)
                                   : Colors.red,
                             );
                           }),
@@ -348,7 +348,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                     icon: Icons.verified_outlined,
                                     title: 'Feature',
                                     subtitle: p.tags![index],
-                                    color: const Color(0xFF10B981),
+                                    color: const Color(0xFF14B8A6),
                                   ),
                                 );
                               },

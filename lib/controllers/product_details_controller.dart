@@ -99,7 +99,7 @@ class ProductDetailsController extends GetxController {
         'Login Required',
         'Please login to save favorite items across devices.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFF0d9488),
+        backgroundColor: const Color(0xFF14B8A6),
         colorText: Colors.white,
       );
       return;
@@ -120,7 +120,7 @@ class ProductDetailsController extends GetxController {
           ? '${observableProduct.value?.title} added to your favorites'
           : '${observableProduct.value?.title} removed from favorites',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: isFav ? const Color(0xFF10B981) : Colors.grey,
+      backgroundColor: isFav ? const Color(0xFF14B8A6) : Colors.grey,
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
       margin: const EdgeInsets.all(16),
@@ -137,7 +137,7 @@ class ProductDetailsController extends GetxController {
         'Login Required',
         'Please login to add items to your cart.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFF0d9488),
+        backgroundColor: const Color(0xFF14B8A6),
         colorText: Colors.white,
       );
       return;

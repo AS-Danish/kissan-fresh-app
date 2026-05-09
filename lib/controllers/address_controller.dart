@@ -258,7 +258,7 @@ class AddressController extends GetxController {
         'Location Updated',
         address,
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFF0d9488),
+        backgroundColor: const Color(0xFF14B8A6),
         colorText: Colors.white,
         margin: const EdgeInsets.all(12),
         borderRadius: 12,

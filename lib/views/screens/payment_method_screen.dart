@@ -70,7 +70,7 @@ class PaymentMethodScreen extends StatelessWidget {
                     context: context,
                     index: 0,
                     icon: Icons.money_rounded,
-                    iconColor: const Color(0xFF10B981),
+                    iconColor: const Color(0xFF14B8A6),
                     title: 'Cash on Delivery',
                     description:
                         'Pay with cash when your order is delivered to your doorstep',
@@ -244,14 +244,14 @@ class PaymentMethodScreen extends StatelessWidget {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.08),
+                  color: const Color(0xFF14B8A6).withOpacity(0.08),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
                   children: [
                     const Icon(
                       Icons.local_offer_rounded,
-                      color: Color(0xFF10B981),
+                      color: Color(0xFF14B8A6),
                       size: 16,
                     ),
                     const SizedBox(width: 8),
@@ -260,7 +260,7 @@ class PaymentMethodScreen extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF10B981),
+                        color: const Color(0xFF14B8A6),
                       ),
                     ),
                   ],
@@ -407,7 +407,7 @@ class PaymentMethodScreen extends StatelessWidget {
                       },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isCod
-                      ? const Color(0xFF10B981)
+                      ? const Color(0xFF14B8A6)
                       : const Color(0xFF6366F1),
                   foregroundColor: Colors.white,
                   elevation: 0,
@@ -415,7 +415,7 @@ class PaymentMethodScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   shadowColor: isCod
-                      ? const Color(0xFF10B981).withOpacity(0.3)
+                      ? const Color(0xFF14B8A6).withOpacity(0.3)
                       : const Color(0xFF6366F1).withOpacity(0.3),
                 ),
                 child: cartController.isProcessingOrder.value

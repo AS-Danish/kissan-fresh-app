@@ -38,7 +38,7 @@ class ProfileScreen extends StatelessWidget {
       body: Obx(() {
         if (controller.isLoading.value) {
           return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF0d9488)),
+            child: CircularProgressIndicator(color: Color(0xFF14B8A6)),
           );
         }
         return SingleChildScrollView(

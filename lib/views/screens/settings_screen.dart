@@ -71,7 +71,7 @@ class SettingsScreen extends StatelessWidget {
                     onChanged: (value) {
                       notificationController.toggleNotifications(value);
                     },
-                    activeThumbColor: const Color(0xFF14b8a6),
+                    activeThumbColor: const Color(0xFF14B8A6),
                   );
                 }),
               ),
@@ -234,7 +234,7 @@ class SettingsScreen extends StatelessWidget {
             return const SizedBox(
               height: 64,
               child: Center(
-                child: CircularProgressIndicator(color: Color(0xFF0d9488)),
+                child: CircularProgressIndicator(color: Color(0xFF14B8A6)),
               ),
             );
           }
@@ -251,7 +251,7 @@ class SettingsScreen extends StatelessWidget {
                       : Colors.transparent,
                   gradient: profileController.profileImage.value.isEmpty
                       ? const LinearGradient(
-                          colors: [Color(0xFF0d9488), Color(0xFF14b8a6)],
+                          colors: [Color(0xFF14B8A6), Color(0xFF14B8A6)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         )

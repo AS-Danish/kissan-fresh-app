@@ -257,7 +257,7 @@ class CartController extends GetxController {
         'Login Required',
         'Please login to add items to your cart.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFF0d9488),
+        backgroundColor: const Color(0xFF14B8A6),
         colorText: Colors.white,
       );
       return false;
@@ -326,7 +326,7 @@ class CartController extends GetxController {
         'Login Required',
         'Please login to add items to your cart.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFF0d9488),
+        backgroundColor: const Color(0xFF14B8A6),
         colorText: Colors.white,
       );
       return false;
@@ -508,7 +508,7 @@ class CartController extends GetxController {
 
     // Show loading while processing order
     Get.dialog(
-      const Center(child: CircularProgressIndicator(color: Color(0xFF0d9488))),
+      const Center(child: CircularProgressIndicator(color: Color(0xFF14B8A6))),
       barrierDismissible: false,
     );
 
@@ -593,7 +593,7 @@ class CartController extends GetxController {
 
     // Step 1: Validate prices and stock first
     Get.dialog(
-      const Center(child: CircularProgressIndicator(color: Color(0xFF0d9488))),
+      const Center(child: CircularProgressIndicator(color: Color(0xFF14B8A6))),
       barrierDismissible: false,
     );
     await validateCartItems();
@@ -620,7 +620,7 @@ class CartController extends GetxController {
 
     // Show loading dialog while Razorpay is opening
     Get.dialog(
-      const Center(child: CircularProgressIndicator(color: Color(0xFF0d9488))),
+      const Center(child: CircularProgressIndicator(color: Color(0xFF14B8A6))),
       barrierDismissible: false,
     );
 
@@ -941,7 +941,7 @@ class CartController extends GetxController {
 
     // Validate stock first
     Get.dialog(
-      const Center(child: CircularProgressIndicator(color: Color(0xFF0d9488))),
+      const Center(child: CircularProgressIndicator(color: Color(0xFF14B8A6))),
       barrierDismissible: false,
     );
     await validateCartItems();
@@ -960,7 +960,7 @@ class CartController extends GetxController {
 
     // Show loading
     Get.dialog(
-      const Center(child: CircularProgressIndicator(color: Color(0xFF0d9488))),
+      const Center(child: CircularProgressIndicator(color: Color(0xFF14B8A6))),
       barrierDismissible: false,
     );
 

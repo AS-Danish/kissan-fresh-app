@@ -78,7 +78,7 @@ class _CartSuccessPopupState extends State<CartSuccessPopup>
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withOpacity(0.1),
+                      color: const Color(0xFF14B8A6).withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -87,7 +87,7 @@ class _CartSuccessPopupState extends State<CartSuccessPopup>
                     width: 70,
                     height: 70,
                     decoration: const BoxDecoration(
-                      color: Color(0xFF10B981),
+                      color: Color(0xFF14B8A6),
                       shape: BoxShape.circle,
                     ),
                   ),

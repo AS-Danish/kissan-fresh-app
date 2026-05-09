@@ -76,7 +76,7 @@ class CartItemTile extends StatelessWidget {
             ],
             border: Border.all(
               color: isCouponApplied
-                  ? const Color(0xFF10B981).withOpacity(0.5)
+                  ? const Color(0xFF14B8A6).withOpacity(0.5)
                   : Theme
                   .of(context)
                   .dividerColor
@@ -214,21 +214,21 @@ class CartItemTile extends StatelessWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF10B981).withOpacity(0.1),
+                              color: const Color(0xFF14B8A6).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 const Icon(Icons.confirmation_num, size: 10,
-                                    color: Color(0xFF10B981)),
+                                    color: Color(0xFF14B8A6)),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Coupon Applied',
                                   style: GoogleFonts.montserrat(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w700,
-                                    color: const Color(0xFF10B981),
+                                    color: const Color(0xFF14B8A6),
                                   ),
                                 ),
                               ],
@@ -258,7 +258,7 @@ class CartItemTile extends StatelessWidget {
                             style: GoogleFonts.montserrat(
                               fontSize: 17,
                               fontWeight: FontWeight.w800,
-                              color: const Color(0xFF10B981), // Success Green
+                              color: const Color(0xFF14B8A6), // Success Green
                               letterSpacing: 0.3,
                             ),
                           ),

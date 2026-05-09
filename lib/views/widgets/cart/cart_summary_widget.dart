@@ -67,12 +67,12 @@ class CartSummaryWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: hasCoupon 
-                ? const Color(0xFF10B981).withOpacity(0.05)
+                ? const Color(0xFF14B8A6).withOpacity(0.05)
                 : Theme.of(context).scaffoldBackgroundColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: hasCoupon
-                  ? const Color(0xFF10B981).withOpacity(0.3)
+                  ? const Color(0xFF14B8A6).withOpacity(0.3)
                   : Theme.of(context).dividerColor.withOpacity(0.4),
             ),
           ),
@@ -82,13 +82,13 @@ class CartSummaryWidget extends StatelessWidget {
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: hasCoupon 
-                      ? const Color(0xFF10B981).withOpacity(0.1)
+                      ? const Color(0xFF14B8A6).withOpacity(0.1)
                       : Theme.of(context).primaryColor.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   hasCoupon ? Icons.check_circle_rounded : Icons.confirmation_num_outlined,
-                  color: hasCoupon ? const Color(0xFF10B981) : Theme.of(context).primaryColor,
+                  color: hasCoupon ? const Color(0xFF14B8A6) : Theme.of(context).primaryColor,
                   size: 18,
                 ),
               ),
@@ -102,7 +102,7 @@ class CartSummaryWidget extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: hasCoupon ? const Color(0xFF10B981) : Theme.of(context).colorScheme.onSurface,
+                        color: hasCoupon ? const Color(0xFF14B8A6) : Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     Text(
@@ -112,7 +112,7 @@ class CartSummaryWidget extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: hasCoupon ? const Color(0xFF10B981).withOpacity(0.8) : Colors.grey.shade600,
+                        color: hasCoupon ? const Color(0xFF14B8A6).withOpacity(0.8) : Colors.grey.shade600,
                       ),
                     ),
                   ],
@@ -206,7 +206,7 @@ class CartSummaryWidget extends StatelessWidget {
                 margin: const EdgeInsets.only(right: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withOpacity(0.1),
+                  color: const Color(0xFF14B8A6).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -214,7 +214,7 @@ class CartSummaryWidget extends StatelessWidget {
                   style: GoogleFonts.montserrat(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF10B981),
+                    color: const Color(0xFF14B8A6),
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -225,7 +225,7 @@ class CartSummaryWidget extends StatelessWidget {
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: isDiscount
-                    ? const Color(0xFF10B981)
+                    ? const Color(0xFF14B8A6)
                     : isDelivery
                     ? Colors.grey.shade400
                     : Theme.of(context).colorScheme.onSurface,

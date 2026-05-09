@@ -123,8 +123,8 @@ class FloatingCartSnackbar extends StatelessWidget {
                             padding: const EdgeInsets.only(top: 2),
                             child: Text(
                               'You save ₹${discount.toStringAsFixed(0)}',
-                              style: const TextStyle(
-                                color: Colors.green,
+                              style: TextStyle(
+                                color: Theme.of(context).primaryColor,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
                               ),

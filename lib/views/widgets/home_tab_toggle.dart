@@ -36,7 +36,7 @@ class HomeTabToggle extends StatelessWidget {
                 width: (MediaQuery.of(context).size.width - 48) / 2,
                 height: 46,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).primaryColor,
                   borderRadius: BorderRadius.circular(26),
                   boxShadow: [
                     BoxShadow(
@@ -63,7 +63,7 @@ class HomeTabToggle extends StatelessWidget {
                             Icons.shopping_basket_rounded,
                             size: 16,
                             color: isGrocery
-                                ? Theme.of(context).primaryColor
+                                ? Colors.black
                                 : Colors.white.withOpacity(0.7),
                           ),
                           const SizedBox(width: 8),
@@ -73,7 +73,7 @@ class HomeTabToggle extends StatelessWidget {
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
                               color: isGrocery
-                                  ? Theme.of(context).primaryColor
+                                  ? Colors.black
                                   : Colors.white.withOpacity(0.8),
                             ),
                           ),
@@ -95,7 +95,7 @@ class HomeTabToggle extends StatelessWidget {
                             Icons.restaurant_rounded,
                             size: 16,
                             color: !isGrocery
-                                ? Theme.of(context).primaryColor
+                                ? Colors.black
                                 : Colors.white.withOpacity(0.7),
                           ),
                           const SizedBox(width: 8),
@@ -105,7 +105,7 @@ class HomeTabToggle extends StatelessWidget {
                               fontSize: 14,
                               fontWeight: FontWeight.w700,
                               color: !isGrocery
-                                  ? Theme.of(context).primaryColor
+                                  ? Colors.black
                                   : Colors.white.withOpacity(0.8),
                             ),
                           ),

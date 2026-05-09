@@ -32,7 +32,7 @@ class PdfReceiptService {
                         style: pw.TextStyle(
                           fontSize: 28,
                           fontWeight: pw.FontWeight.bold,
-                          color: PdfColors.teal,
+                          color: PdfColors.teal700,
                         ),
                       ),
                       pw.SizedBox(height: 4),
@@ -51,7 +51,7 @@ class PdfReceiptService {
                       vertical: 8,
                     ),
                     decoration: pw.BoxDecoration(
-                      color: isCod ? PdfColors.green50 : PdfColors.indigo50,
+                      color: isCod ? PdfColors.green50 : PdfColors.teal50,
                       borderRadius: pw.BorderRadius.circular(8),
                     ),
                     child: pw.Text(
@@ -59,7 +59,7 @@ class PdfReceiptService {
                       style: pw.TextStyle(
                         fontSize: 11,
                         fontWeight: pw.FontWeight.bold,
-                        color: isCod ? PdfColors.green800 : PdfColors.indigo800,
+                        color: isCod ? PdfColors.green800 : PdfColors.teal700,
                       ),
                     ),
                   ),
@@ -183,7 +183,7 @@ class PdfReceiptService {
                           style: pw.TextStyle(
                             fontSize: 18,
                             fontWeight: pw.FontWeight.bold,
-                            color: PdfColors.teal,
+                            color: PdfColors.teal700,
                           ),
                         ),
                       ],
