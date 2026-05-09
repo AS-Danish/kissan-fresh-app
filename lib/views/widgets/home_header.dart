@@ -25,7 +25,7 @@ class HomeHeader extends StatelessWidget {
                 : const AssetImage('assets/images/header_bg.png'),
             fit: BoxFit.cover,
             colorFilter: const ColorFilter.mode(
-              Colors.black45,
+              Colors.black38,
               BlendMode.darken,
             ),
           ),

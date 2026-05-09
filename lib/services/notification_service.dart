@@ -103,11 +103,18 @@ class NotificationService {
 
   Future<void> saveTokenToFirestore() async {
     try {
+      final box = Hive.box('user_settings');
+      bool isEnabled = box.get('isNotificationsEnabled', defaultValue: true);
+      
+      if (!isEnabled) {
+        debugPrint('Notifications are disabled, skipping token save.');
+        return;
+      }
+
       String? token = await _fcm.getToken();
       String? uid = _auth.currentUser?.uid;
 
       if (token != null && uid != null) {
-        final box = Hive.box('user_settings');
         final savedToken = box.get('fcm_token_$uid');
         if (savedToken == token) {
            debugPrint('FCM Token unchanged, skipping Firestore write.');
@@ -123,6 +130,23 @@ class NotificationService {
       }
     } catch (e) {
       debugPrint('Error saving FCM token: $e');
+    }
+  }
+
+  Future<void> deleteTokenFromFirestore() async {
+    try {
+      String? uid = _auth.currentUser?.uid;
+      if (uid != null) {
+        await _firestore.collection('users').doc(uid).set(
+          {'fcmToken': FieldValue.delete()},
+          SetOptions(merge: true),
+        );
+        final box = Hive.box('user_settings');
+        await box.delete('fcm_token_$uid');
+        debugPrint('FCM Token deleted from Firestore');
+      }
+    } catch (e) {
+      debugPrint('Error deleting FCM token: $e');
     }
   }
 }

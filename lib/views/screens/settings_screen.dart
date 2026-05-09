@@ -4,6 +4,7 @@ import 'package:kissanfresh/routes/app_routes.dart';
 import 'package:kissanfresh/controllers/auth_controller.dart';
 import 'package:kissanfresh/controllers/profile_controller.dart';
 import 'package:kissanfresh/controllers/theme_controller.dart';
+import 'package:kissanfresh/controllers/notification_controller.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -63,11 +64,16 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Notifications',
                 subtitle: 'Manage your notifications',
                 onTap: () {},
-                trailing: Switch(
-                  value: true,
-                  onChanged: (value) {},
-                  activeThumbColor: const Color(0xFF14b8a6),
-                ),
+                trailing: Obx(() {
+                  final notificationController = Get.find<NotificationController>();
+                  return Switch(
+                    value: notificationController.isNotificationsEnabled.value,
+                    onChanged: (value) {
+                      notificationController.toggleNotifications(value);
+                    },
+                    activeThumbColor: const Color(0xFF14b8a6),
+                  );
+                }),
               ),
               _SettingsItem(
                 icon: Icons.dark_mode_outlined,

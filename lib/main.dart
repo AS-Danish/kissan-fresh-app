@@ -22,6 +22,7 @@ import 'package:kissanfresh/services/location_service.dart';
 import 'package:kissanfresh/controllers/theme_controller.dart';
 import 'package:kissanfresh/controllers/update_controller.dart';
 import 'package:kissanfresh/controllers/user_activity_controller.dart';
+import 'package:kissanfresh/controllers/notification_controller.dart';
 import 'package:kissanfresh/controllers/orders_controller.dart';
 import 'package:kissanfresh/services/cache_service.dart';
 import 'package:kissanfresh/services/notification_service.dart';
@@ -79,6 +80,8 @@ void main() async {
   Get.put(AddressController(), permanent: true);
   Get.put(OrdersController(), permanent: true);
   Get.put(UserActivityController(), permanent: true);
+  
+  Get.put(NotificationController(), permanent: true);
   
   // Start initializing HomepageController as well
   final homepageController = Get.put(HomepageController(), permanent: true);
