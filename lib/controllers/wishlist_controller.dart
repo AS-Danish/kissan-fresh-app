@@ -164,6 +164,7 @@ class WishlistController extends GetxController {
               'category': item.category,
               'tags': item.tags,
               'inStock': item.inStock,
+              'stockCount': item.stockCount,
               'images': item.images,
             },
           )

@@ -98,6 +98,27 @@ class UserActivityController extends GetxController {
             onTap: () => _navigateToProductDetails(
               ProductCardModel.fromJson(productData),
             ),
+            onAddToCart: () {
+              try {
+                final cartController = Get.find<CartController>();
+                final productModel = ProductCardModel.fromJson(productData);
+                bool added = cartController.addToCart(productModel, 1);
+                if (added) {
+                  Get.snackbar(
+                    'Added to Cart',
+                    '${productModel.title} added to cart',
+                    snackPosition: SnackPosition.BOTTOM,
+                    backgroundColor: const Color(0xFF14B8A6),
+                    colorText: Colors.white,
+                    duration: const Duration(seconds: 2),
+                    margin: const EdgeInsets.all(16),
+                    borderRadius: 12,
+                  );
+                }
+              } catch (e) {
+                debugPrint("CartController not found: $e");
+              }
+            },
           );
           if (product.id != null && !uniqueIds.contains(product.id)) {
             combined.add(product);
@@ -140,7 +161,38 @@ class UserActivityController extends GetxController {
                     onAddToCart: () {},
                   ),
                 ),
-                onAddToCart: () {},
+                onAddToCart: () {
+                  try {
+                    final cartController = Get.find<CartController>();
+                    final productModel = ProductCardModel(
+                      id: item.productId,
+                      title: item.title,
+                      image: item.image,
+                      price: item.price.toDouble(),
+                      unit: item.unit,
+                      stockCount: 99,
+                      inStock: true,
+                      description: "Previously ordered",
+                      onTap: () {},
+                      onAddToCart: () {},
+                    );
+                    bool added = cartController.addToCart(productModel, 1);
+                    if (added) {
+                      Get.snackbar(
+                        'Added to Cart',
+                        '${productModel.title} added to cart',
+                        snackPosition: SnackPosition.BOTTOM,
+                        backgroundColor: const Color(0xFF14B8A6),
+                        colorText: Colors.white,
+                        duration: const Duration(seconds: 2),
+                        margin: const EdgeInsets.all(16),
+                        borderRadius: 12,
+                      );
+                    }
+                  } catch (e) {
+                    debugPrint("CartController not found: $e");
+                  }
+                },
               ),
             );
             uniqueIds.add(item.productId!);

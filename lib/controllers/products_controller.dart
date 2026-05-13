@@ -85,7 +85,45 @@ class ProductsController extends GetxController {
     // Load from cache instantly if available to prevent loading spinners
     final cached = _cacheService.getProducts(cacheKey);
     if (cached.isNotEmpty) {
-      products.assignAll(cached);
+      final boundData = cached.map((p) {
+        return p.copyWith(
+          onTap: () => _navigateToProductDetails(
+            id: p.id,
+            image: p.image,
+            images: p.images,
+            title: p.title,
+            description: p.description,
+            price: p.price,
+            mrp: p.mrp,
+            unit: p.unit,
+            category: p.category,
+            tags: p.tags,
+            inStock: p.inStock,
+            stockCount: p.stockCount,
+          ),
+          onAddToCart: () {
+            try {
+              final cartController = Get.find<CartController>();
+              bool added = cartController.addToCart(p, 1);
+              if (added) {
+                Get.snackbar(
+                  'Added to Cart',
+                  '${p.title} added to cart',
+                  snackPosition: SnackPosition.BOTTOM,
+                  backgroundColor: const Color(0xFF14B8A6),
+                  colorText: Colors.white,
+                  duration: const Duration(seconds: 2),
+                  margin: const EdgeInsets.all(16),
+                  borderRadius: 12,
+                );
+              }
+            } catch (e) {
+              debugPrint("CartController not found: $e");
+            }
+          },
+        );
+      }).toList();
+      products.assignAll(boundData);
       // NOTE: We don't hide the loading indicator here because the UI is already populated.
     } else {
       isLoadingProducts.value = true;

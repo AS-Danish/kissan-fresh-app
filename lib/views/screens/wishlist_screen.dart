@@ -125,9 +125,11 @@ class WishlistScreen extends StatelessWidget {
             bool effectiveInStock = product.inStock;
             double effectivePrice = product.price;
             double? effectiveMrp = product.mrp;
+            int effectiveStockCount = product.stockCount;
             
             if (realTimeData != null) {
-              effectiveInStock = realTimeData['inStock'] ?? true;
+              effectiveStockCount = (realTimeData['stockCount'] ?? 0).toInt();
+              effectiveInStock = (realTimeData['inStock'] ?? true) && effectiveStockCount > 0;
               if (realTimeData['price'] != null) {
                 effectivePrice = (realTimeData['price'] as num).toDouble();
               }
@@ -141,7 +143,7 @@ class WishlistScreen extends StatelessWidget {
               inStock: effectiveInStock,
               price: effectivePrice,
               mrp: effectiveMrp,
-              stockCount: effectiveInStock ? 99 : 0,
+              stockCount: effectiveStockCount,
               onTap: () {
                 Get.toNamed(
                   AppRoutes.productDetailsRoute,

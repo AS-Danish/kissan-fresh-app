@@ -89,6 +89,26 @@ class CategorizedProductsController extends GetxController {
                   inStock: p.inStock,
                   stockCount: p.stockCount,
                 ),
+                onAddToCart: () {
+                  try {
+                    final cartController = Get.find<CartController>();
+                    bool added = cartController.addToCart(p, 1);
+                    if (added) {
+                      Get.snackbar(
+                        'Added to Cart',
+                        '${p.title} added to cart',
+                        snackPosition: SnackPosition.BOTTOM,
+                        backgroundColor: const Color(0xFF14B8A6),
+                        colorText: Colors.white,
+                        duration: const Duration(seconds: 2),
+                        margin: const EdgeInsets.all(16),
+                        borderRadius: 12,
+                      );
+                    }
+                  } catch (e) {
+                    debugPrint("CartController not found: $e");
+                  }
+                },
               );
             }).toList(),
           );
