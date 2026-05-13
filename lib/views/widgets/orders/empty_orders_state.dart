@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:kissanfresh/routes/app_routes.dart';
+import 'package:kissanfresh/controllers/bottom_bar_controller.dart';
 
 class EmptyOrdersState extends StatelessWidget {
   const EmptyOrdersState({super.key});
@@ -46,7 +47,14 @@ class EmptyOrdersState extends StatelessWidget {
           ),
           const SizedBox(height: 32),
           ElevatedButton(
-            onPressed: () => Get.offAllNamed(AppRoutes.mainLayout),
+            onPressed: () {
+              if (Get.isRegistered<BottomBarController>()) {
+                Get.find<BottomBarController>().changePage(0);
+                Get.until((route) => route.settings.name == AppRoutes.mainLayout || route.isFirst);
+              } else {
+                Get.offAllNamed(AppRoutes.mainLayout);
+              }
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,

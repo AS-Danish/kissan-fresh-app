@@ -7,6 +7,7 @@ import '../../model/product_card_model.dart';
 import '../../routes/app_routes.dart';
 import '../widgets/product_card_widget.dart';
 import '../widgets/floating_cart_snackbar.dart';
+import '../../controllers/bottom_bar_controller.dart';
 
 class WishlistScreen extends StatelessWidget {
   const WishlistScreen({super.key});
@@ -71,6 +72,34 @@ class WishlistScreen extends StatelessWidget {
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: Theme.of(context).textTheme.bodyMedium?.color,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: () {
+                    if (Get.isRegistered<BottomBarController>()) {
+                      Get.find<BottomBarController>().changePage(0);
+                      Get.until((route) => route.settings.name == AppRoutes.mainLayout || route.isFirst);
+                    } else {
+                      Get.offAllNamed(AppRoutes.mainLayout);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                  ),
+                  child: Text(
+                    'Start Shopping',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.3,
+                    ),
                   ),
                 ),
               ],

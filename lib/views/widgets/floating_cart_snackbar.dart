@@ -138,6 +138,7 @@ class FloatingCartSnackbar extends StatelessWidget {
                     onPressed: () {
                       if (Get.isRegistered<BottomBarController>()) {
                         Get.find<BottomBarController>().changePage(2); // Go to Cart Tab
+                        Get.until((route) => route.settings.name == AppRoutes.mainLayout || route.isFirst);
                       } else {
                         Get.toNamed(AppRoutes.cartRoute);
                       }
