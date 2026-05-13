@@ -781,11 +781,11 @@ class CartSummaryWidget extends StatelessWidget {
                         border: Border.all(
                           color: isApplicable 
                               ? Theme.of(context).primaryColor.withOpacity(0.3)
-                              : Colors.grey.shade200,
+                              : Theme.of(context).dividerColor.withOpacity(0.5),
                         ),
                         color: isApplicable 
                             ? Theme.of(context).primaryColor.withOpacity(0.02)
-                            : Colors.grey.shade50.withOpacity(0.5),
+                            : Theme.of(context).disabledColor.withOpacity(0.05),
                       ),
                       child: Column(
                         children: [
@@ -800,7 +800,7 @@ class CartSummaryWidget extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: isApplicable 
                                     ? Theme.of(context).primaryColor.withOpacity(0.1)
-                                    : Colors.grey.shade100,
+                                    : Theme.of(context).disabledColor.withOpacity(0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
@@ -820,7 +820,7 @@ class CartSummaryWidget extends StatelessWidget {
                                     fontSize: 16,
                                     color: isApplicable 
                                         ? Theme.of(context).colorScheme.onSurface
-                                        : Colors.grey.shade400,
+                                        : Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -877,7 +877,9 @@ class CartSummaryWidget extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style: GoogleFonts.montserrat(
                                     fontSize: 12,
-                                    color: isApplicable ? Colors.grey.shade700 : Colors.grey.shade400,
+                                    color: isApplicable 
+                                        ? Theme.of(context).colorScheme.onSurface.withOpacity(0.7) 
+                                        : Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
                                   ),
                                 ),
                                 if (!isApplicable) ...[

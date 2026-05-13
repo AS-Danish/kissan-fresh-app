@@ -110,13 +110,15 @@ class SlotSelectionScreen extends StatelessWidget {
       height: 50,
       margin: const EdgeInsets.only(top: 16),
       child: Obx(() {
+        // Read the observable here so Obx tracks the dependency
+        final currentSelection = controller.selectedDateLabel.value;
         return ListView.builder(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 20),
           itemCount: controller.availableDates.length,
           itemBuilder: (context, index) {
             final dateLabel = controller.availableDates[index];
-            final isSelected = controller.selectedDateLabel.value == dateLabel;
+            final isSelected = currentSelection == dateLabel;
 
             return GestureDetector(
               onTap: () => controller.selectDate(dateLabel),
