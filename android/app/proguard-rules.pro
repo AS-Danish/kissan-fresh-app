@@ -1,0 +1,2 @@
+-keep class com.baseflow.geocoding.** { *; }
+-dontwarn com.baseflow.geocoding.**

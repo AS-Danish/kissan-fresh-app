@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import '../model/product_card_model.dart';
 import '../routes/app_routes.dart';
+import 'cart_controller.dart';
 import 'orders_controller.dart';
 
 class UserActivityController extends GetxController {
