@@ -421,6 +421,39 @@ exports.createOrder = require("firebase-functions/v2/https")
                   `${result.id}:`, err);
             }
 
+            // 7. Send Telegram Notification to Admin (Non-blocking)
+            try {
+              const botToken = process.env.TELEGRAM_BOT_TOKEN;
+              const chatId = process.env.TELEGRAM_CHAT_ID;
+              
+              console.log(`DEBUG: Telegram attempt for ${result.id}. Token exists: ${!!botToken}, ChatID exists: ${!!chatId}`);
+              
+              if (botToken && chatId) {
+                const text = `🛒 *New Order Received!*\n\n*Order ID:* ${result.id}\n*Slot:* ${result.slotId}\n*Rider ID:* ${result.riderId}\n*Status:* Confirmed`;
+                
+                const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    chat_id: chatId,
+                    text: text,
+                    parse_mode: "Markdown",
+                  }),
+                });
+
+                const responseData = await response.json();
+                if (response.ok) {
+                  console.log(`Telegram notification sent successfully for Order: ${result.id}`);
+                } else {
+                  console.error(`Telegram API error for Order ${result.id}:`, JSON.stringify(responseData));
+                }
+              } else {
+                console.log(`Telegram credentials missing in .env for Order: ${result.id}`);
+              }
+            } catch (err) {
+              console.error(`Error in Telegram notification block for order ${result.id}:`, err.message || err);
+            }
+
             return {
               success: true,
               message: "Order processed successfully",
