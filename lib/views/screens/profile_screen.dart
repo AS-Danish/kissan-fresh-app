@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/profile_controller.dart';
@@ -85,18 +86,18 @@ class ProfileScreen extends StatelessWidget {
                                 ),
                               )
                             : ClipRRect(
-                                borderRadius: BorderRadius.circular(60),
-                                child: Image.network(
-                                  controller.profileImage.value,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(
-                                        Icons.error,
-                                        color: Colors.white,
-                                        size: 40,
-                                      ),
+                                  borderRadius: BorderRadius.circular(60),
+                                  child: CachedNetworkImage(
+                                    imageUrl: controller.profileImage.value,
+                                    fit: BoxFit.cover,
+                                    errorWidget: (context, url, error) =>
+                                        const Icon(
+                                          Icons.error,
+                                          color: Colors.white,
+                                          size: 40,
+                                        ),
+                                  ),
                                 ),
-                              ),
                       ),
                     ),
                     Positioned(

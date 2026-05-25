@@ -4,7 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/best_seller_controller.dart';
 import '../../controllers/homepage_controller.dart';
 import '../../controllers/theme_controller.dart';
+import '../../controllers/theme_controller.dart';
 import '../../model/bestseller_card_model.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class BestsellersSection extends StatelessWidget {
   BestsellersSection({super.key});
@@ -213,23 +215,16 @@ class BestsellersSection extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
-        child: Image.network(
-          imageUrl,
+        child: CachedNetworkImage(
+          imageUrl: imageUrl,
           fit: BoxFit.cover,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Center(
-              child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded /
-                          loadingProgress.expectedTotalBytes!
-                    : null,
-                strokeWidth: 2,
-                color: Theme.of(context).primaryColor,
-              ),
-            );
-          },
-          errorBuilder: (context, error, stackTrace) {
+          placeholder: (context, url) => Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Theme.of(context).primaryColor,
+            ),
+          ),
+          errorWidget: (context, url, error) {
             return Container(
               color: Theme.of(context).colorScheme.surface,
               child: Icon(
@@ -259,25 +254,18 @@ class BestsellersSection extends StatelessWidget {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              imageUrl,
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
               fit: BoxFit.cover,
               width: double.infinity,
               height: double.infinity,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Center(
-                  child: CircularProgressIndicator(
-                    value: loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                        : null,
-                    strokeWidth: 2,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) {
+              placeholder: (context, url) => Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+              errorWidget: (context, url, error) {
                 return Container(
                   color: Colors.grey.shade200,
                   child: const Icon(

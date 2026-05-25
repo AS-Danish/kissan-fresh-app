@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kissanfresh/model/trending_item_model.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class TrendingItemWidget extends StatelessWidget {
   final TrendingItemModel trendingItem;
@@ -40,10 +41,10 @@ class TrendingItemWidget extends StatelessWidget {
                   child: trendingItem.imageUrl != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(10),
-                          child: Image.network(
-                            trendingItem.imageUrl!,
+                          child: CachedNetworkImage(
+                            imageUrl: trendingItem.imageUrl!,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
+                            errorWidget: (context, url, error) {
                               return Icon(
                                 Icons.local_drink_outlined,
                                 size: 40,

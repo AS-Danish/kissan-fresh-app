@@ -5,6 +5,7 @@ import 'package:kissanfresh/model/order_model.dart';
 import 'package:kissanfresh/services/pdf_receipt_service.dart';
 import 'package:kissanfresh/views/widgets/orders/order_badges.dart';
 import 'package:kissanfresh/views/widgets/orders/order_details_sheet.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class OrderCard extends StatelessWidget {
   final OrderModel order;
@@ -102,10 +103,10 @@ class OrderCard extends StatelessWidget {
                               ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
-                                child: Image.network(
-                                  item.image,
+                                child: CachedNetworkImage(
+                                  imageUrl: item.image,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
+                                  errorWidget: (context, url, error) {
                                     return Container(
                                       color: Colors.grey.shade200,
                                       child: const Icon(

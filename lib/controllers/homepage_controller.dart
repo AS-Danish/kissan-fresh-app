@@ -65,6 +65,7 @@ class HomepageController extends GetxController {
         final themes = data['themes'] as List<dynamic>?;
 
         String activeImageUrl = '';
+        String updateTime = '';
 
         if (themes != null) {
           for (var item in themes) {
@@ -90,6 +91,14 @@ class HomepageController extends GetxController {
               }
             }
           }
+        }
+        
+        if (data['header_status_update_time'] != null) {
+          updateTime = data['header_status_update_time'].toString();
+        }
+
+        if (updateTime.isNotEmpty && activeImageUrl.isNotEmpty) {
+          activeImageUrl = '$activeImageUrl${activeImageUrl.contains('?') ? '&' : '?'}v=$updateTime';
         }
 
         headerImageUrl.value = activeImageUrl;

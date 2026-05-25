@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,7 +22,7 @@ class HomeHeader extends StatelessWidget {
         decoration: BoxDecoration(
           image: DecorationImage(
             image: imageUrl.isNotEmpty
-                ? NetworkImage(imageUrl) as ImageProvider
+                ? CachedNetworkImageProvider(imageUrl) as ImageProvider
                 : const AssetImage('assets/images/header_bg.png'),
             fit: BoxFit.cover,
             colorFilter: const ColorFilter.mode(
@@ -200,10 +201,10 @@ class HomeHeader extends StatelessWidget {
                                     ),
                                   ),
                                 )
-                              : Image.network(
-                                  profileController.profileImage.value,
+                              : CachedNetworkImage(
+                                  imageUrl: profileController.profileImage.value,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
+                                  errorWidget: (context, url, error) =>
                                       const Icon(
                                         Icons.person,
                                         color: Colors.white,

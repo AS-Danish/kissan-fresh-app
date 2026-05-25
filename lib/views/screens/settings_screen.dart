@@ -5,6 +5,7 @@ import 'package:kissanfresh/controllers/auth_controller.dart';
 import 'package:kissanfresh/controllers/profile_controller.dart';
 import 'package:kissanfresh/controllers/theme_controller.dart';
 import 'package:kissanfresh/controllers/notification_controller.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -270,10 +271,10 @@ class SettingsScreen extends StatelessWidget {
                       )
                     : ClipRRect(
                         borderRadius: BorderRadius.circular(32),
-                        child: Image.network(
-                          profileController.profileImage.value,
+                        child: CachedNetworkImage(
+                          imageUrl: profileController.profileImage.value,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
+                          errorWidget: (context, url, error) =>
                               const Icon(Icons.error),
                         ),
                       ),

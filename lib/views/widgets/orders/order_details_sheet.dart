@@ -6,6 +6,7 @@ import 'package:kissanfresh/model/order_model.dart';
 import 'package:kissanfresh/services/pdf_receipt_service.dart';
 import 'package:kissanfresh/views/widgets/orders/order_badges.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class OrderDetailsSheet {
   static void show(BuildContext context, OrderModel order) {
@@ -142,11 +143,11 @@ class OrderDetailsSheet {
                                   shape: BoxShape.circle,
                                 ),
                                 child: ClipOval(
-                                  child: Image.network(
-                                    order.rider!.avatarUrl,
+                                  child: CachedNetworkImage(
+                                    imageUrl: order.rider!.avatarUrl,
                                     fit: BoxFit.cover,
-                                    errorBuilder:
-                                        (context, error, stackTrace) => Icon(
+                                    errorWidget:
+                                        (context, url, error) => Icon(
                                           Icons.person,
                                           color: Theme.of(context).primaryColor,
                                         ),
@@ -337,14 +338,14 @@ class OrderDetailsSheet {
                                 ),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(10),
-                                  child: Image.network(
-                                    item.image,
+                                  child: CachedNetworkImage(
+                                    imageUrl: item.image,
                                     fit: BoxFit.cover,
-                                    errorBuilder:
+                                    errorWidget:
                                         (
                                           context,
+                                          url,
                                           error,
-                                          stackTrace,
                                         ) => const Icon(
                                           Icons.image_not_supported_outlined,
                                           color: Colors.grey,
