@@ -232,7 +232,27 @@ class HomepageController extends GetxController {
       description: productData['description'] ?? '',
       price: (productData['price'] ?? 0).toDouble(),
       mrp: productData['mrp'] != null ? (productData['mrp'] as num).toDouble() : null,
-      unit: productData['unit'] ?? 'unit',
+      unit: () {
+        String baseUnit = productData['unit']?.toString() ?? 'unit';
+        String? prefix;
+        if (productData['quantity'] != null && productData['quantity'].toString().isNotEmpty) {
+          prefix = productData['quantity'].toString();
+        } else if (productData['weight'] != null && productData['weight'].toString().isNotEmpty) {
+          prefix = productData['weight'].toString();
+        } else if (productData['unitQuantity'] != null && productData['unitQuantity'].toString().isNotEmpty) {
+          prefix = productData['unitQuantity'].toString();
+        } else if (productData['unitValue'] != null && productData['unitValue'].toString().isNotEmpty) {
+          prefix = productData['unitValue'].toString();
+        }
+        if (prefix != null) {
+          if (prefix.toLowerCase().endsWith(baseUnit.toLowerCase())) {
+            return prefix;
+          }
+          return '$prefix$baseUnit';
+        }
+        return baseUnit;
+      }(),
+      quantity: productData['quantity']?.toString() ?? productData['weight']?.toString() ?? productData['unitQuantity']?.toString() ?? productData['unitValue']?.toString(),
       category: category,
       tags: dynamicTags.isNotEmpty ? dynamicTags : null,
       inStock: inStock,

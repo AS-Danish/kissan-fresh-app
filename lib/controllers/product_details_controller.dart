@@ -65,7 +65,27 @@ class ProductDetailsController extends GetxController {
               mrp: data['mrp'] != null ? (data['mrp'] as num).toDouble() : null,
               image: current.image,
               images: current.images,
-              unit: current.unit,
+              unit: () {
+                String baseUnit = data['unit']?.toString() ?? current.unit;
+                String? prefix;
+                if (data['quantity'] != null && data['quantity'].toString().isNotEmpty) {
+                  prefix = data['quantity'].toString();
+                } else if (data['weight'] != null && data['weight'].toString().isNotEmpty) {
+                  prefix = data['weight'].toString();
+                } else if (data['unitQuantity'] != null && data['unitQuantity'].toString().isNotEmpty) {
+                  prefix = data['unitQuantity'].toString();
+                } else if (data['unitValue'] != null && data['unitValue'].toString().isNotEmpty) {
+                  prefix = data['unitValue'].toString();
+                }
+                if (prefix != null) {
+                  if (prefix.toLowerCase().endsWith(baseUnit.toLowerCase())) {
+                    return prefix;
+                  }
+                  return '$prefix$baseUnit';
+                }
+                return baseUnit;
+              }(),
+              quantity: data['quantity']?.toString() ?? data['weight']?.toString() ?? data['unitQuantity']?.toString() ?? data['unitValue']?.toString() ?? current.quantity,
               category: current.category,
               stockCount: (data['stockCount'] ?? 0).toInt(),
               inStock:

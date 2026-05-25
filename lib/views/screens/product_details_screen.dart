@@ -289,6 +289,27 @@ class ProductDetailsScreen extends StatelessWidget {
                             );
                           }),
 
+                          Obx(() {
+                            final p = controller.observableProduct.value ?? product;
+                            if (p.quantity != null && p.quantity!.isNotEmpty) {
+                              return Column(
+                                children: [
+                                  const SizedBox(height: 12),
+                                  Divider(color: Colors.grey.shade200, height: 1),
+                                  const SizedBox(height: 12),
+                                  _buildDetailRow(
+                                    context: context,
+                                    icon: Icons.scale_outlined,
+                                    label: 'Quantity',
+                                    value: '${p.quantity} ${p.unit.replaceAll(p.quantity!, '')}'.trim(),
+                                    valueColor: Colors.grey.shade700,
+                                  ),
+                                ],
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          }),
+
                           const SizedBox(height: 12),
                           Divider(color: Colors.grey.shade200, height: 1),
                           const SizedBox(height: 12),

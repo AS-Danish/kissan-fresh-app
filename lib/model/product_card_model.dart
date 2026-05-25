@@ -9,6 +9,7 @@ class ProductCardModel {
   final double price; // discount price
   final double? mrp; // original price
   final String unit;
+  final String? quantity;
   final String? category; // Added category field
   final List<String>? tags; // Dynamic tags
   final VoidCallback onTap;
@@ -26,6 +27,7 @@ class ProductCardModel {
     required this.price,
     this.mrp,
     required this.unit,
+    this.quantity,
     this.category,
     this.tags,
     this.inStock = true,
@@ -44,6 +46,7 @@ class ProductCardModel {
       'price': price,
       'mrp': mrp,
       'unit': unit,
+      'quantity': quantity,
       'category': category,
       'tags': tags,
       'inStock': inStock,
@@ -64,7 +67,28 @@ class ProductCardModel {
       description: json['description'] ?? '',
       price: (json['price'] ?? 0).toDouble(),
       mrp: json['mrp'] != null ? (json['mrp']).toDouble() : null,
-      unit: json['unit'] ?? 'unit',
+      unit: () {
+        String baseUnit = json['unit']?.toString() ?? 'unit';
+        String? prefix;
+        if (json['quantity'] != null && json['quantity'].toString().isNotEmpty) {
+          prefix = json['quantity'].toString();
+        } else if (json['weight'] != null && json['weight'].toString().isNotEmpty) {
+          prefix = json['weight'].toString();
+        } else if (json['unitQuantity'] != null && json['unitQuantity'].toString().isNotEmpty) {
+          prefix = json['unitQuantity'].toString();
+        } else if (json['unitValue'] != null && json['unitValue'].toString().isNotEmpty) {
+          prefix = json['unitValue'].toString();
+        }
+        if (prefix != null) {
+          // If the prefix already contains the unit (e.g. they typed "500gm" in quantity field), just use it
+          if (prefix.toLowerCase().endsWith(baseUnit.toLowerCase())) {
+            return prefix;
+          }
+          return '$prefix$baseUnit';
+        }
+        return baseUnit;
+      }(),
+      quantity: json['quantity']?.toString() ?? json['weight']?.toString() ?? json['unitQuantity']?.toString() ?? json['unitValue']?.toString(),
       category: json['category'],
       tags: json['tags'] != null ? List<String>.from(json['tags']) : null,
       inStock: json['inStock'] ?? true,
@@ -85,6 +109,7 @@ class ProductCardModel {
     double? price,
     double? mrp,
     String? unit,
+    String? quantity,
     String? category,
     List<String>? tags,
     bool? inStock,
@@ -101,6 +126,7 @@ class ProductCardModel {
       price: price ?? this.price,
       mrp: mrp ?? this.mrp,
       unit: unit ?? this.unit,
+      quantity: quantity ?? this.quantity,
       category: category ?? this.category,
       tags: tags ?? this.tags,
       inStock: inStock ?? this.inStock,

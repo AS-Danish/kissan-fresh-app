@@ -374,7 +374,27 @@ class ProductSearchController extends GetxController {
       description: data['description'] ?? '',
       price: (data['price'] ?? 0).toDouble(),
       mrp: data['mrp'] != null ? (data['mrp'] as num).toDouble() : null,
-      unit: data['unit'] ?? 'unit',
+      unit: () {
+        String baseUnit = data['unit']?.toString() ?? 'unit';
+        String? prefix;
+        if (data['quantity'] != null && data['quantity'].toString().isNotEmpty) {
+          prefix = data['quantity'].toString();
+        } else if (data['weight'] != null && data['weight'].toString().isNotEmpty) {
+          prefix = data['weight'].toString();
+        } else if (data['unitQuantity'] != null && data['unitQuantity'].toString().isNotEmpty) {
+          prefix = data['unitQuantity'].toString();
+        } else if (data['unitValue'] != null && data['unitValue'].toString().isNotEmpty) {
+          prefix = data['unitValue'].toString();
+        }
+        if (prefix != null) {
+          if (prefix.toLowerCase().endsWith(baseUnit.toLowerCase())) {
+            return prefix;
+          }
+          return '$prefix$baseUnit';
+        }
+        return baseUnit;
+      }(),
+      quantity: data['quantity']?.toString() ?? data['weight']?.toString() ?? data['unitQuantity']?.toString() ?? data['unitValue']?.toString(),
       category: category,
       tags: dynamicTags.isNotEmpty ? dynamicTags : null,
       inStock: inStock,
@@ -387,7 +407,27 @@ class ProductSearchController extends GetxController {
         description: data['description'] ?? '',
         price: (data['price'] ?? 0).toDouble(),
         mrp: data['mrp'] != null ? (data['mrp'] as num).toDouble() : null,
-        unit: data['unit'] ?? 'unit',
+        unit: () {
+          String baseUnit = data['unit']?.toString() ?? 'unit';
+          String? prefix;
+          if (data['quantity'] != null && data['quantity'].toString().isNotEmpty) {
+            prefix = data['quantity'].toString();
+          } else if (data['weight'] != null && data['weight'].toString().isNotEmpty) {
+            prefix = data['weight'].toString();
+          } else if (data['unitQuantity'] != null && data['unitQuantity'].toString().isNotEmpty) {
+            prefix = data['unitQuantity'].toString();
+          } else if (data['unitValue'] != null && data['unitValue'].toString().isNotEmpty) {
+            prefix = data['unitValue'].toString();
+          }
+          if (prefix != null) {
+            if (prefix.toLowerCase().endsWith(baseUnit.toLowerCase())) {
+              return prefix;
+            }
+            return '$prefix$baseUnit';
+          }
+          return baseUnit;
+        }(),
+        quantity: data['quantity']?.toString() ?? data['weight']?.toString() ?? data['unitQuantity']?.toString() ?? data['unitValue']?.toString(),
         category: category,
         tags: dynamicTags.isNotEmpty ? dynamicTags : null,
         inStock: inStock,
@@ -426,6 +466,7 @@ class ProductSearchController extends GetxController {
     required double price,
     double? mrp,
     required String unit,
+    String? quantity,
     String? category,
     List<String>? tags,
     bool inStock = true,
@@ -465,6 +506,7 @@ class ProductSearchController extends GetxController {
         price: price,
         mrp: mrp,
         unit: unit,
+        quantity: quantity,
         category: category,
         tags: tags,
         inStock: inStock,
