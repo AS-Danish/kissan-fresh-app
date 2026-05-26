@@ -25,7 +25,7 @@ class OrderCard extends StatelessWidget {
             offset: const Offset(0, 2),
           ),
         ],
-        border: Border.all(color: Colors.grey.shade100, width: 1),
+        border: Border.all(color: Theme.of(context).colorScheme.outline, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,7 +98,9 @@ class OrderCard extends StatelessWidget {
                               width: 50,
                               height: 50,
                               decoration: BoxDecoration(
-                                color: Colors.grey.shade100,
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? Colors.white.withOpacity(0.1)
+                                    : Colors.grey.shade100,
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: ClipRRect(
@@ -108,7 +110,9 @@ class OrderCard extends StatelessWidget {
                                   fit: BoxFit.cover,
                                   errorWidget: (context, url, error) {
                                     return Container(
-                                      color: Colors.grey.shade200,
+                                      color: Theme.of(context).brightness == Brightness.dark
+                                          ? Colors.white.withOpacity(0.05)
+                                          : Colors.grey.shade200,
                                       child: const Icon(
                                         Icons.image_not_supported_outlined,
                                         color: Colors.grey,
@@ -142,7 +146,7 @@ class OrderCard extends StatelessWidget {
                                           '${item.quantity} x ₹${item.price.toStringAsFixed(0)}',
                                           style: GoogleFonts.montserrat(
                                             fontSize: 12,
-                                            color: Colors.grey.shade600,
+                                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -152,7 +156,7 @@ class OrderCard extends StatelessWidget {
                                             '₹${item.mrp!.toStringAsFixed(0)}',
                                             style: GoogleFonts.montserrat(
                                               fontSize: 10,
-                                              color: Colors.grey.shade400,
+                                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
                                               fontWeight: FontWeight.w500,
                                               decoration: TextDecoration.lineThrough,
                                             ),
@@ -181,7 +185,7 @@ class OrderCard extends StatelessWidget {
                                     style: GoogleFonts.montserrat(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w500,
-                                      color: Colors.grey.shade500,
+                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
                                       decoration: TextDecoration.lineThrough,
                                     ),
                                   ),
@@ -210,7 +214,7 @@ class OrderCard extends StatelessWidget {
                 const SizedBox(height: 8),
 
                 // Divider
-                Container(height: 1, color: Colors.grey.shade200),
+                Container(height: 1, color: Theme.of(context).dividerColor),
 
                 const SizedBox(height: 12),
 
@@ -262,7 +266,7 @@ class OrderCard extends StatelessWidget {
                           style: GoogleFonts.montserrat(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: Colors.grey.shade600,
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -286,7 +290,7 @@ class OrderCard extends StatelessWidget {
                             style: GoogleFonts.montserrat(
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
-                              color: Colors.grey.shade600,
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                             ),
                           ),
                           const SizedBox(height: 2),

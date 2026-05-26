@@ -192,7 +192,7 @@ class OrderDetailsSheet {
                                 ),
                               ),
                               Material(
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.surface,
                                 borderRadius: BorderRadius.circular(12),
                                 child: InkWell(
                                   onTap: () async {
@@ -323,9 +323,9 @@ class OrderDetailsSheet {
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade50,
+                            color: Theme.of(context).colorScheme.surface,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey.shade100),
+                            border: Border.all(color: Theme.of(context).colorScheme.outline),
                           ),
                           child: Row(
                             children: [
@@ -333,7 +333,9 @@ class OrderDetailsSheet {
                                 width: 50,
                                 height: 50,
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: Theme.of(context).brightness == Brightness.dark
+                                      ? Colors.white.withOpacity(0.1)
+                                      : Colors.white,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: ClipRRect(
@@ -376,7 +378,10 @@ class OrderDetailsSheet {
                                           '${item.quantity} x ₹${item.price.toStringAsFixed(0)}',
                                           style: GoogleFonts.montserrat(
                                             fontSize: 12,
-                                            color: Colors.grey.shade600,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface
+                                                .withOpacity(0.6),
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -386,7 +391,10 @@ class OrderDetailsSheet {
                                             '₹${item.mrp!.toStringAsFixed(0)}',
                                             style: GoogleFonts.montserrat(
                                               fontSize: 10,
-                                              color: Colors.grey.shade400,
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface
+                                                  .withOpacity(0.4),
                                               fontWeight: FontWeight.w500,
                                               decoration: TextDecoration.lineThrough,
                                             ),
@@ -564,7 +572,7 @@ class OrderDetailsSheet {
       padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: Colors.grey.shade100, width: 1),
+          bottom: BorderSide(color: Theme.of(context).dividerColor, width: 1),
         ),
       ),
       child: Text(
@@ -592,7 +600,7 @@ class OrderDetailsSheet {
               style: GoogleFonts.montserrat(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: Colors.grey.shade600,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
               ),
             ),
           ),
@@ -630,7 +638,7 @@ class OrderDetailsSheet {
             style: GoogleFonts.montserrat(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: Colors.grey.shade600,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
             ),
           ),
           Text(
