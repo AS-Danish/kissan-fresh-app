@@ -140,10 +140,7 @@ class CategorizedProductsSection extends StatelessWidget {
                     return SizedBox(
                       width: 115,
                       child: ProductCardWidget(
-                        product: products[index].copyWith(
-                          stockCount: 99,
-                          inStock: true,
-                        ),
+                        product: products[index],
                         showAddButton: true,
                       ),
                     );
