@@ -12,6 +12,7 @@ import 'package:kissanfresh/views/layout/main_layout.dart';
 
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:kissanfresh/controllers/homepage_controller.dart';
+import 'package:kissanfresh/views/screens/splash_screen.dart';
 
 import 'firebase_options.dart';
 
@@ -87,21 +88,10 @@ void main() async {
   final homepageController = Get.put(HomepageController(), permanent: true);
 
   // We call runApp immediately so the Get widget tree is mounted (required for navigation in UpdateController etc).
-  // The UI is hidden behind the native splash screen.
+  // The UI is shown immediately with our custom splash screen.
   runApp(const MyApp());
   
-  // Wait for critical background initializations
-  try {
-    await Future.wait([
-      if (updateController.initializationFuture != null) updateController.initializationFuture!,
-      if (locationService.initializationFuture != null) locationService.initializationFuture!,
-      if (homepageController.categoriesFuture != null) homepageController.categoriesFuture!,
-    ]);
-  } catch (e) {
-    debugPrint("Background initialization error: $e");
-  }
-
-  // Once everything is ready, reveal the app
+  // Once Flutter UI is ready to paint, remove the native splash screen
   FlutterNativeSplash.remove();
 }
 
@@ -121,7 +111,7 @@ class MyApp extends StatelessWidget {
         themeMode: themeController.themeMode,
         getPages: AppRoutes.pages,
         initialBinding: BottomBarBinding(),
-        home: MainLayout(),
+        home: const SplashScreen(),
         defaultTransition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),
         builder: (context, child) {
