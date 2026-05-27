@@ -1,11 +1,21 @@
 import java.util.Properties
+import java.io.FileInputStream
 
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
     localPropertiesFile.inputStream().use { localProperties.load(it) }
 }
-val mapsApiKey = localProperties.getProperty("MAPS_API_KEY") ?: ""
+
+val envProperties = Properties()
+val envFile = rootProject.file("../.env")
+if (envFile.exists()) {
+    envFile.inputStream().use { envProperties.load(it) }
+}
+
+val mapsApiKey = envProperties.getProperty("MAPS_API_KEY")?.replace("\"", "")?.trim()
+    ?: localProperties.getProperty("MAPS_API_KEY") 
+    ?: ""
 
 plugins {
     id("com.android.application")
