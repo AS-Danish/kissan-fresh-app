@@ -78,9 +78,43 @@ class UserActivityController extends GetxController {
                   newData[doc.id] = doc.data();
                 }
                 realTimeProductData.assignAll(newData);
+
+                final fetchedIds = snapshot.docs.map((doc) => doc.id).toList();
+                final deletedIds = productIds.where((id) => !fetchedIds.contains(id)).toList();
+                
+                if (deletedIds.isNotEmpty) {
+                  bool changed = false;
+                  personalizedProducts.removeWhere((item) {
+                    if (deletedIds.contains(item.id)) {
+                      changed = true;
+                      return true;
+                    }
+                    return false;
+                  });
+
+                  if (changed) {
+                    _removeFromRecentViews(deletedIds);
+                  }
+                }
               },
               onError: (e) => debugPrint("Error in personalized products stream: $e"),
             );
+  }
+
+  void _removeFromRecentViews(List<String> deletedIds) {
+    final String? cachedViews = _activityBox.get(_recentViewsKey);
+    if (cachedViews != null) {
+      try {
+        final List<dynamic> decoded = jsonDecode(cachedViews);
+        List<Map<String, dynamic>> viewsList = decoded.map((e) => Map<String, dynamic>.from(e)).toList();
+        
+        viewsList.removeWhere((item) => deletedIds.contains(item['id']));
+        
+        _activityBox.put(_recentViewsKey, jsonEncode(viewsList));
+      } catch (e) {
+        debugPrint('Error decoding views list for deletion: $e');
+      }
+    }
   }
 
   void _loadPersonalizedData() {

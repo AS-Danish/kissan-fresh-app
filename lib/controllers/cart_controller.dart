@@ -217,7 +217,7 @@ class CartController extends GetxController {
       
       if (coupon.applicableCategory != null && item.category == coupon.applicableCategory) {
         isApplicable = true;
-      } else if (coupon.applicableProduct != null && item.id == coupon.applicableProduct) {
+      } else if (coupon.applicableProduct != null && item.id.split('_').first == coupon.applicableProduct) {
         isApplicable = true;
       }
       
@@ -441,7 +441,7 @@ class CartController extends GetxController {
     _stockSubscription?.cancel();
     if (items.isEmpty) return;
 
-    final productIds = items.map((item) => item.id).toList();
+    final productIds = items.map((item) => item.id.split('_').first).toSet().toList();
 
     // Firestore whereIn limit is 30. If cart > 30, we'd need chunks.
     // For this app, 30 is likely sufficient.
@@ -453,30 +453,63 @@ class CartController extends GetxController {
         .snapshots()
         .listen((snapshot) {
           bool changed = false;
+          
+          final fetchedIds = snapshot.docs.map((doc) => doc.id).toList();
+          final deletedIds = limitedIds.where((id) => !fetchedIds.contains(id)).toList();
+          
+          if (deletedIds.isNotEmpty) {
+            cartItems.removeWhere((item) {
+              final baseId = item.id.split('_').first;
+              return deletedIds.contains(baseId);
+            });
+            changed = true;
+          }
+
           for (var doc in snapshot.docs) {
             final data = doc.data();
             final productId = doc.id;
-            final index = cartItems.indexWhere((item) => item.id == productId);
+            
+            // Handle variations: find all cart items matching this base product
+            for (int index = 0; index < cartItems.length; index++) {
+              final cartItemId = cartItems[index].id;
+              final baseId = cartItemId.split('_').first;
+              
+              if (baseId == productId) {
+                double freshPrice = (data['price'] ?? 0).toDouble();
+                int freshStock = (data['stockCount'] ?? 0).toInt();
+                bool freshInStock = (data['inStock'] ?? true) && freshStock > 0;
 
-            if (index >= 0) {
-              final double freshPrice = (data['price'] ?? 0).toDouble();
-              final int freshStock = (data['stockCount'] ?? 0).toInt();
-              final bool freshInStock =
-                  (data['inStock'] ?? true) && freshStock > 0;
+                // If this cart item is a variation, extract specific price/stock
+                if (cartItemId.contains('_') && data['hasVariations'] == true && data['variations'] != null) {
+                  final variationId = cartItemId.substring(cartItemId.indexOf('_') + 1);
+                  final variationsList = data['variations'] as List;
+                  final variationData = variationsList.firstWhere(
+                    (v) => v['id']?.toString() == variationId,
+                    orElse: () => null,
+                  );
 
-              if (cartItems[index].price != freshPrice ||
-                  cartItems[index].availableStock != freshStock ||
-                  cartItems[index].inStock != freshInStock) {
-                cartItems[index].price = freshPrice;
-                cartItems[index].availableStock = freshStock;
-                cartItems[index].inStock = freshInStock;
-
-                // Cap quantity if it exceeds stock
-                if (cartItems[index].count > freshStock && freshStock >= 0) {
-                  cartItems[index].count = freshStock;
+                  if (variationData != null) {
+                    freshPrice = (variationData['price'] ?? 0).toDouble();
+                  } else {
+                     freshInStock = false;
+                     freshStock = 0;
+                  }
                 }
 
-                changed = true;
+                if (cartItems[index].price != freshPrice ||
+                    cartItems[index].availableStock != freshStock ||
+                    cartItems[index].inStock != freshInStock) {
+                  cartItems[index].price = freshPrice;
+                  cartItems[index].availableStock = freshStock;
+                  cartItems[index].inStock = freshInStock;
+
+                  // Cap quantity if it exceeds stock
+                  if (cartItems[index].count > freshStock && freshStock >= 0) {
+                    cartItems[index].count = freshStock;
+                  }
+
+                  changed = true;
+                }
               }
             }
           }
@@ -678,7 +711,7 @@ class CartController extends GetxController {
       items: cartItems
           .map(
             (item) => OrderItem(
-              productId: item.id,
+              productId: item.id.split('_').first, // Ensure backend gets the base productId
               title: item.name,
               unit: item.quantity,
               image: item.image,

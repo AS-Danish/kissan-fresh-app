@@ -87,20 +87,12 @@ class ProductsController extends GetxController {
     if (cached.isNotEmpty) {
       final boundData = cached.map((p) {
         return p.copyWith(
-          onTap: () => _navigateToProductDetails(
-            id: p.id,
-            image: p.image,
-            images: p.images,
-            title: p.title,
-            description: p.description,
-            price: p.price,
-            mrp: p.mrp,
-            unit: p.unit,
-            category: p.category,
-            tags: p.tags,
-            inStock: p.inStock,
-            stockCount: p.stockCount,
-          ),
+          onTap: () {
+            Get.toNamed(
+              AppRoutes.productDetailsRoute,
+              arguments: p,
+            );
+          },
           onAddToCart: () {
             try {
               final cartController = Get.find<CartController>();
@@ -244,117 +236,25 @@ class ProductsController extends GetxController {
 
   ProductCardModel _mapToProductCardModel(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+    data['id'] = doc.id;
 
-    // Extract a single image logic
-    String imageUrl = '';
-    if (data['image'] != null && data['image'].toString().isNotEmpty) {
-      imageUrl = data['image'];
-    } else if (data['images'] != null &&
-        data['images'] is List &&
-        data['images'].isNotEmpty) {
-      imageUrl = data['images'][0];
-    }
+    final model = ProductCardModel.fromJson(data);
 
-    // Parse list of images if any (optional based on your model)
-    List<String>? imagesList;
-    if (data['images'] != null && data['images'] is List) {
-      imagesList = List<String>.from(data['images']);
-    }
-
-    final stockCount = (data['stockCount'] ?? 0).toInt();
-    final inStock = (data['inStock'] ?? true) && stockCount > 0;
-    final category = data['category'] ?? 'General';
-
-    // Parse existing tags from db if any
-    List<String> dynamicTags = [];
-    if (data['tags'] != null && data['tags'] is List) {
-      dynamicTags = List<String>.from(data['tags']);
-    }
-
-    // Add implicit tags
-    if (category != 'General' && !dynamicTags.contains(category)) {
-      dynamicTags.add(category);
-    }
-    if (inStock && !dynamicTags.contains('In Stock')) {
-      dynamicTags.add('In Stock');
-    }
-
-    return ProductCardModel(
-      id: doc.id,
-      image: imageUrl,
-      images: imagesList,
-      title: data['name'] ?? 'Unknown',
-      description: data['description'] ?? '',
-      price: (data['price'] ?? 0).toDouble(),
-      mrp: data['mrp'] != null ? (data['mrp'] as num).toDouble() : null,
-      unit: () {
-        String baseUnit = data['unit']?.toString() ?? 'unit';
-        String? prefix;
-        if (data['quantity'] != null && data['quantity'].toString().isNotEmpty) {
-          prefix = data['quantity'].toString();
-        } else if (data['weight'] != null && data['weight'].toString().isNotEmpty) {
-          prefix = data['weight'].toString();
-        } else if (data['unitQuantity'] != null && data['unitQuantity'].toString().isNotEmpty) {
-          prefix = data['unitQuantity'].toString();
-        } else if (data['unitValue'] != null && data['unitValue'].toString().isNotEmpty) {
-          prefix = data['unitValue'].toString();
-        }
-        if (prefix != null) {
-          if (prefix.toLowerCase().endsWith(baseUnit.toLowerCase())) {
-            return prefix;
-          }
-          return '$prefix$baseUnit';
-        }
-        return baseUnit;
-      }(),
-      quantity: data['quantity']?.toString() ?? data['weight']?.toString() ?? data['unitQuantity']?.toString() ?? data['unitValue']?.toString(),
-      category: category,
-      tags: dynamicTags.isNotEmpty ? dynamicTags : null,
-      inStock: inStock,
-      stockCount: stockCount,
-      onTap: () => _navigateToProductDetails(
-        id: doc.id,
-        image: imageUrl,
-        images: imagesList,
-        title: data['name'] ?? 'Unknown',
-        description: data['description'] ?? '',
-        price: (data['price'] ?? 0).toDouble(),
-        mrp: data['mrp'] != null ? (data['mrp'] as num).toDouble() : null,
-        unit: () {
-          String baseUnit = data['unit']?.toString() ?? 'unit';
-          String? prefix;
-          if (data['quantity'] != null && data['quantity'].toString().isNotEmpty) {
-            prefix = data['quantity'].toString();
-          } else if (data['weight'] != null && data['weight'].toString().isNotEmpty) {
-            prefix = data['weight'].toString();
-          } else if (data['unitQuantity'] != null && data['unitQuantity'].toString().isNotEmpty) {
-            prefix = data['unitQuantity'].toString();
-          } else if (data['unitValue'] != null && data['unitValue'].toString().isNotEmpty) {
-            prefix = data['unitValue'].toString();
-          }
-          if (prefix != null) {
-            if (prefix.toLowerCase().endsWith(baseUnit.toLowerCase())) {
-              return prefix;
-            }
-            return '$prefix$baseUnit';
-          }
-          return baseUnit;
-        }(),
-        quantity: data['quantity']?.toString() ?? data['weight']?.toString() ?? data['unitQuantity']?.toString() ?? data['unitValue']?.toString(),
-        category: category,
-        tags: dynamicTags.isNotEmpty ? dynamicTags : null,
-        inStock: inStock,
-        stockCount: stockCount,
-      ),
+    return model.copyWith(
+      onTap: () {
+        Get.toNamed(
+          AppRoutes.productDetailsRoute,
+          arguments: model,
+        );
+      },
       onAddToCart: () {
         try {
           final cartController = Get.find<CartController>();
-          final productModel = _mapToProductCardModel(doc);
-          bool added = cartController.addToCart(productModel, 1);
+          bool added = cartController.addToCart(model, 1);
           if (added) {
             Get.snackbar(
               'Added to Cart',
-              '${data['name'] ?? 'Product'} added to cart',
+              '${model.title} added to cart',
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: const Color(0xFF14B8A6),
               colorText: Colors.white,

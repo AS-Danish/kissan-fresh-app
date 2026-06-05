@@ -23,6 +23,9 @@ class ProductDetailsController extends GetxController {
     currentImageIndex.value = index;
   }
 
+  // Observable for selected variation
+  var selectedVariation = Rxn<ProductVariation>();
+
   Rxn<ProductCardModel> observableProduct = Rxn<ProductCardModel>();
   StreamSubscription? _productSubscription;
 
@@ -30,6 +33,11 @@ class ProductDetailsController extends GetxController {
   void initializeProduct(ProductCardModel productData) {
     observableProduct.value = productData;
     
+    if (productData.hasVariations && productData.variations != null && productData.variations!.isNotEmpty) {
+      selectedVariation.value = productData.variations!.first;
+    }
+
+
     // Universally track product view whenever product details are opened
     try {
       Get.find<UserActivityController>().trackView(productData);
@@ -91,11 +99,36 @@ class ProductDetailsController extends GetxController {
               inStock:
                   (data['inStock'] ?? true) && (data['stockCount'] ?? 0) > 0,
               tags: current.tags,
+              hasVariations: data['hasVariations'] ?? false,
+              variations: data['variations'] != null
+                  ? (data['variations'] as List).map((v) => ProductVariation.fromJson(v)).toList()
+                  : current.variations,
               onTap: current.onTap,
               onAddToCart: current.onAddToCart,
             );
+
+            // Maintain selected variation
+            if (observableProduct.value!.hasVariations && observableProduct.value!.variations != null && observableProduct.value!.variations!.isNotEmpty) {
+              if (selectedVariation.value != null) {
+                final existing = observableProduct.value!.variations!.firstWhereOrNull((v) => 
+                  (v.id != null && v.id == selectedVariation.value!.id) || 
+                  (v.id == null && v.unit == selectedVariation.value!.unit && v.unitValue == selectedVariation.value!.unitValue)
+                );
+                if (existing != null) {
+                  selectedVariation.value = existing;
+                } else {
+                  selectedVariation.value = observableProduct.value!.variations!.first;
+                }
+              } else {
+                selectedVariation.value = observableProduct.value!.variations!.first;
+              }
+            }
           }
         });
+  }
+
+  void selectVariation(ProductVariation variation) {
+    selectedVariation.value = variation;
   }
 
   /// Increase quantity
@@ -168,8 +201,22 @@ class ProductDetailsController extends GetxController {
       final p = observableProduct.value;
       if (p == null) return;
 
+      // If a variation is selected, construct a temporary ProductCardModel for the cart
+      ProductCardModel productToAdd = p;
+      if (p.hasVariations && selectedVariation.value != null) {
+        final v = selectedVariation.value!;
+        productToAdd = p.copyWith(
+          id: '${p.id}_${v.id}',
+          price: v.price,
+          mrp: v.mrp,
+          unit: v.unit,
+          quantity: v.unitValue,
+          image: v.image ?? p.image,
+        );
+      }
+
       // Use the centralized addToCart for strict stock enforcement
-      bool added = cartController.addToCart(p, quantity.value);
+      bool added = cartController.addToCart(productToAdd, quantity.value);
 
       if (added) {
         Get.dialog(const CartSuccessPopup(), barrierDismissible: true);
@@ -199,7 +246,7 @@ class ProductDetailsController extends GetxController {
 
   /// Calculate total price
   double get totalPrice =>
-      (observableProduct.value?.price ?? 0) * quantity.value;
+      (selectedVariation.value?.price ?? observableProduct.value?.price ?? 0) * quantity.value;
 
   @override
   void onClose() {

@@ -84,25 +84,29 @@ class ProductDetailsScreen extends StatelessWidget {
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 color: Colors.grey.shade100,
-                child: (product.images != null && product.images!.isNotEmpty)
-                    ? Stack(
-                        children: [
-                          PageView.builder(
-                            itemCount: product.images!.length,
-                            onPageChanged: controller.onImageChanged,
-                            itemBuilder: (context, index) {
-                              return _buildNetworkImage(
-                                context,
-                                product.images![index],
-                              );
-                            },
-                          ),
-                          Positioned(
-                            bottom: 20,
-                            left: 0,
-                            right: 0,
-                            child: Obx(
-                              () => Row(
+                child: Obx(() {
+                  final v = controller.selectedVariation.value;
+                  if (v != null && v.image != null && v.image!.isNotEmpty) {
+                    return _buildNetworkImage(context, v.image!);
+                  }
+                  return (product.images != null && product.images!.isNotEmpty)
+                      ? Stack(
+                          children: [
+                            PageView.builder(
+                              itemCount: product.images!.length,
+                              onPageChanged: controller.onImageChanged,
+                              itemBuilder: (context, index) {
+                                return _buildNetworkImage(
+                                  context,
+                                  product.images![index],
+                                );
+                              },
+                            ),
+                            Positioned(
+                              bottom: 20,
+                              left: 0,
+                              right: 0,
+                              child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: List.generate(
                                   product.images!.length,
@@ -130,10 +134,10 @@ class ProductDetailsScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      )
-                    : _buildNetworkImage(context, product.image),
+                          ],
+                        )
+                      : _buildNetworkImage(context, product.image);
+                }),
               ),
             ),
           ),
@@ -158,6 +162,11 @@ class ProductDetailsScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Obx(() {
                       final p = controller.observableProduct.value ?? product;
+                      final v = controller.selectedVariation.value;
+                      final displayPrice = v?.price ?? p.price;
+                      final displayMrp = v?.mrp ?? p.mrp;
+                      final displayUnit = v != null ? '${v.unitValue} ${v.unit}' : p.unit;
+
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -175,11 +184,11 @@ class ProductDetailsScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.baseline,
                             textBaseline: TextBaseline.alphabetic,
                             children: [
-                              if (p.mrp != null && p.mrp! > p.price)
+                              if (displayMrp != null && displayMrp > displayPrice)
                                 Padding(
                                   padding: const EdgeInsets.only(right: 8.0),
                                   child: Text(
-                                    '₹${p.mrp!.toStringAsFixed(0)}',
+                                    '₹${displayMrp.toStringAsFixed(0)}',
                                     style: GoogleFonts.montserrat(
                                       fontSize: 20,
                                       fontWeight: FontWeight.w600,
@@ -189,7 +198,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                   ),
                                 ),
                               Text(
-                                '₹${p.price.toStringAsFixed(0)}',
+                                '₹${displayPrice.toStringAsFixed(0)}',
                                 style: GoogleFonts.montserrat(
                                   fontSize: 32,
                                   fontWeight: FontWeight.w900,
@@ -198,7 +207,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                ' /${p.unit}',
+                                ' /$displayUnit',
                                 style: GoogleFonts.montserrat(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -214,7 +223,102 @@ class ProductDetailsScreen extends StatelessWidget {
 
                   const SizedBox(height: 24),
 
-                  const SizedBox(height: 24),
+                  // Variations
+                  Obx(() {
+                    final p = controller.observableProduct.value ?? product;
+                    final currentSelected = controller.selectedVariation.value;
+                    
+                    if (!p.hasVariations || p.variations == null || p.variations!.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Text(
+                            'Available Options',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              color: Theme.of(context).colorScheme.onSurface,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          height: 110,
+                          child: ListView.separated(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            scrollDirection: Axis.horizontal,
+                            itemCount: p.variations!.length,
+                            separatorBuilder: (context, index) => const SizedBox(width: 12),
+                            itemBuilder: (context, index) {
+                              final v = p.variations![index];
+                              final isSelected = currentSelected == v;
+                              return GestureDetector(
+                                onTap: () => controller.selectVariation(v),
+                                child: Container(
+                                  width: 120,
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.1) : Theme.of(context).colorScheme.surface,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: isSelected ? Theme.of(context).primaryColor : Colors.grey.shade300,
+                                      width: isSelected ? 2 : 1,
+                                    ),
+                                    boxShadow: isSelected ? [] : [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.05),
+                                        blurRadius: 5,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        '${v.unitValue} ${v.unit}',
+                                        style: GoogleFonts.montserrat(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w800,
+                                          color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).colorScheme.onSurface,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '₹${v.price.toStringAsFixed(0)}',
+                                        style: GoogleFonts.montserrat(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                      ),
+                                      if (v.mrp != null && v.mrp! > v.price)
+                                        Text(
+                                          '₹${v.mrp!.toStringAsFixed(0)}',
+                                          style: GoogleFonts.montserrat(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.grey.shade400,
+                                            decoration: TextDecoration.lineThrough,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                    );
+                  }),
 
                   // Description
                   Padding(
@@ -291,7 +395,11 @@ class ProductDetailsScreen extends StatelessWidget {
 
                           Obx(() {
                             final p = controller.observableProduct.value ?? product;
-                            if (p.quantity != null && p.quantity!.isNotEmpty) {
+                            final v = controller.selectedVariation.value;
+                            final displayQuantity = v != null ? v.unitValue : p.quantity;
+                            final displayUnit = v != null ? v.unit : p.unit;
+
+                            if (displayQuantity != null && displayQuantity.isNotEmpty) {
                               return Column(
                                 children: [
                                   const SizedBox(height: 12),
@@ -301,7 +409,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                     context: context,
                                     icon: Icons.scale_outlined,
                                     label: 'Quantity',
-                                    value: '${p.quantity} ${p.unit.replaceAll(p.quantity!, '')}'.trim(),
+                                    value: '$displayQuantity ${displayUnit.replaceAll(displayQuantity, '')}'.trim(),
                                     valueColor: Colors.grey.shade700,
                                   ),
                                 ],

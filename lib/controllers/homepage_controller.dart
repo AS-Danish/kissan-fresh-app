@@ -208,86 +208,31 @@ class HomepageController extends GetxController {
 
   ProductCardModel _mapDocToModel(DocumentSnapshot productDoc) {
     final productData = productDoc.data() as Map<String, dynamic>;
+    productData['id'] = productDoc.id;
 
-    String imageUrl = '';
-    if (productData['image'] != null &&
-        productData['image'].toString().isNotEmpty) {
-      imageUrl = productData['image'];
-    } else if (productData['images'] != null &&
-        productData['images'] is List &&
-        productData['images'].isNotEmpty) {
-      imageUrl = productData['images'][0];
-    }
+    final model = ProductCardModel.fromJson(productData);
 
-    List<String>? imagesList;
-    if (productData['images'] != null && productData['images'] is List) {
-      imagesList = List<String>.from(productData['images']);
-    }
-
-    final stockCount = (productData['stockCount'] ?? 0).toInt();
-    final inStock = (productData['inStock'] ?? true) && stockCount > 0;
-    final category = productData['category'] ?? 'General';
-
-    List<String> dynamicTags = [];
-    if (productData['tags'] != null && productData['tags'] is List) {
-      dynamicTags = List<String>.from(productData['tags']);
-    }
-
-    return ProductCardModel(
-      id: productDoc.id,
-      image: imageUrl,
-      images: imagesList,
-      title: productData['name'] ?? 'Unknown',
-      description: productData['description'] ?? '',
-      price: (productData['price'] ?? 0).toDouble(),
-      mrp: productData['mrp'] != null ? (productData['mrp'] as num).toDouble() : null,
-      unit: () {
-        String baseUnit = productData['unit']?.toString() ?? 'unit';
-        String? prefix;
-        if (productData['quantity'] != null && productData['quantity'].toString().isNotEmpty) {
-          prefix = productData['quantity'].toString();
-        } else if (productData['weight'] != null && productData['weight'].toString().isNotEmpty) {
-          prefix = productData['weight'].toString();
-        } else if (productData['unitQuantity'] != null && productData['unitQuantity'].toString().isNotEmpty) {
-          prefix = productData['unitQuantity'].toString();
-        } else if (productData['unitValue'] != null && productData['unitValue'].toString().isNotEmpty) {
-          prefix = productData['unitValue'].toString();
-        }
-        if (prefix != null) {
-          if (prefix.toLowerCase().endsWith(baseUnit.toLowerCase())) {
-            return prefix;
-          }
-          return '$prefix$baseUnit';
-        }
-        return baseUnit;
-      }(),
-      quantity: productData['quantity']?.toString() ?? productData['weight']?.toString() ?? productData['unitQuantity']?.toString() ?? productData['unitValue']?.toString(),
-      category: category,
-      tags: dynamicTags.isNotEmpty ? dynamicTags : null,
-      inStock: inStock,
-      stockCount: stockCount,
+    return model.copyWith(
       onTap: () {
-        final product = _mapDocToModel(productDoc);
         try {
-          Get.find<UserActivityController>().trackView(product);
+          Get.find<UserActivityController>().trackView(model);
         } catch (e) {
           debugPrint("UserActivityController error: $e");
         }
         Get.to(
           () => ProductDetailsScreen(
-            product: product, // Re-map to ensure fresh data
+            product: model,
           ),
         );
       },
       onAddToCart: () {
         try {
           final cartController = Get.find<CartController>();
-          final productModel = _mapDocToModel(productDoc);
-          bool added = cartController.addToCart(productModel, 1);
+          bool added = cartController.addToCart(model, 1);
           if (added) {
             Get.snackbar(
               'Added to Cart',
-              '${productData['name'] ?? 'Product'} added to cart',
+              '${model.title} added to cart',
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: const Color(0xFF14B8A6),
               colorText: Colors.white,

@@ -1,5 +1,49 @@
 import 'package:flutter/material.dart';
 
+class ProductVariation {
+  final String? id;
+  final String unit;
+  final String unitValue;
+  final double price;
+  final double? mrp;
+  final double? discountPercentage;
+  final String? image;
+
+  ProductVariation({
+    this.id,
+    required this.unit,
+    required this.unitValue,
+    required this.price,
+    this.mrp,
+    this.discountPercentage,
+    this.image,
+  });
+
+  factory ProductVariation.fromJson(Map<String, dynamic> json) {
+    return ProductVariation(
+      id: json['id']?.toString(),
+      unit: json['unit']?.toString() ?? '',
+      unitValue: json['unitValue']?.toString() ?? '1',
+      price: (json['price'] ?? 0).toDouble(),
+      mrp: json['mrp'] != null ? (json['mrp'] as num).toDouble() : null,
+      discountPercentage: json['discountPercentage'] != null ? (json['discountPercentage'] as num).toDouble() : null,
+      image: json['image']?.toString(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'unit': unit,
+      'unitValue': unitValue,
+      'price': price,
+      'mrp': mrp,
+      'discountPercentage': discountPercentage,
+      'image': image,
+    };
+  }
+}
+
 class ProductCardModel {
   final String? id; // Optional ID field for better tracking
   final String image;
@@ -18,6 +62,9 @@ class ProductCardModel {
   final bool inStock; // Stock status
   final int stockCount; // Exact stock quantity
 
+  final bool hasVariations;
+  final List<ProductVariation>? variations;
+
   ProductCardModel({
     this.id,
     required this.image,
@@ -32,6 +79,8 @@ class ProductCardModel {
     this.tags,
     this.inStock = true,
     this.stockCount = 0,
+    this.hasVariations = false,
+    this.variations,
     required this.onTap,
     required this.onAddToCart,
   });
@@ -51,6 +100,8 @@ class ProductCardModel {
       'tags': tags,
       'inStock': inStock,
       'stockCount': stockCount,
+      'hasVariations': hasVariations,
+      'variations': variations?.map((v) => v.toJson()).toList(),
     };
   }
 
@@ -59,42 +110,56 @@ class ProductCardModel {
     VoidCallback? onTap,
     VoidCallback? onAddToCart,
   }) {
+    final bool hasVars = json['hasVariations'] ?? false;
+    final List<ProductVariation>? vars = json['variations'] != null
+        ? (json['variations'] as List).map((v) => ProductVariation.fromJson(v as Map<String, dynamic>)).toList()
+        : null;
+
+    double basePrice = (json['price'] ?? 0).toDouble();
+    double? baseMrp = json['mrp'] != null ? (json['mrp'] as num).toDouble() : null;
+    String baseUnit = json['unit']?.toString() ?? 'unit';
+    String? baseQuantity = json['quantity']?.toString() ?? json['weight']?.toString() ?? json['unitQuantity']?.toString() ?? json['unitValue']?.toString();
+
+    if (hasVars && vars != null && vars.isNotEmpty) {
+      if (basePrice == 0) basePrice = vars.first.price;
+      if (baseMrp == null || baseMrp == 0) baseMrp = vars.first.mrp;
+      if (baseUnit == 'unit' || baseUnit.isEmpty) baseUnit = vars.first.unit;
+      if (baseQuantity == null || baseQuantity.isEmpty) baseQuantity = vars.first.unitValue;
+    }
+
+    String finalUnit = () {
+      if (baseQuantity != null && baseQuantity.isNotEmpty) {
+        if (baseQuantity.toLowerCase().endsWith(baseUnit.toLowerCase())) {
+          return baseQuantity;
+        }
+        return '$baseQuantity$baseUnit';
+      }
+      return baseUnit;
+    }();
+
+    String imageUrl = json['image']?.toString() ?? '';
+    if (imageUrl.isEmpty && json['images'] != null && json['images'] is List && (json['images'] as List).isNotEmpty) {
+      imageUrl = json['images'][0].toString();
+    }
+
     return ProductCardModel(
       id: json['id'],
-      image: json['image'] ?? '',
+      image: imageUrl,
       images: json['images'] != null ? List<String>.from(json['images']) : null,
-      title: json['title'] ?? 'Unknown',
+      title: json['title'] ?? json['name'] ?? 'Unknown',
       description: json['description'] ?? '',
-      price: (json['price'] ?? 0).toDouble(),
-      mrp: json['mrp'] != null ? (json['mrp']).toDouble() : null,
-      unit: () {
-        String baseUnit = json['unit']?.toString() ?? 'unit';
-        String? prefix;
-        if (json['quantity'] != null && json['quantity'].toString().isNotEmpty) {
-          prefix = json['quantity'].toString();
-        } else if (json['weight'] != null && json['weight'].toString().isNotEmpty) {
-          prefix = json['weight'].toString();
-        } else if (json['unitQuantity'] != null && json['unitQuantity'].toString().isNotEmpty) {
-          prefix = json['unitQuantity'].toString();
-        } else if (json['unitValue'] != null && json['unitValue'].toString().isNotEmpty) {
-          prefix = json['unitValue'].toString();
-        }
-        if (prefix != null) {
-          // If the prefix already contains the unit (e.g. they typed "500gm" in quantity field), just use it
-          if (prefix.toLowerCase().endsWith(baseUnit.toLowerCase())) {
-            return prefix;
-          }
-          return '$prefix$baseUnit';
-        }
-        return baseUnit;
-      }(),
-      quantity: json['quantity']?.toString() ?? json['weight']?.toString() ?? json['unitQuantity']?.toString() ?? json['unitValue']?.toString(),
+      price: basePrice,
+      mrp: baseMrp,
+      unit: finalUnit,
+      quantity: baseQuantity,
       category: json['category'],
       tags: json['tags'] != null ? List<String>.from(json['tags']) : null,
       inStock: json['inStock'] ?? true,
       stockCount: json['stockCount'] != null 
           ? (json['stockCount'] as num).toInt() 
           : (json['inStock'] == false ? 0 : 99),
+      hasVariations: hasVars,
+      variations: vars,
       onTap: onTap ?? () {},
       onAddToCart: onAddToCart ?? () {},
     );
@@ -114,6 +179,8 @@ class ProductCardModel {
     List<String>? tags,
     bool? inStock,
     int? stockCount,
+    bool? hasVariations,
+    List<ProductVariation>? variations,
     VoidCallback? onTap,
     VoidCallback? onAddToCart,
   }) {
@@ -131,6 +198,8 @@ class ProductCardModel {
       tags: tags ?? this.tags,
       inStock: inStock ?? this.inStock,
       stockCount: stockCount ?? this.stockCount,
+      hasVariations: hasVariations ?? this.hasVariations,
+      variations: variations ?? this.variations,
       onTap: onTap ?? this.onTap,
       onAddToCart: onAddToCart ?? this.onAddToCart,
     );
