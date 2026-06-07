@@ -8,6 +8,8 @@ class ProductVariation {
   final double? mrp;
   final double? discountPercentage;
   final String? image;
+  final bool inStock;
+  final int stockCount;
 
   ProductVariation({
     this.id,
@@ -17,6 +19,8 @@ class ProductVariation {
     this.mrp,
     this.discountPercentage,
     this.image,
+    this.inStock = true,
+    this.stockCount = 0,
   });
 
   factory ProductVariation.fromJson(Map<String, dynamic> json) {
@@ -28,6 +32,8 @@ class ProductVariation {
       mrp: json['mrp'] != null ? (json['mrp'] as num).toDouble() : null,
       discountPercentage: json['discountPercentage'] != null ? (json['discountPercentage'] as num).toDouble() : null,
       image: json['image']?.toString(),
+      inStock: json['inStock'] ?? true,
+      stockCount: json['stockCount'] != null ? (json['stockCount'] as num).toInt() : (json['inStock'] == false ? 0 : 99),
     );
   }
 
@@ -40,6 +46,8 @@ class ProductVariation {
       'mrp': mrp,
       'discountPercentage': discountPercentage,
       'image': image,
+      'inStock': inStock,
+      'stockCount': stockCount,
     };
   }
 }
@@ -112,7 +120,7 @@ class ProductCardModel {
   }) {
     final bool hasVars = json['hasVariations'] ?? false;
     final List<ProductVariation>? vars = json['variations'] != null
-        ? (json['variations'] as List).map((v) => ProductVariation.fromJson(v as Map<String, dynamic>)).toList()
+        ? (json['variations'] as List).map((v) => ProductVariation.fromJson(Map<String, dynamic>.from(v))).toList()
         : null;
 
     double basePrice = (json['price'] ?? 0).toDouble();

@@ -364,10 +364,12 @@ class HomepageController extends GetxController {
     for (var entry in json) {
       if (entry is Map) {
         final name = entry['name']?.toString() ?? 'Unknown';
+        final iconName = entry['icon']?.toString();
+
         items.add(
           CategoryItemModel(
             label: name,
-            icon: IconUtils.getCategoryIcon(name),
+            icon: IconUtils.getLucideIcon(iconName) ?? IconUtils.getCategoryIcon(name),
             onTap: () {},
           ),
         );

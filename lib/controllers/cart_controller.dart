@@ -20,6 +20,7 @@ import 'orders_controller.dart';
 import 'slot_selection_controller.dart';
 import 'user_activity_controller.dart';
 import '../model/coupon_model.dart';
+import 'bottom_bar_controller.dart';
 
 class CartController extends GetxController {
   final AuthController _authController = Get.find<AuthController>();
@@ -490,6 +491,8 @@ class CartController extends GetxController {
 
                   if (variationData != null) {
                     freshPrice = (variationData['price'] ?? 0).toDouble();
+                    freshStock = (variationData['stockCount'] ?? 0).toInt();
+                    freshInStock = (variationData['inStock'] ?? true) && freshStock > 0;
                   } else {
                      freshInStock = false;
                      freshStock = 0;
@@ -554,9 +557,10 @@ class CartController extends GetxController {
           Get.find<OrdersController>().loadOrders();
         }
 
+        Get.find<BottomBarController>().changePage(3);
         // Navigate to My Orders with success popup flag
         Get.offAllNamed(
-          AppRoutes.myOrdersRoute,
+          AppRoutes.mainLayout,
           arguments: {
             'showSuccessPopup': true,
             'paymentId': response.paymentId,
@@ -1010,9 +1014,10 @@ class CartController extends GetxController {
           Get.find<OrdersController>().loadOrders();
         }
 
+        Get.find<BottomBarController>().changePage(3);
         // Navigate to My Orders with success popup flag
         Get.offAllNamed(
-          AppRoutes.myOrdersRoute,
+          AppRoutes.mainLayout,
           arguments: {
             'showSuccessPopup': true,
             'orderId': serverOrderId,

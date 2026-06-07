@@ -1,6 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 class IconUtils {
+  static IconData? getLucideIcon(String? iconName) {
+    if (iconName == null) return null;
+    
+    switch (iconName) {
+      case 'Grid': return LucideIcons.grid;
+      case 'Apple': return LucideIcons.apple;
+      case 'Carrot': return LucideIcons.carrot;
+      case 'Milk': return LucideIcons.milk;
+      case 'Beef': return LucideIcons.beef;
+      case 'Wheat': return LucideIcons.wheat;
+      case 'Coffee': return LucideIcons.coffee;
+      case 'ShoppingBag': return LucideIcons.shoppingBag;
+      case 'Shirt': return LucideIcons.shirt;
+      case 'Smartphone': return LucideIcons.smartphone;
+      case 'Home': return LucideIcons.home;
+      case 'Heart': return LucideIcons.heart;
+      case 'Package': return LucideIcons.package;
+      case 'Utensils': return LucideIcons.utensils;
+      case 'Pizza': return LucideIcons.pizza;
+      case 'IceCream': return LucideIcons.iceCream;
+      case 'Fish': return LucideIcons.fish;
+      case 'Cake': return LucideIcons.cake;
+      case 'Soup': return LucideIcons.soup;
+      case 'Egg': return LucideIcons.egg;
+      case 'Droplets': return LucideIcons.droplets;
+      case 'Flame': return LucideIcons.flame;
+      case 'Cpu': return LucideIcons.cpu;
+      case 'Book': return LucideIcons.book;
+      case 'Dumbbell': return LucideIcons.dumbbell;
+      case 'Music': return LucideIcons.music;
+      case 'Plane': return LucideIcons.plane;
+      case 'Car': return LucideIcons.car;
+      case 'Gift': return LucideIcons.gift;
+      case 'Baby': return LucideIcons.baby;
+      default: return null;
+    }
+  }
+
   static IconData getCategoryIcon(String name) {
     final n = name.toLowerCase();
     

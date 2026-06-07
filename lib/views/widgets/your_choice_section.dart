@@ -88,6 +88,10 @@ class YourChoiceSection extends StatelessWidget {
                     stockCount: (realTimeData['stockCount'] ?? 0).toInt(),
                     price: (realTimeData['price'] ?? product.price).toDouble(),
                     mrp: realTimeData['mrp'] != null ? (realTimeData['mrp'] as num).toDouble() : null,
+                    hasVariations: realTimeData['hasVariations'] ?? false,
+                    variations: realTimeData['variations'] != null
+                        ? (realTimeData['variations'] as List).map((v) => ProductVariation.fromJson(Map<String, dynamic>.from(v))).toList()
+                        : product.variations,
                   );
                 }
 

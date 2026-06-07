@@ -11,6 +11,9 @@ import '../views/widgets/cart_success_popup.dart';
 import 'user_activity_controller.dart';
 
 class ProductDetailsController extends GetxController {
+  // Observable list for similar products
+  var similarProducts = <ProductCardModel>[].obs;
+  var isLoadingSimilarProducts = false.obs;
   // Observable quantity
   var quantity = 1.obs;
 
@@ -46,6 +49,7 @@ class ProductDetailsController extends GetxController {
     }
     
     _startProductListener();
+    _fetchSimilarProducts(productData);
     // Check if product is already in wishlist using safe Get.put
     Get.put(WishlistController());
   }
@@ -101,7 +105,7 @@ class ProductDetailsController extends GetxController {
               tags: current.tags,
               hasVariations: data['hasVariations'] ?? false,
               variations: data['variations'] != null
-                  ? (data['variations'] as List).map((v) => ProductVariation.fromJson(v)).toList()
+                  ? (data['variations'] as List).map((v) => ProductVariation.fromJson(Map<String, dynamic>.from(v))).toList()
                   : current.variations,
               onTap: current.onTap,
               onAddToCart: current.onAddToCart,
@@ -125,6 +129,85 @@ class ProductDetailsController extends GetxController {
             }
           }
         });
+  }
+
+  Future<void> _fetchSimilarProducts(ProductCardModel productData) async {
+    try {
+      isLoadingSimilarProducts.value = true;
+      similarProducts.clear();
+
+      final List<ProductCardModel> fetchedProducts = [];
+      
+      // 1. Fetch from the same category
+      if (productData.category != null && productData.category!.isNotEmpty && productData.category != 'All') {
+        final query = FirebaseFirestore.instance.collection('products')
+            .where('category', isEqualTo: productData.category)
+            .limit(11);
+        final snapshot = await query.get();
+        
+        for (var doc in snapshot.docs) {
+          if (doc.id == productData.id) continue; // Skip the current product
+          
+          final data = doc.data() as Map<String, dynamic>;
+          data['id'] = doc.id;
+          
+          try {
+            fetchedProducts.add(_mapSimilarProduct(data));
+          } catch (e) {
+            debugPrint("Error parsing similar product: $e");
+          }
+          
+          if (fetchedProducts.length >= 10) break;
+        }
+      }
+
+      // 2. If we still need more products, fetch from other categories
+      if (fetchedProducts.length < 10) {
+        int remaining = 10 - fetchedProducts.length;
+        Query fallbackQuery = FirebaseFirestore.instance.collection('products');
+        
+        if (productData.category != null && productData.category!.isNotEmpty && productData.category != 'All') {
+          fallbackQuery = fallbackQuery.where('category', isNotEqualTo: productData.category);
+        }
+        
+        final fallbackSnapshot = await fallbackQuery.limit(remaining + 1).get();
+        
+        for (var doc in fallbackSnapshot.docs) {
+          if (doc.id == productData.id) continue;
+          
+          if (fetchedProducts.any((p) => p.id == doc.id)) continue;
+          
+          final data = doc.data() as Map<String, dynamic>;
+          data['id'] = doc.id;
+          
+          try {
+            fetchedProducts.add(_mapSimilarProduct(data));
+          } catch (e) {
+            debugPrint("Error parsing similar product: $e");
+          }
+          
+          if (fetchedProducts.length >= 10) break;
+        }
+      }
+      
+      similarProducts.value = fetchedProducts;
+    } catch (e) {
+      debugPrint("Error fetching similar products: $e");
+    } finally {
+      isLoadingSimilarProducts.value = false;
+    }
+  }
+
+  ProductCardModel _mapSimilarProduct(Map<String, dynamic> data) {
+    final model = ProductCardModel.fromJson(data);
+    return model.copyWith(
+      onTap: () {
+        Get.toNamed(AppRoutes.productDetailsRoute, arguments: model);
+      },
+      onAddToCart: () {
+        // Handled by widget/cart controller
+      }
+    );
   }
 
   void selectVariation(ProductVariation variation) {
@@ -212,6 +295,8 @@ class ProductDetailsController extends GetxController {
           unit: v.unit,
           quantity: v.unitValue,
           image: v.image ?? p.image,
+          inStock: v.inStock,
+          stockCount: v.stockCount,
         );
       }
 

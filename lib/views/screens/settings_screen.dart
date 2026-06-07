@@ -6,6 +6,7 @@ import 'package:kissanfresh/controllers/profile_controller.dart';
 import 'package:kissanfresh/controllers/theme_controller.dart';
 import 'package:kissanfresh/controllers/notification_controller.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:kissanfresh/controllers/bottom_bar_controller.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -45,7 +46,12 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.shopping_bag_outlined,
                 title: 'My Orders',
                 subtitle: 'View your order history',
-                onTap: () => Get.toNamed(AppRoutes.myOrdersRoute),
+                onTap: () {
+                  Get.find<BottomBarController>().changePage(3);
+                  if (Get.currentRoute != AppRoutes.mainLayout) {
+                    Get.offAllNamed(AppRoutes.mainLayout);
+                  }
+                },
               ),
               _SettingsItem(
                 icon: Icons.favorite_outline,

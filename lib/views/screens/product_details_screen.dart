@@ -6,6 +6,8 @@ import '../../model/product_card_model.dart';
 import '../../controllers/product_details_controller.dart';
 import '../../controllers/wishlist_controller.dart';
 import '../widgets/floating_cart_snackbar.dart';
+import '../widgets/product_card_widget.dart';
+import '../../routes/app_routes.dart';
 
 class ProductDetailsScreen extends StatelessWidget {
   final ProductCardModel product;
@@ -378,16 +380,19 @@ class ProductDetailsScreen extends StatelessWidget {
                           Obx(() {
                             final p =
                                 controller.observableProduct.value ?? product;
+                            final v = controller.selectedVariation.value;
+                            final stockCount = v != null ? v.stockCount : p.stockCount;
+                            
                             return _buildDetailRow(
                               context: context,
                               icon: Icons.inventory_2_outlined,
                               label: 'Stock Status',
-                              value: p.stockCount > 0
-                                  ? (p.stockCount < 10
-                                        ? 'Only ${p.stockCount} left!'
-                                        : 'In Stock (${p.stockCount})')
+                              value: stockCount > 0
+                                  ? (stockCount < 10
+                                        ? 'Only ${stockCount} left!'
+                                        : 'In Stock (${stockCount})')
                                   : 'Out of Stock',
-                              valueColor: p.stockCount > 0
+                              valueColor: stockCount > 0
                                   ? const Color(0xFF14B8A6)
                                   : Colors.red,
                             );
@@ -485,6 +490,96 @@ class ProductDetailsScreen extends StatelessWidget {
                           ),
                         ],
                       ),
+                    );
+                  }),
+
+                  const SizedBox(height: 32),
+
+                  // Similar Products Section
+                  Obx(() {
+                    if (controller.isLoadingSimilarProducts.value) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Similar Products',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: Theme.of(context).colorScheme.onSurface,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            const Center(child: CircularProgressIndicator()),
+                          ],
+                        ),
+                      );
+                    }
+                    
+                    if (controller.similarProducts.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Similar Products',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Get.toNamed(AppRoutes.searchRoute);
+                                },
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: Text(
+                                  'See More',
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Theme.of(context).primaryColor,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          height: 280, // Adjust based on ProductCardWidget's ideal height
+                          child: ListView.separated(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            scrollDirection: Axis.horizontal,
+                            itemCount: controller.similarProducts.length,
+                            separatorBuilder: (context, index) => const SizedBox(width: 16),
+                            itemBuilder: (context, index) {
+                              return SizedBox(
+                                width: 160, // Fixed width for horizontal layout
+                                child: ProductCardWidget(
+                                  product: controller.similarProducts[index],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     );
                   }),
 
@@ -624,6 +719,10 @@ class ProductDetailsScreen extends StatelessWidget {
       child: SafeArea(
         child: Obx(() {
           final p = controller.observableProduct.value ?? product;
+          final v = controller.selectedVariation.value;
+          final stockCount = v != null ? v.stockCount : p.stockCount;
+          final inStock = v != null ? v.inStock : p.inStock;
+
           return Row(
             children: [
               // Quantity Controls
@@ -645,7 +744,7 @@ class ProductDetailsScreen extends StatelessWidget {
                       context: context,
                       icon: Icons.remove,
                       onPressed:
-                          (p.stockCount > 0 && controller.quantity.value > 1)
+                          (stockCount > 0 && controller.quantity.value > 1)
                           ? controller.decreaseQuantity
                           : null,
                     ),
@@ -664,8 +763,8 @@ class ProductDetailsScreen extends StatelessWidget {
                       context: context,
                       icon: Icons.add,
                       onPressed:
-                          (p.stockCount > 0 &&
-                              controller.quantity.value < p.stockCount)
+                          (stockCount > 0 &&
+                              controller.quantity.value < stockCount)
                           ? controller.increaseQuantity
                           : null,
                     ),
@@ -682,7 +781,7 @@ class ProductDetailsScreen extends StatelessWidget {
                     gradient: LinearGradient(
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
-                      colors: p.inStock
+                      colors: inStock
                           ? [
                               Theme.of(context).primaryColor,
                               Theme.of(
@@ -699,7 +798,7 @@ class ProductDetailsScreen extends StatelessWidget {
                             ],
                     ),
                     borderRadius: BorderRadius.circular(16),
-                    boxShadow: p.inStock
+                    boxShadow: inStock
                         ? [
                             BoxShadow(
                               color: Theme.of(
@@ -714,7 +813,7 @@ class ProductDetailsScreen extends StatelessWidget {
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: p.inStock ? controller.addToCart : null,
+                      onTap: inStock ? controller.addToCart : null,
                       borderRadius: BorderRadius.circular(16),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -722,7 +821,7 @@ class ProductDetailsScreen extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              p.inStock
+                              inStock
                                   ? Icons.shopping_cart_outlined
                                   : Icons.remove_shopping_cart_outlined,
                               color: Colors.white,
@@ -731,7 +830,7 @@ class ProductDetailsScreen extends StatelessWidget {
                             const SizedBox(width: 8),
                             Flexible(
                               child: Text(
-                                p.inStock ? 'Add to Cart' : 'Out of Stock',
+                                inStock ? 'Add to Cart' : 'Out of Stock',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: GoogleFonts.montserrat(
