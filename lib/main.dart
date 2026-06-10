@@ -7,6 +7,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kissanfresh/bindings/bottom_bar_binding.dart';
+import 'package:kissanfresh/controllers/bottom_bar_controller.dart';
 import 'package:kissanfresh/routes/app_routes.dart';
 import 'package:kissanfresh/views/layout/main_layout.dart';
 
@@ -81,6 +82,7 @@ void main() async {
   Get.put(AddressController(), permanent: true);
   Get.put(OrdersController(), permanent: true);
   Get.put(UserActivityController(), permanent: true);
+  Get.put(BottomBarController(), permanent: true);
   
   Get.put(NotificationController(), permanent: true);
   

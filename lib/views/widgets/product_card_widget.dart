@@ -314,16 +314,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                                                 : Colors.grey,
                                           ),
                                         ),
-                                        Text(
-                                          '/${widget.product.unit}',
-                                          style: GoogleFonts.outfit(
-                                            fontSize: 8,
-                                            fontWeight: FontWeight.w600,
-                                            color: (widget.product.inStock && widget.product.stockCount > 0)
-                                                ? primaryColor.withOpacity(0.1)
-                                                : Colors.grey.shade500,
-                                          ),
-                                        ),
+
                                       ],
                                     ),
                                   ],

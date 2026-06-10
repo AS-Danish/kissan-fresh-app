@@ -128,11 +128,18 @@ class ProductCardModel {
     String baseUnit = json['unit']?.toString() ?? 'unit';
     String? baseQuantity = json['quantity']?.toString() ?? json['weight']?.toString() ?? json['unitQuantity']?.toString() ?? json['unitValue']?.toString();
 
+    bool baseInStock = json['inStock'] ?? true;
+    int baseStockCount = json['stockCount'] != null 
+        ? (json['stockCount'] as num).toInt() 
+        : (baseInStock == false ? 0 : 99);
+
     if (hasVars && vars != null && vars.isNotEmpty) {
-      if (basePrice == 0) basePrice = vars.first.price;
-      if (baseMrp == null || baseMrp == 0) baseMrp = vars.first.mrp;
-      if (baseUnit == 'unit' || baseUnit.isEmpty) baseUnit = vars.first.unit;
-      if (baseQuantity == null || baseQuantity.isEmpty) baseQuantity = vars.first.unitValue;
+      if (basePrice == 0 || basePrice != vars.first.price) basePrice = vars.first.price;
+      if (baseMrp == null || baseMrp == 0 || baseMrp != vars.first.mrp) baseMrp = vars.first.mrp;
+      if (baseUnit == 'unit' || baseUnit.isEmpty || baseUnit != vars.first.unit) baseUnit = vars.first.unit;
+      if (baseQuantity == null || baseQuantity.isEmpty || baseQuantity != vars.first.unitValue) baseQuantity = vars.first.unitValue;
+      baseInStock = vars.first.inStock;
+      baseStockCount = vars.first.stockCount;
     }
 
     String finalUnit = () {
@@ -162,10 +169,8 @@ class ProductCardModel {
       quantity: baseQuantity,
       category: json['category'],
       tags: json['tags'] != null ? List<String>.from(json['tags']) : null,
-      inStock: json['inStock'] ?? true,
-      stockCount: json['stockCount'] != null 
-          ? (json['stockCount'] as num).toInt() 
-          : (json['inStock'] == false ? 0 : 99),
+      inStock: baseInStock,
+      stockCount: baseStockCount,
       hasVariations: hasVars,
       variations: vars,
       onTap: onTap ?? () {},

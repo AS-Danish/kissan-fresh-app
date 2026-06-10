@@ -122,42 +122,30 @@ class WishlistScreen extends StatelessWidget {
             // Get real-time data if available
             final realTimeData = controller.realTimeProductData[product.id];
 
-            bool effectiveInStock = product.inStock;
-            double effectivePrice = product.price;
-            double? effectiveMrp = product.mrp;
-            int effectiveStockCount = product.stockCount;
+            ProductCardModel baseProduct = product;
             
             if (realTimeData != null) {
-              effectiveStockCount = (realTimeData['stockCount'] ?? 0).toInt();
-              effectiveInStock = (realTimeData['inStock'] ?? true) && effectiveStockCount > 0;
-              if (realTimeData['price'] != null) {
-                effectivePrice = (realTimeData['price'] as num).toDouble();
-              }
-              if (realTimeData['mrp'] != null) {
-                effectiveMrp = (realTimeData['mrp'] as num).toDouble();
-              }
+              final mapData = Map<String, dynamic>.from(realTimeData);
+              mapData['id'] ??= product.id;
+              baseProduct = ProductCardModel.fromJson(mapData);
             }
 
             // Create a wrapper product with functional callbacks and real-time data
-            final functionalProduct = product.copyWith(
-              inStock: effectiveInStock,
-              price: effectivePrice,
-              mrp: effectiveMrp,
-              stockCount: effectiveStockCount,
+            final functionalProduct = baseProduct.copyWith(
               onTap: () {
                 Get.toNamed(
                   AppRoutes.productDetailsRoute,
-                  arguments: product,
+                  arguments: baseProduct,
                 );
               },
               onAddToCart: () {
                 try {
                   final cartController = Get.find<CartController>();
-                  bool added = cartController.addToCart(product, 1);
+                  bool added = cartController.addToCart(baseProduct, 1);
                   if (added) {
                     Get.snackbar(
                       'Added to Cart',
-                      '${product.title} added to cart',
+                      '${baseProduct.title} added to cart',
                       snackPosition: SnackPosition.BOTTOM,
                       backgroundColor: const Color(0xFF14B8A6),
                       colorText: Colors.white,
