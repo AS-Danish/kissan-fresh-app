@@ -215,15 +215,31 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              widget.product.title,
-                              style: GoogleFonts.outfit(
-                                fontSize: 12, // Slightly larger for better readability
-                                fontWeight: FontWeight.w700,
-                                color: widget.product.inStock
-                                    ? colorScheme.onSurface
-                                    : Colors.grey.shade600,
-                                height: 1.1,
+                            Text.rich(
+                              TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: widget.product.title,
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 12, // Slightly larger for better readability
+                                      fontWeight: FontWeight.w700,
+                                      color: widget.product.inStock
+                                          ? colorScheme.onSurface
+                                          : Colors.grey.shade600,
+                                      height: 1.1,
+                                    ),
+                                  ),
+                                  if (widget.product.unit.isNotEmpty)
+                                    TextSpan(
+                                      text: ' - ${widget.product.unit}',
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.grey.shade500,
+                                        height: 1.1,
+                                      ),
+                                    ),
+                                ],
                               ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
