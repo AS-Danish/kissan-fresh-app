@@ -38,8 +38,8 @@ class ProfileScreen extends StatelessWidget {
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF14B8A6)),
+          return Center(
+            child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
           );
         }
         return SingleChildScrollView(
@@ -67,7 +67,7 @@ class ProfileScreen extends StatelessWidget {
                           BoxShadow(
                             color: Theme.of(
                               context,
-                            ).primaryColor.withOpacity(0.3),
+                            ).primaryColor.withValues(alpha: 0.3),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
@@ -112,7 +112,7 @@ class ProfileScreen extends StatelessWidget {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 8,
                                 offset: const Offset(0, 4),
                               ),
@@ -189,7 +189,7 @@ class ProfileScreen extends StatelessWidget {
                     elevation: 8,
                     shadowColor: Theme.of(
                       context,
-                    ).primaryColor.withOpacity(0.5),
+                    ).primaryColor.withValues(alpha: 0.5),
                   ),
                   child: Text(
                     'Save Changes',
@@ -264,7 +264,7 @@ class ProfileScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: 16,
                 offset: const Offset(0, 4),
               ),

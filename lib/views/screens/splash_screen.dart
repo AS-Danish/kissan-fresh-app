@@ -128,10 +128,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               child: Image.asset(
                 'assets/images/KissanFreshCompleteLogo.png',
                 width: 240,
-                errorBuilder: (context, error, stackTrace) => const Icon(
+                errorBuilder: (context, error, stackTrace) => Icon(
                   Icons.shopping_cart, 
                   size: 100, 
-                  color: Color(0xFF14B8A6),
+                  color: Theme.of(context).primaryColor,
                 ),
               ),
             ),
@@ -143,9 +143,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               width: 180,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: const LinearProgressIndicator(
-                  backgroundColor: Color(0x3314B8A6), // Transparent teal
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF14B8A6)),
+                child: LinearProgressIndicator(
+                  backgroundColor: const Color(0x3314B8A6), // Transparent teal
+                  valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
                   minHeight: 5,
                 ),
               ),

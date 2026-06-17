@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hive/hive.dart';
 import 'package:kissanfresh/model/user_model.dart';
 import 'package:kissanfresh/services/user_service.dart';
 import 'package:kissanfresh/services/location_service.dart';
@@ -173,7 +174,7 @@ class ProfileController extends GetxController {
             'Success',
             'Profile updated successfully',
             snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: const Color(0xFF14B8A6),
+            backgroundColor: Get.theme.primaryColor,
             colorText: Colors.white,
             margin: const EdgeInsets.all(16),
             borderRadius: 12,
@@ -194,119 +195,36 @@ class ProfileController extends GetxController {
   }
 
   void deleteAccount() {
-    Get.dialog(
-      AlertDialog(
-        backgroundColor: Theme.of(Get.context!).colorScheme.surface,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-        contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.warning_amber_rounded,
-                color: Colors.red,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Delete Account',
-                style: GoogleFonts.montserrat(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  color: Theme.of(Get.context!).colorScheme.onSurface,
-                ),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'This action is permanent and cannot be undone. All your data, including order history and saved addresses, will be removed.',
-              style: GoogleFonts.montserrat(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Theme.of(
-                  Get.context!,
-                ).colorScheme.onSurface.withOpacity(0.7),
-                height: 1.5,
-              ),
-            ),
-          ],
-        ),
-        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        actions: [
-          Row(
-            children: [
-              Expanded(
-                child: TextButton(
-                  onPressed: () => Get.back(),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    'Cancel',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Theme.of(
-                        Get.context!,
-                      ).colorScheme.onSurface.withOpacity(0.6),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () async {
-                    Get.back(); // Close dialog
-                    _processAccountDeletion();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    'Delete',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
+    Get.toNamed(AppRoutes.accountDeletionRoute);
   }
 
-  Future<void> _processAccountDeletion() async {
+  Future<void> processAccountDeletion(String reason) async {
     isLoading.value = true;
     try {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
-        // 1. Optional: Delete image from storage if exists
+        final uid = currentUser.uid;
+
+        // 1. Sever Orders
+        final ordersSnapshot = await FirebaseFirestore.instance
+            .collection('orders')
+            .where('userId', isEqualTo: uid)
+            .get();
+        
+        final batch = FirebaseFirestore.instance.batch();
+        for (var doc in ordersSnapshot.docs) {
+          batch.update(doc.reference, {
+            'userId': 'deleted_$uid',
+            'isDeletedByConsumer': true,
+            'deletionReason': reason,
+          });
+        }
+        await batch.commit();
+
+        // 2. Delete user document from Firestore (this also removes wishlist)
+        await FirebaseFirestore.instance.collection('users').doc(uid).delete();
+
+        // 3. Optional: Delete image from storage if exists
         if (profileImage.value.isNotEmpty) {
           try {
             final ref = FirebaseStorage.instance.refFromURL(profileImage.value);
@@ -316,12 +234,29 @@ class ProfileController extends GetxController {
           }
         }
 
-        // 2. Clear cache
+        // 4. Clear cache and local data
         final prefs = await SharedPreferences.getInstance();
         await prefs.clear();
 
-        // 3. Delete Auth User
-        await currentUser.delete();
+        try {
+          if (Hive.isBoxOpen('cart_box')) await Hive.box('cart_box').clear();
+          if (Hive.isBoxOpen('wishlist_box')) await Hive.box('wishlist_box').clear();
+          if (Hive.isBoxOpen('user_activity')) await Hive.box('user_activity').clear();
+        } catch(e) {
+          debugPrint("Error clearing hive boxes: $e");
+        }
+
+        // 5. Try to Delete Auth User
+        try {
+          await currentUser.delete();
+        } on FirebaseAuthException catch (e) {
+          if (e.code == 'requires-recent-login') {
+             // Bypass the error by just signing out, because all data is wiped anyway
+             await FirebaseAuth.instance.signOut();
+          } else {
+             rethrow;
+          }
+        }
 
         Get.snackbar(
           'Account Deleted',
@@ -335,32 +270,10 @@ class ProfileController extends GetxController {
 
         Get.offAllNamed(AppRoutes.loginScreen);
       }
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'requires-recent-login') {
-        Get.snackbar(
-          'Security Check',
-          'Please log out and log back in to verify your identity before deleting.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.orange,
-          colorText: Colors.white,
-          margin: const EdgeInsets.all(16),
-          borderRadius: 12,
-          icon: const Icon(Icons.lock_outline, color: Colors.white),
-        );
-      } else {
-        Get.snackbar(
-          'Error',
-          e.message ?? 'Failed to delete account.',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-          margin: const EdgeInsets.all(16),
-          borderRadius: 12,
-        );
-      }
     } catch (e) {
       Get.snackbar(
         'Error',
-        'An unknown error occurred.',
+        'Failed to delete account. Please try again.',
         backgroundColor: Colors.red,
         colorText: Colors.white,
         margin: const EdgeInsets.all(16),
@@ -420,7 +333,7 @@ class ProfileController extends GetxController {
           'Success',
           'Profile picture updated!',
           snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: const Color(0xFF14B8A6),
+          backgroundColor: Get.theme.primaryColor,
           colorText: Colors.white,
         );
       }

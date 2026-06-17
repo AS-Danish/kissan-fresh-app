@@ -16,8 +16,8 @@ class OrderTypeBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: isCod
-            ? const Color(0xFF14B8A6).withOpacity(0.12)
-            : const Color(0xFF6366F1).withOpacity(0.12),
+            ? Theme.of(context).primaryColor.withValues(alpha: 0.12)
+            : const Color(0xFF6366F1).withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -26,7 +26,7 @@ class OrderTypeBadge extends StatelessWidget {
           Icon(
             isCod ? Icons.money_rounded : Icons.account_balance_wallet_rounded,
             size: 12,
-            color: isCod ? const Color(0xFF14B8A6) : const Color(0xFF6366F1),
+            color: isCod ? Theme.of(context).primaryColor : const Color(0xFF6366F1),
           ),
           const SizedBox(width: 4),
           Text(
@@ -34,7 +34,7 @@ class OrderTypeBadge extends StatelessWidget {
             style: GoogleFonts.montserrat(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: isCod ? const Color(0xFF14B8A6) : const Color(0xFF6366F1),
+              color: isCod ? Theme.of(context).primaryColor : const Color(0xFF6366F1),
               letterSpacing: 0.3,
             ),
           ),
@@ -70,22 +70,22 @@ class OrderStatusBadge extends StatelessWidget {
 
     switch (status) {
       case OrderStatus.processing:
-        backgroundColor = Colors.orange.withOpacity(0.1);
+        backgroundColor = Colors.orange.withValues(alpha: 0.1);
         textColor = Colors.orange;
         icon = Icons.hourglass_empty;
         break;
       case OrderStatus.outForDelivery:
-        backgroundColor = Colors.blue.withOpacity(0.1);
+        backgroundColor = Colors.blue.withValues(alpha: 0.1);
         textColor = Colors.blue;
         icon = Icons.local_shipping_outlined;
         break;
       case OrderStatus.delivered:
-        backgroundColor = Colors.green.withOpacity(0.1);
+        backgroundColor = Colors.green.withValues(alpha: 0.1);
         textColor = Colors.green;
         icon = Icons.check_circle;
         break;
       case OrderStatus.cancelled:
-        backgroundColor = Colors.red.withOpacity(0.1);
+        backgroundColor = Colors.red.withValues(alpha: 0.1);
         textColor = Colors.red;
         icon = Icons.cancel_outlined;
         break;

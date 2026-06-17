@@ -143,7 +143,7 @@ class UserActivityController extends GetxController {
                     'Added to Cart',
                     '${productModel.title} added to cart',
                     snackPosition: SnackPosition.BOTTOM,
-                    backgroundColor: const Color(0xFF14B8A6),
+                    backgroundColor: Get.theme.primaryColor,
                     colorText: Colors.white,
                     duration: const Duration(seconds: 2),
                     margin: const EdgeInsets.all(16),
@@ -173,7 +173,7 @@ class UserActivityController extends GetxController {
           // We only have basic info in order items, but we can construct a ProductCardModel
           // Or we can just use what we have. 
           // Note: OrderItem might not have the full ProductCardModel structure.
-          if (item.productId != null && !uniqueIds.contains(item.productId)) {
+          if (!uniqueIds.contains(item.productId)) {
             combined.add(
               ProductCardModel(
                 id: item.productId,
@@ -217,7 +217,7 @@ class UserActivityController extends GetxController {
                         'Added to Cart',
                         '${productModel.title} added to cart',
                         snackPosition: SnackPosition.BOTTOM,
-                        backgroundColor: const Color(0xFF14B8A6),
+                        backgroundColor: Get.theme.primaryColor,
                         colorText: Colors.white,
                         duration: const Duration(seconds: 2),
                         margin: const EdgeInsets.all(16),
@@ -230,7 +230,7 @@ class UserActivityController extends GetxController {
                 },
               ),
             );
-            uniqueIds.add(item.productId!);
+            uniqueIds.add(item.productId);
           }
         }
       }

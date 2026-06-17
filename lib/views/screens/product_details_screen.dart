@@ -40,7 +40,7 @@ class ProductDetailsScreen extends StatelessWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.black.withValues(alpha: 0.5),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -64,7 +64,7 @@ class ProductDetailsScreen extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.5),
+                          color: Colors.black.withValues(alpha: 0.5),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -129,7 +129,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                               index
                                           ? Theme.of(context).primaryColor
                                           : Theme.of(context).dividerColor
-                                                .withOpacity(0.5),
+                                                .withValues(alpha: 0.5),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                   ),
@@ -265,7 +265,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                   width: 120,
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.1) : Theme.of(context).colorScheme.surface,
+                                    color: isSelected ? Theme.of(context).primaryColor.withValues(alpha: 0.1) : Theme.of(context).colorScheme.surface,
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
                                       color: isSelected ? Theme.of(context).primaryColor : Colors.grey.shade300,
@@ -273,7 +273,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                     ),
                                     boxShadow: isSelected ? [] : [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.05),
+                                        color: Colors.black.withValues(alpha: 0.05),
                                         blurRadius: 5,
                                         offset: const Offset(0, 2),
                                       ),
@@ -369,7 +369,7 @@ class ProductDetailsScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.5),
+                            color: Colors.black.withValues(alpha: 0.5),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),
@@ -389,11 +389,11 @@ class ProductDetailsScreen extends StatelessWidget {
                               label: 'Stock Status',
                               value: stockCount > 0
                                   ? (stockCount < 10
-                                        ? 'Only ${stockCount} left!'
-                                        : 'In Stock (${stockCount})')
+                                        ? 'Only $stockCount left!'
+                                        : 'In Stock ($stockCount)')
                                   : 'Out of Stock',
                               valueColor: stockCount > 0
-                                  ? const Color(0xFF14B8A6)
+                                  ? Theme.of(context).primaryColor
                                   : Colors.red,
                             );
                           }),
@@ -482,7 +482,7 @@ class ProductDetailsScreen extends StatelessWidget {
                                     icon: Icons.verified_outlined,
                                     title: 'Feature',
                                     subtitle: p.tags![index],
-                                    color: const Color(0xFF14B8A6),
+                                    color: Theme.of(context).primaryColor,
                                   ),
                                 );
                               },
@@ -616,7 +616,7 @@ class ProductDetailsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -629,7 +629,7 @@ class ProductDetailsScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.5),
+              color: color.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 24),
@@ -710,7 +710,7 @@ class ProductDetailsScreen extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -728,12 +728,12 @@ class ProductDetailsScreen extends StatelessWidget {
               // Quantity Controls
               Container(
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.5),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: Theme.of(
                       context,
-                    ).primaryColor.withOpacity(0.5),
+                    ).primaryColor.withValues(alpha: 0.5),
                     width: 1,
                   ),
                 ),
@@ -786,15 +786,15 @@ class ProductDetailsScreen extends StatelessWidget {
                               Theme.of(context).primaryColor,
                               Theme.of(
                                 context,
-                              ).primaryColor.withOpacity(0.5),
+                              ).primaryColor.withValues(alpha: 0.5),
                             ]
                           : [
                               Theme.of(
                                 context,
-                              ).dividerColor.withOpacity(0.5),
+                              ).dividerColor.withValues(alpha: 0.5),
                               Theme.of(
                                 context,
-                              ).dividerColor.withOpacity(0.5),
+                              ).dividerColor.withValues(alpha: 0.5),
                             ],
                     ),
                     borderRadius: BorderRadius.circular(16),
@@ -803,7 +803,7 @@ class ProductDetailsScreen extends StatelessWidget {
                             BoxShadow(
                               color: Theme.of(
                                 context,
-                              ).primaryColor.withOpacity(0.5),
+                              ).primaryColor.withValues(alpha: 0.5),
                               blurRadius: 12,
                               offset: const Offset(0, 4),
                             ),
@@ -875,7 +875,7 @@ class ProductDetailsScreen extends StatelessWidget {
           size: 20,
           color: onPressed != null
               ? Theme.of(context).primaryColor
-              : Theme.of(context).primaryColor.withOpacity(0.5),
+              : Theme.of(context).primaryColor.withValues(alpha: 0.5),
         ),
       ),
     );

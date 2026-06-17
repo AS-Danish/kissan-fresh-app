@@ -3,8 +3,6 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/homepage_controller.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'all_products_section.dart';
-import 'categories_section.dart';
 
 class HomeFoodSection extends StatelessWidget {
   const HomeFoodSection({super.key});
@@ -90,7 +88,7 @@ class HomeFoodSection extends StatelessWidget {
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
+                                  color: Colors.black.withValues(alpha: 0.1),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
@@ -105,8 +103,8 @@ class HomeFoodSection extends StatelessWidget {
                                   stops: const [0.3, 0.7, 1.0],
                                   colors: [
                                     Colors.transparent,
-                                    Colors.black.withOpacity(0.6),
-                                    Colors.black.withOpacity(0.9),
+                                    Colors.black.withValues(alpha: 0.6),
+                                    Colors.black.withValues(alpha: 0.9),
                                   ],
                                 ),
                               ),

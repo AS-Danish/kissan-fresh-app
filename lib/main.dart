@@ -9,7 +9,6 @@ import 'package:get/get.dart';
 import 'package:kissanfresh/bindings/bottom_bar_binding.dart';
 import 'package:kissanfresh/controllers/bottom_bar_controller.dart';
 import 'package:kissanfresh/routes/app_routes.dart';
-import 'package:kissanfresh/views/layout/main_layout.dart';
 
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:kissanfresh/controllers/homepage_controller.dart';
@@ -28,7 +27,6 @@ import 'package:kissanfresh/controllers/notification_controller.dart';
 import 'package:kissanfresh/controllers/orders_controller.dart';
 import 'package:kissanfresh/services/cache_service.dart';
 import 'package:kissanfresh/services/notification_service.dart';
-import 'package:kissanfresh/utils/app_theme.dart';
 import 'package:kissanfresh/utils/app_theme.dart';
 
 void main() async {
@@ -108,8 +106,16 @@ class MyApp extends StatelessWidget {
       () => GetMaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Kissan Fresh',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
+        theme: themeController.isEid.value
+            ? AppTheme.eidLightTheme
+            : themeController.isChristmas.value
+                ? AppTheme.christmasLightTheme
+                : AppTheme.lightTheme,
+        darkTheme: themeController.isEid.value
+            ? AppTheme.eidDarkTheme
+            : themeController.isChristmas.value
+                ? AppTheme.christmasDarkTheme
+                : AppTheme.darkTheme,
         themeMode: themeController.themeMode,
         getPages: AppRoutes.pages,
         initialBinding: BottomBarBinding(),

@@ -20,7 +20,7 @@ class OrderCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -34,7 +34,7 @@ class OrderCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withOpacity(0.05),
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
@@ -99,7 +99,7 @@ class OrderCard extends StatelessWidget {
                               height: 50,
                               decoration: BoxDecoration(
                                 color: Theme.of(context).brightness == Brightness.dark
-                                    ? Colors.white.withOpacity(0.1)
+                                    ? Colors.white.withValues(alpha: 0.1)
                                     : Colors.grey.shade100,
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -111,7 +111,7 @@ class OrderCard extends StatelessWidget {
                                   errorWidget: (context, url, error) {
                                     return Container(
                                       color: Theme.of(context).brightness == Brightness.dark
-                                          ? Colors.white.withOpacity(0.05)
+                                          ? Colors.white.withValues(alpha: 0.05)
                                           : Colors.grey.shade200,
                                       child: const Icon(
                                         Icons.image_not_supported_outlined,
@@ -146,7 +146,7 @@ class OrderCard extends StatelessWidget {
                                           '${item.quantity} x ₹${item.price.toStringAsFixed(0)}',
                                           style: GoogleFonts.montserrat(
                                             fontSize: 12,
-                                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -156,7 +156,7 @@ class OrderCard extends StatelessWidget {
                                             '₹${item.mrp!.toStringAsFixed(0)}',
                                             style: GoogleFonts.montserrat(
                                               fontSize: 10,
-                                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
                                               fontWeight: FontWeight.w500,
                                               decoration: TextDecoration.lineThrough,
                                             ),
@@ -185,7 +185,7 @@ class OrderCard extends StatelessWidget {
                                     style: GoogleFonts.montserrat(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w500,
-                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
                                       decoration: TextDecoration.lineThrough,
                                     ),
                                   ),
@@ -225,10 +225,10 @@ class OrderCard extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.05),
+                        color: Colors.orange.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: Colors.orange.withOpacity(0.1),
+                          color: Colors.orange.withValues(alpha: 0.1),
                         ),
                       ),
                       child: Row(
@@ -266,7 +266,7 @@ class OrderCard extends StatelessWidget {
                           style: GoogleFonts.montserrat(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -290,7 +290,7 @@ class OrderCard extends StatelessWidget {
                             style: GoogleFonts.montserrat(
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -299,7 +299,7 @@ class OrderCard extends StatelessWidget {
                             style: GoogleFonts.montserrat(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF14B8A6),
+                              color: Theme.of(context).primaryColor,
                               letterSpacing: 0.2,
                             ),
                           ),

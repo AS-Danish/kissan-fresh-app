@@ -6,10 +6,11 @@ import 'package:kissanfresh/controllers/categorized_products_controller.dart';
 class HomepageBinding extends Bindings {
   @override
   void dependencies() {
-    Get.lazyPut<HomepageController>(() => HomepageController());
-    Get.lazyPut<BestsellersController>(() => BestsellersController());
+    Get.lazyPut<HomepageController>(() => HomepageController(), fenix: true);
+    Get.lazyPut<BestsellersController>(() => BestsellersController(), fenix: true);
     Get.lazyPut<CategorizedProductsController>(
       () => CategorizedProductsController(),
+      fenix: true,
     );
   }
 }

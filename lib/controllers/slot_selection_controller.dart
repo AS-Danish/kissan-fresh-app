@@ -29,8 +29,8 @@ class SlotSelectionController extends GetxController {
       // Limit to 50 to ensure we get plenty of slots for today and tomorrow
       final snap = await _firestore
           .collection('slots')
-          .where('endTime', isGreaterThan: Timestamp.fromDate(now))
-          .orderBy('endTime', descending: false)
+          .where('startTime', isGreaterThan: Timestamp.fromDate(now))
+          .orderBy('startTime', descending: false)
           .limit(50)
           .get();
 

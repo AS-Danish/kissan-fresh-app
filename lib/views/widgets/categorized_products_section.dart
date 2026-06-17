@@ -72,7 +72,7 @@ class CategorizedProductsSection extends StatelessWidget {
                             style: GoogleFonts.montserrat(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                              color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
                               letterSpacing: 0.1,
                             ),
                             maxLines: 2,
@@ -96,7 +96,7 @@ class CategorizedProductsSection extends StatelessWidget {
                         ),
                         backgroundColor: Theme.of(
                           context,
-                        ).primaryColor.withOpacity(0.1),
+                        ).primaryColor.withValues(alpha: 0.1),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),

@@ -45,7 +45,7 @@ class WishlistScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Theme.of(
                       context,
-                    ).dividerColor.withOpacity(0.1),
+                    ).dividerColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -53,7 +53,7 @@ class WishlistScreen extends StatelessWidget {
                     size: 60,
                     color: Theme.of(
                       context,
-                    ).dividerColor.withOpacity(0.5),
+                    ).dividerColor.withValues(alpha: 0.5),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -147,7 +147,7 @@ class WishlistScreen extends StatelessWidget {
                       'Added to Cart',
                       '${baseProduct.title} added to cart',
                       snackPosition: SnackPosition.BOTTOM,
-                      backgroundColor: const Color(0xFF14B8A6),
+                      backgroundColor: Theme.of(context).primaryColor,
                       colorText: Colors.white,
                       duration: const Duration(seconds: 2),
                       margin: const EdgeInsets.all(16),

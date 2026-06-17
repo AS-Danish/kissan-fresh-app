@@ -45,7 +45,7 @@ class LoginScreen extends StatelessWidget {
                             height: 150,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.white.withOpacity(0.08),
+                              color: Colors.white.withValues(alpha: 0.08),
                             ),
                           ),
                         ),
@@ -57,7 +57,7 @@ class LoginScreen extends StatelessWidget {
                             height: 100,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.white.withOpacity(0.08),
+                              color: Colors.white.withValues(alpha: 0.08),
                             ),
                           ),
                         ),
@@ -68,6 +68,21 @@ class LoginScreen extends StatelessWidget {
                             horizontal: 24,
                           ),
                           child: _buildTopSection(context),
+                        ),
+                        // Back Button (almost invisible)
+                        Positioned(
+                          top: 10,
+                          left: 10,
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.arrow_back_ios,
+                              color: Colors.white.withValues(alpha: 0.3),
+                              size: 20,
+                            ),
+                            onPressed: () => Get.back(),
+                            splashColor: Colors.transparent,
+                            highlightColor: Colors.transparent,
+                          ),
                         ),
                       ],
                     ),
@@ -120,7 +135,7 @@ class LoginScreen extends StatelessWidget {
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -153,7 +168,7 @@ class LoginScreen extends StatelessWidget {
           style: GoogleFonts.montserrat(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.white.withOpacity(0.95),
+            color: Colors.white.withValues(alpha: 0.95),
             height: 1.4,
             letterSpacing: 0.3,
           ),
@@ -171,7 +186,7 @@ class LoginScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Welcome to fresh!',
+          'Welcome!',
           style: GoogleFonts.montserrat(
             fontSize: 28,
             fontWeight: FontWeight.w800,
@@ -181,11 +196,12 @@ class LoginScreen extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         Text(
-          'Enter your mobile number to continue',
+          'Please enter your phone number\n(Compulsory)',
           style: GoogleFonts.montserrat(
             fontSize: 15,
             fontWeight: FontWeight.w500,
             color: Theme.of(context).textTheme.bodyMedium?.color,
+            height: 1.4,
           ),
         ),
 
@@ -198,7 +214,7 @@ class LoginScreen extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).primaryColor.withOpacity(0.08),
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.08),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
@@ -214,7 +230,7 @@ class LoginScreen extends StatelessWidget {
                   vertical: 20,
                 ),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).dividerColor.withOpacity(0.1),
+                  color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(14),
                     bottomLeft: Radius.circular(14),
@@ -223,7 +239,7 @@ class LoginScreen extends StatelessWidget {
                     right: BorderSide(
                       color: Theme.of(
                         context,
-                      ).dividerColor.withOpacity(0.5),
+                      ).dividerColor.withValues(alpha: 0.5),
                       width: 1.5,
                     ),
                   ),
@@ -290,7 +306,7 @@ class LoginScreen extends StatelessWidget {
                       BoxShadow(
                         color: Theme.of(
                           context,
-                        ).primaryColor.withOpacity(0.35),
+                        ).primaryColor.withValues(alpha: 0.35),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -310,7 +326,7 @@ class LoginScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
+                                  color: Colors.black.withValues(alpha: 0.1),
                                   blurRadius: 10,
                                   spreadRadius: 2,
                                 ),
@@ -354,7 +370,7 @@ class LoginScreen extends StatelessWidget {
                 backgroundColor: Theme.of(context).primaryColor,
                 disabledBackgroundColor: Theme.of(
                   context,
-                ).dividerColor.withOpacity(0.3),
+                ).dividerColor.withValues(alpha: 0.3),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -371,7 +387,7 @@ class LoginScreen extends StatelessWidget {
                       color: isButtonEnabled.value
                           ? Colors.white
                           : Theme.of(context).textTheme.bodyMedium?.color
-                                ?.withOpacity(0.5),
+                                ?.withValues(alpha: 0.5),
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -391,37 +407,11 @@ class LoginScreen extends StatelessWidget {
 
         const SizedBox(height: 60),
 
-        // Bottom Footer (Sign Up & Terms)
+        // Bottom Footer (Terms)
         Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Wrap(
-                alignment: WrapAlignment.center,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  Text(
-                    'New to the app? ',
-                    style: GoogleFonts.montserrat(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(context).textTheme.bodyMedium?.color,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {},
-                    child: Text(
-                      'Sign Up',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 14.5,
-                        fontWeight: FontWeight.w800,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
               Text.rich(
                 TextSpan(
                   text: 'By continuing, you agree to our\n',
@@ -429,7 +419,7 @@ class LoginScreen extends StatelessWidget {
                     fontSize: 12.5,
                     color: Theme.of(
                       context,
-                    ).textTheme.bodyMedium?.color?.withOpacity(0.8),
+                    ).textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
                     height: 1.5,
                     fontWeight: FontWeight.w500,
                   ),

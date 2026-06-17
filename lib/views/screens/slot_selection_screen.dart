@@ -41,8 +41,8 @@ class SlotSelectionScreen extends StatelessWidget {
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF14B8A6)),
+          return Center(
+            child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
           );
         }
 
@@ -134,13 +134,13 @@ class SlotSelectionScreen extends StatelessWidget {
                   border: Border.all(
                     color: isSelected
                         ? theme.primaryColor
-                        : theme.dividerColor.withOpacity(0.3),
+                        : theme.dividerColor.withValues(alpha: 0.3),
                     width: 1.5,
                   ),
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: theme.primaryColor.withOpacity(0.25),
+                            color: theme.primaryColor.withValues(alpha: 0.25),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),
@@ -187,20 +187,20 @@ class SlotSelectionScreen extends StatelessWidget {
                 ? theme.primaryColor
                 : (isAvailable
                       ? theme.colorScheme.surface
-                      : theme.colorScheme.surface.withOpacity(0.5)),
+                      : theme.colorScheme.surface.withValues(alpha: 0.5)),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected
                   ? theme.primaryColor
                   : (isAvailable
-                        ? theme.dividerColor.withOpacity(0.5)
-                        : theme.dividerColor.withOpacity(0.2)),
+                        ? theme.dividerColor.withValues(alpha: 0.5)
+                        : theme.dividerColor.withValues(alpha: 0.2)),
               width: isSelected ? 2 : 1,
             ),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: theme.primaryColor.withOpacity(0.2),
+                      color: theme.primaryColor.withValues(alpha: 0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -235,7 +235,7 @@ class SlotSelectionScreen extends StatelessWidget {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
+                      color: Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -301,7 +301,7 @@ class SlotSelectionScreen extends StatelessWidget {
         color: theme.colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 16,
             offset: const Offset(0, -4),
           ),

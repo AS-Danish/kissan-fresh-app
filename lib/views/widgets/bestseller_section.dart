@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/best_seller_controller.dart';
 import '../../controllers/homepage_controller.dart';
 import '../../controllers/theme_controller.dart';
-import '../../controllers/theme_controller.dart';
 import '../../model/bestseller_card_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -105,13 +104,13 @@ class BestsellersSection extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 16,
               offset: const Offset(0, 4),
             ),
           ],
           border: Border.all(
-            color: Theme.of(context).dividerColor.withOpacity(0.5),
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
             width: 1,
           ),
         ),
@@ -189,7 +188,7 @@ class BestsellersSection extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Theme.of(
                         context,
-                      ).primaryColor.withOpacity(0.1),
+                      ).primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
@@ -286,8 +285,8 @@ class BestsellersSection extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Theme.of(context).primaryColor.withOpacity(0.85),
-                Theme.of(context).primaryColor.withOpacity(0.95),
+                Theme.of(context).primaryColor.withValues(alpha: 0.85),
+                Theme.of(context).primaryColor.withValues(alpha: 0.95),
               ],
             ),
           ),
@@ -309,7 +308,7 @@ class BestsellersSection extends StatelessWidget {
                   style: GoogleFonts.montserrat(
                     fontSize: 7,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white.withOpacity(0.9),
+                    color: Colors.white.withValues(alpha: 0.9),
                     letterSpacing: 1.2,
                   ),
                 ),

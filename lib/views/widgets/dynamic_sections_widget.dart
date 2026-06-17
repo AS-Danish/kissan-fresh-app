@@ -9,7 +9,7 @@ import '../../routes/app_routes.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class DynamicSectionsWidget extends StatelessWidget {
-  DynamicSectionsWidget({super.key});
+  const DynamicSectionsWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +61,7 @@ class DynamicSectionsWidget extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                        color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
                         letterSpacing: 0.1,
                       ),
                     ),
@@ -70,7 +70,7 @@ class DynamicSectionsWidget extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -129,13 +129,13 @@ class DynamicSectionsWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 16,
               offset: const Offset(0, 4),
             ),
           ],
           border: Border.all(
-            color: Theme.of(context).dividerColor.withOpacity(0.5),
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
             width: 1,
           ),
         ),
@@ -214,7 +214,7 @@ class DynamicSectionsWidget extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Theme.of(
                         context,
-                      ).primaryColor.withOpacity(0.1),
+                      ).primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
@@ -325,8 +325,8 @@ class DynamicSectionsWidget extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Theme.of(context).primaryColor.withOpacity(0.85),
-                  Theme.of(context).primaryColor.withOpacity(0.95),
+                  Theme.of(context).primaryColor.withValues(alpha: 0.85),
+                  Theme.of(context).primaryColor.withValues(alpha: 0.95),
                 ],
               ),
             ),
@@ -348,7 +348,7 @@ class DynamicSectionsWidget extends StatelessWidget {
                     style: GoogleFonts.montserrat(
                       fontSize: 7,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       letterSpacing: 1.2,
                     ),
                   ),

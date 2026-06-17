@@ -25,7 +25,7 @@ class CartSummaryWidget extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -67,13 +67,13 @@ class CartSummaryWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: hasCoupon 
-                ? const Color(0xFF14B8A6).withOpacity(0.05)
+                ? Theme.of(context).primaryColor.withValues(alpha: 0.05)
                 : Theme.of(context).scaffoldBackgroundColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: hasCoupon
-                  ? const Color(0xFF14B8A6).withOpacity(0.3)
-                  : Theme.of(context).dividerColor.withOpacity(0.4),
+                  ? Theme.of(context).primaryColor.withValues(alpha: 0.3)
+                  : Theme.of(context).dividerColor.withValues(alpha: 0.4),
             ),
           ),
           child: Row(
@@ -82,13 +82,13 @@ class CartSummaryWidget extends StatelessWidget {
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: hasCoupon 
-                      ? const Color(0xFF14B8A6).withOpacity(0.1)
-                      : Theme.of(context).primaryColor.withOpacity(0.1),
+                      ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
+                      : Theme.of(context).primaryColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   hasCoupon ? Icons.check_circle_rounded : Icons.confirmation_num_outlined,
-                  color: hasCoupon ? const Color(0xFF14B8A6) : Theme.of(context).primaryColor,
+                  color: hasCoupon ? Theme.of(context).primaryColor : Theme.of(context).primaryColor,
                   size: 18,
                 ),
               ),
@@ -102,7 +102,7 @@ class CartSummaryWidget extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: hasCoupon ? const Color(0xFF14B8A6) : Theme.of(context).colorScheme.onSurface,
+                        color: hasCoupon ? Theme.of(context).primaryColor : Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     Text(
@@ -112,7 +112,7 @@ class CartSummaryWidget extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: hasCoupon ? const Color(0xFF14B8A6).withOpacity(0.8) : Colors.grey.shade600,
+                        color: hasCoupon ? Theme.of(context).primaryColor.withValues(alpha: 0.8) : Colors.grey.shade600,
                       ),
                     ),
                   ],
@@ -206,7 +206,7 @@ class CartSummaryWidget extends StatelessWidget {
                 margin: const EdgeInsets.only(right: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF14B8A6).withOpacity(0.1),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
@@ -214,7 +214,7 @@ class CartSummaryWidget extends StatelessWidget {
                   style: GoogleFonts.montserrat(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF14B8A6),
+                    color: Theme.of(context).primaryColor,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -225,7 +225,7 @@ class CartSummaryWidget extends StatelessWidget {
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: isDiscount
-                    ? const Color(0xFF14B8A6)
+                    ? Theme.of(context).primaryColor
                     : isDelivery
                     ? Colors.grey.shade400
                     : Theme.of(context).colorScheme.onSurface,
@@ -268,7 +268,7 @@ class CartSummaryWidget extends StatelessWidget {
                 ? [Colors.grey.shade400, Colors.grey.shade500]
                 : [
                     Theme.of(context).primaryColor,
-                    Theme.of(context).primaryColor.withOpacity(0.4),
+                    Theme.of(context).primaryColor.withValues(alpha: 0.4),
                   ],
           ),
           borderRadius: BorderRadius.circular(28),
@@ -278,7 +278,7 @@ class CartSummaryWidget extends StatelessWidget {
                   BoxShadow(
                     color: Theme.of(
                       context,
-                    ).primaryColor.withOpacity(0.3),
+                    ).primaryColor.withValues(alpha: 0.3),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),
@@ -326,7 +326,7 @@ class CartSummaryWidget extends StatelessWidget {
                           style: GoogleFonts.montserrat(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
-                            color: Colors.white.withOpacity(0.4),
+                            color: Colors.white.withValues(alpha: 0.4),
                             letterSpacing: 1.2,
                           ),
                         ),
@@ -363,7 +363,7 @@ class CartSummaryWidget extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.4),
+                          color: Colors.white.withValues(alpha: 0.4),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -395,7 +395,7 @@ class CartSummaryWidget extends StatelessWidget {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 20,
                 offset: const Offset(0, -5),
               ),
@@ -439,12 +439,12 @@ class CartSummaryWidget extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.05),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: Theme.of(
                       context,
-                    ).primaryColor.withOpacity(0.1),
+                    ).primaryColor.withValues(alpha: 0.1),
                   ),
                 ),
                 child: Row(
@@ -614,7 +614,7 @@ class CartSummaryWidget extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
@@ -769,7 +769,7 @@ class CartSummaryWidget extends StatelessWidget {
                 child: ListView.separated(
                   shrinkWrap: true,
                   itemCount: displayedCoupons.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  separatorBuilder: (_, _) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     final coupon = displayedCoupons[index];
                     final validationError = controller.getCouponValidation(coupon);
@@ -780,12 +780,12 @@ class CartSummaryWidget extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           color: isApplicable 
-                              ? Theme.of(context).primaryColor.withOpacity(0.3)
-                              : Theme.of(context).dividerColor.withOpacity(0.5),
+                              ? Theme.of(context).primaryColor.withValues(alpha: 0.3)
+                              : Theme.of(context).dividerColor.withValues(alpha: 0.5),
                         ),
                         color: isApplicable 
-                            ? Theme.of(context).primaryColor.withOpacity(0.02)
-                            : Theme.of(context).disabledColor.withOpacity(0.05),
+                            ? Theme.of(context).primaryColor.withValues(alpha: 0.02)
+                            : Theme.of(context).disabledColor.withValues(alpha: 0.05),
                       ),
                       child: Column(
                         children: [
@@ -799,8 +799,8 @@ class CartSummaryWidget extends StatelessWidget {
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
                                 color: isApplicable 
-                                    ? Theme.of(context).primaryColor.withOpacity(0.1)
-                                    : Theme.of(context).disabledColor.withOpacity(0.1),
+                                    ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
+                                    : Theme.of(context).disabledColor.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
@@ -820,7 +820,7 @@ class CartSummaryWidget extends StatelessWidget {
                                     fontSize: 16,
                                     color: isApplicable 
                                         ? Theme.of(context).colorScheme.onSurface
-                                        : Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                                        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
@@ -828,7 +828,7 @@ class CartSummaryWidget extends StatelessWidget {
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: Colors.orange.withOpacity(0.1),
+                                      color: Colors.orange.withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
@@ -878,8 +878,8 @@ class CartSummaryWidget extends StatelessWidget {
                                   style: GoogleFonts.montserrat(
                                     fontSize: 12,
                                     color: isApplicable 
-                                        ? Theme.of(context).colorScheme.onSurface.withOpacity(0.7) 
-                                        : Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                                        ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7) 
+                                        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
                                   ),
                                 ),
                                 if (!isApplicable) ...[
@@ -890,7 +890,7 @@ class CartSummaryWidget extends StatelessWidget {
                                       const SizedBox(width: 4),
                                       Expanded(
                                         child: Text(
-                                          validationError!,
+                                          validationError,
                                           style: GoogleFonts.montserrat(
                                             fontSize: 10,
                                             fontWeight: FontWeight.w600,
@@ -955,7 +955,7 @@ class CartSummaryWidget extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                      color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(Icons.confirmation_num_outlined, color: Theme.of(context).primaryColor),

@@ -139,6 +139,269 @@ class AppTheme {
     ),
   );
 
+  // --- Professional Christmas Theme Palette (Frozen Icy Blue) ---
+  static const Color christmasPrimary = Color(0xFF4BA3E3); // Soft Frost Blue (Lighter & less intense)
+  static const Color christmasSecondary = Color(0xFF4BA3E3);
+  
+  // Light Palette
+  static const Color christmasLightBackground = Color(0xFFF0F9FF); // Icy blue tint (Sky 50)
+  static const Color christmasLightSurface = Colors.white;
+  static const Color christmasLightBorder = Color(0xFFE0F2FE); // Sky 100
+  
+  // Dark Palette
+  static const Color christmasDarkBackground = Color(0xFF08121E); // Deep frozen midnight
+  static const Color christmasDarkSurface = Color(0xFF112031); // Dark Ice surface
+  static const Color christmasDarkBorder = Color(0xFF1B3047); // Subtle frost border
+
+  static final ThemeData christmasLightTheme = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.light,
+    primaryColor: christmasPrimary,
+    cardColor: christmasLightSurface,
+    scaffoldBackgroundColor: christmasLightBackground,
+    colorScheme: const ColorScheme.light(
+      primary: christmasPrimary,
+      secondary: christmasSecondary,
+      surface: christmasLightSurface,
+      onPrimary: Colors.white,
+      onSecondary: Colors.white,
+      onSurface: lightPrimaryText,
+      outline: christmasLightBorder,
+      error: lightBadge,
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: christmasLightBackground,
+      elevation: 0,
+      iconTheme: IconThemeData(color: lightPrimaryText),
+      titleTextStyle: TextStyle(
+        color: lightPrimaryText,
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+    cardTheme: CardThemeData(
+      color: christmasLightSurface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 2,
+    ),
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: lightPrimaryText),
+      bodyMedium: TextStyle(color: lightSecondaryText),
+    ),
+    iconTheme: const IconThemeData(color: christmasPrimary),
+    dividerColor: christmasLightBorder,
+  );
+
+  static final ThemeData christmasDarkTheme = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    primaryColor: christmasPrimary,
+    cardColor: christmasDarkSurface,
+    scaffoldBackgroundColor: christmasDarkBackground,
+    colorScheme: const ColorScheme.dark(
+      primary: christmasPrimary,
+      secondary: christmasSecondary,
+      surface: christmasDarkSurface,
+      onPrimary: Colors.black,
+      onSecondary: Colors.black,
+      onSurface: darkPrimaryText,
+      outline: christmasDarkBorder,
+      error: darkBadge,
+      surfaceContainerHighest: Color(0xFF152A42),
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: christmasDarkBackground,
+      elevation: 0,
+      centerTitle: true,
+      iconTheme: IconThemeData(color: darkPrimaryText),
+      titleTextStyle: TextStyle(
+        color: darkPrimaryText,
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.3,
+      ),
+    ),
+    cardTheme: CardThemeData(
+      color: christmasDarkSurface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: christmasDarkBorder, width: 1),
+      ),
+      elevation: 0,
+    ),
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: darkPrimaryText, letterSpacing: 0.15),
+      bodyMedium: TextStyle(color: darkSecondaryText, letterSpacing: 0.1),
+      titleLarge: TextStyle(
+        color: darkPrimaryText,
+        fontSize: 20,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 0.2,
+      ),
+      titleMedium: TextStyle(
+        color: darkPrimaryText,
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+    iconTheme: const IconThemeData(color: christmasPrimary, size: 24),
+    dividerColor: christmasDarkBorder,
+    dialogTheme: DialogThemeData(
+      backgroundColor: christmasDarkSurface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      titleTextStyle: const TextStyle(
+        color: darkPrimaryText,
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: christmasPrimary,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        textStyle: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
+        ),
+      ),
+    ),
+  );
+
+  // --- Professional Eid Theme Palette (Crescent Green) ---
+  static const Color eidPrimary = Color(0xFF059669); // Rich Emerald
+  static const Color eidSecondary = Color(0xFF059669);
+  
+  // Light Palette
+  static const Color eidLightBackground = Color(0xFFF0FDF4); // Subtle mint tint
+  static const Color eidLightSurface = Colors.white;
+  static const Color eidLightBorder = Color(0xFFD1FAE5); // Mint 100
+  
+  // Dark Palette
+  static const Color eidDarkBackground = Color(0xFF0B1711); // Deep forest midnight
+  static const Color eidDarkSurface = Color(0xFF14241B); // Dark forest surface
+  static const Color eidDarkBorder = Color(0xFF1B3326); // Subtle forest border
+
+  static final ThemeData eidLightTheme = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.light,
+    primaryColor: eidPrimary,
+    cardColor: eidLightSurface,
+    scaffoldBackgroundColor: eidLightBackground,
+    colorScheme: const ColorScheme.light(
+      primary: eidPrimary,
+      secondary: eidSecondary,
+      surface: eidLightSurface,
+      onPrimary: Colors.white,
+      onSecondary: Colors.white,
+      onSurface: lightPrimaryText,
+      outline: eidLightBorder,
+      error: lightBadge,
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: eidLightBackground,
+      elevation: 0,
+      iconTheme: IconThemeData(color: lightPrimaryText),
+      titleTextStyle: TextStyle(
+        color: lightPrimaryText,
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+    cardTheme: CardThemeData(
+      color: eidLightSurface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 2,
+    ),
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: lightPrimaryText),
+      bodyMedium: TextStyle(color: lightSecondaryText),
+    ),
+    iconTheme: const IconThemeData(color: eidPrimary),
+    dividerColor: eidLightBorder,
+  );
+
+  static final ThemeData eidDarkTheme = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    primaryColor: eidPrimary,
+    cardColor: eidDarkSurface,
+    scaffoldBackgroundColor: eidDarkBackground,
+    colorScheme: const ColorScheme.dark(
+      primary: eidPrimary,
+      secondary: eidSecondary,
+      surface: eidDarkSurface,
+      onPrimary: Colors.black,
+      onSecondary: Colors.black,
+      onSurface: darkPrimaryText,
+      outline: eidDarkBorder,
+      error: darkBadge,
+      surfaceContainerHighest: Color(0xFF1D3A2B),
+    ),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: eidDarkBackground,
+      elevation: 0,
+      centerTitle: true,
+      iconTheme: IconThemeData(color: darkPrimaryText),
+      titleTextStyle: TextStyle(
+        color: darkPrimaryText,
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.3,
+      ),
+    ),
+    cardTheme: CardThemeData(
+      color: eidDarkSurface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: eidDarkBorder, width: 1),
+      ),
+      elevation: 0,
+    ),
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: darkPrimaryText, letterSpacing: 0.15),
+      bodyMedium: TextStyle(color: darkSecondaryText, letterSpacing: 0.1),
+      titleLarge: TextStyle(
+        color: darkPrimaryText,
+        fontSize: 20,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 0.2,
+      ),
+      titleMedium: TextStyle(
+        color: darkPrimaryText,
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+    iconTheme: const IconThemeData(color: eidPrimary, size: 24),
+    dividerColor: eidDarkBorder,
+    dialogTheme: DialogThemeData(
+      backgroundColor: eidDarkSurface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      titleTextStyle: const TextStyle(
+        color: darkPrimaryText,
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: eidPrimary,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        textStyle: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
+        ),
+      ),
+    ),
+  );
   static const String darkMapStyle = '''
 [
   {

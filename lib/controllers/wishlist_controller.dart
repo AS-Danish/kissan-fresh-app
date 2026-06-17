@@ -210,7 +210,7 @@ class WishlistController extends GetxController {
         'Login Required',
         'Please login to save favorite items across devices.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFF14B8A6),
+        backgroundColor: Get.theme.primaryColor,
         colorText: Colors.white,
       );
       return;

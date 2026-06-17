@@ -61,7 +61,7 @@ class _CartSuccessPopupState extends State<CartSuccessPopup>
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 30,
                 offset: const Offset(0, 10),
               ),
@@ -78,7 +78,7 @@ class _CartSuccessPopupState extends State<CartSuccessPopup>
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF14B8A6).withOpacity(0.1),
+                      color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -86,8 +86,8 @@ class _CartSuccessPopupState extends State<CartSuccessPopup>
                   Container(
                     width: 70,
                     height: 70,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF14B8A6),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -123,7 +123,7 @@ class _CartSuccessPopupState extends State<CartSuccessPopup>
                   fontWeight: FontWeight.w500,
                   color: Theme.of(
                     context,
-                  ).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                  ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
                   letterSpacing: 0.2,
                 ),
               ),

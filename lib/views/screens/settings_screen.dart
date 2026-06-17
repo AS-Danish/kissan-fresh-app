@@ -78,7 +78,7 @@ class SettingsScreen extends StatelessWidget {
                     onChanged: (value) {
                       notificationController.toggleNotifications(value);
                     },
-                    activeThumbColor: const Color(0xFF14B8A6),
+                    activeThumbColor: Theme.of(context).primaryColor,
                   );
                 }),
               ),
@@ -163,7 +163,7 @@ class SettingsScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 2),
                 ),
@@ -177,7 +177,7 @@ class SettingsScreen extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Theme.of(
                       context,
-                    ).dividerColor.withOpacity(0.5),
+                    ).dividerColor.withValues(alpha: 0.5),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -230,7 +230,7 @@ class SettingsScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -238,10 +238,10 @@ class SettingsScreen extends StatelessWidget {
         ),
         child: Obx(() {
           if (profileController.isLoading.value) {
-            return const SizedBox(
+            return SizedBox(
               height: 64,
               child: Center(
-                child: CircularProgressIndicator(color: Color(0xFF14B8A6)),
+                child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
               ),
             );
           }
@@ -257,8 +257,8 @@ class SettingsScreen extends StatelessWidget {
                       ? null
                       : Colors.transparent,
                   gradient: profileController.profileImage.value.isEmpty
-                      ? const LinearGradient(
-                          colors: [Color(0xFF14B8A6), Color(0xFF14B8A6)],
+                      ? LinearGradient(
+                          colors: [Theme.of(context).primaryColor, Theme.of(context).primaryColor],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         )
@@ -369,7 +369,7 @@ class SettingsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -392,7 +392,7 @@ class SettingsScreen extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -512,7 +512,7 @@ class SettingsScreen extends StatelessWidget {
           fontSize: 12,
           color: Theme.of(
             context,
-          ).textTheme.bodyMedium?.color?.withOpacity(0.7),
+          ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
         ),
       ),
     );

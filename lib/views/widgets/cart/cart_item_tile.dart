@@ -69,18 +69,18 @@ class CartItemTile extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
             ],
             border: Border.all(
               color: isCouponApplied
-                  ? const Color(0xFF14B8A6).withOpacity(0.5)
+                  ? Theme.of(context).primaryColor.withValues(alpha: 0.5)
                   : Theme
                   .of(context)
                   .dividerColor
-                  .withOpacity(0.5),
+                  .withValues(alpha: 0.5),
               width: isCouponApplied ? 2 : 1,
             ),
           ),
@@ -193,7 +193,7 @@ class CartItemTile extends StatelessWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFEF4444).withOpacity(0.1),
+                              color: const Color(0xFFEF4444).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
@@ -214,21 +214,21 @@ class CartItemTile extends StatelessWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF14B8A6).withOpacity(0.1),
+                              color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.confirmation_num, size: 10,
-                                    color: Color(0xFF14B8A6)),
+                                Icon(Icons.confirmation_num, size: 10,
+                                    color: Theme.of(context).primaryColor),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Coupon Applied',
                                   style: GoogleFonts.montserrat(
                                     fontSize: 10,
                                     fontWeight: FontWeight.w700,
-                                    color: const Color(0xFF14B8A6),
+                                    color: Theme.of(context).primaryColor,
                                   ),
                                 ),
                               ],
@@ -258,7 +258,7 @@ class CartItemTile extends StatelessWidget {
                             style: GoogleFonts.montserrat(
                               fontSize: 17,
                               fontWeight: FontWeight.w800,
-                              color: const Color(0xFF14B8A6), // Success Green
+                              color: Theme.of(context).primaryColor, // Success Green
                               letterSpacing: 0.3,
                             ),
                           ),
@@ -321,10 +321,10 @@ class CartItemTile extends StatelessWidget {
   Widget _buildQuantityControls(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor.withOpacity(0.1),
+        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: Theme.of(context).primaryColor.withOpacity(0.3),
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -381,7 +381,7 @@ class CartItemTile extends StatelessWidget {
           icon,
           size: 18,
           color: isDisabled
-              ? Theme.of(context).primaryColor.withOpacity(0.3)
+              ? Theme.of(context).primaryColor.withValues(alpha: 0.3)
               : Theme.of(context).primaryColor,
         ),
       ),

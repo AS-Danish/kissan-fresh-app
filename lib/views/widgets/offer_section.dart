@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/homepage_controller.dart';
-import '../../controllers/theme_controller.dart';
 
 class OffersSection extends StatelessWidget {
   const OffersSection({super.key});
@@ -46,7 +45,7 @@ class OffersSection extends StatelessWidget {
             return _buildOfferCard(
               context: context,
               icon: coupon.discountType == 'percentage' ? Icons.percent : Icons.local_offer,
-              iconBgColor: Theme.of(context).primaryColor.withOpacity(0.1),
+              iconBgColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
               iconColor: Theme.of(context).primaryColor,
               badge: coupon.applyTo == 'all' ? 'EXCLUSIVE DEAL' : 'SPECIAL OFFER',
               badgeColor: Theme.of(context).primaryColor,
@@ -111,7 +110,7 @@ class OffersSection extends StatelessWidget {
                   width: 48,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).dividerColor.withOpacity(0.3),
+                    color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -127,7 +126,7 @@ class OffersSection extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                      color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -166,10 +165,10 @@ class OffersSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.05),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: Theme.of(context).primaryColor.withOpacity(0.2),
+                    color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
                     style: BorderStyle.solid,
                     width: 1,
                   ),
@@ -336,14 +335,14 @@ class OffersSection extends StatelessWidget {
           boxShadow: Theme.of(context).brightness == Brightness.light
               ? [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
                 ]
               : [],
           border: Border.all(
-            color: Theme.of(context).dividerColor.withOpacity(0.2),
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
             width: 1,
           ),
         ),

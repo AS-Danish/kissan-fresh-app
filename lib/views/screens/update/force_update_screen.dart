@@ -25,13 +25,13 @@ class ForceUpdateScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF14B8A6).withOpacity(0.1),
+                    color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.system_update,
                     size: 80,
-                    color: Color(0xFF14B8A6),
+                    color: Theme.of(context).primaryColor,
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -64,7 +64,7 @@ class ForceUpdateScreen extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () => controller.launchStore(storeUrl),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF14B8A6),
+                      backgroundColor: Theme.of(context).primaryColor,
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(

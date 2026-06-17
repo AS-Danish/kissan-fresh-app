@@ -148,7 +148,7 @@ class ProductDetailsController extends GetxController {
         for (var doc in snapshot.docs) {
           if (doc.id == productData.id) continue; // Skip the current product
           
-          final data = doc.data() as Map<String, dynamic>;
+          final data = doc.data();
           data['id'] = doc.id;
           
           try {
@@ -235,7 +235,7 @@ class ProductDetailsController extends GetxController {
         'Login Required',
         'Please login to save favorite items across devices.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFF14B8A6),
+        backgroundColor: Get.theme.primaryColor,
         colorText: Colors.white,
       );
       return;
@@ -256,7 +256,7 @@ class ProductDetailsController extends GetxController {
           ? '${observableProduct.value?.title} added to your favorites'
           : '${observableProduct.value?.title} removed from favorites',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: isFav ? const Color(0xFF14B8A6) : Colors.grey,
+      backgroundColor: isFav ? Get.theme.primaryColor : Colors.grey,
       colorText: Colors.white,
       duration: const Duration(seconds: 2),
       margin: const EdgeInsets.all(16),
@@ -273,7 +273,7 @@ class ProductDetailsController extends GetxController {
         'Login Required',
         'Please login to add items to your cart.',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: const Color(0xFF14B8A6),
+        backgroundColor: Get.theme.primaryColor,
         colorText: Colors.white,
       );
       return;

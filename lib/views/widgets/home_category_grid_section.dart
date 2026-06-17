@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/categorized_products_controller.dart';
-import '../../controllers/homepage_controller.dart';
 import '../../routes/app_routes.dart';
 import 'product_card_widget.dart';
 
@@ -10,7 +9,7 @@ class HomeCategoryGridSection extends StatelessWidget {
   final String categoryName;
   final String title;
 
-  HomeCategoryGridSection({
+  const HomeCategoryGridSection({
     super.key,
     required this.categoryName,
     required this.title,
@@ -91,7 +90,7 @@ class HomeCategoryGridSection extends StatelessWidget {
                 },
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(
-                    color: Theme.of(context).primaryColor.withOpacity(0.3),
+                    color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
                     width: 1.5,
                   ),
                   shape: RoundedRectangleBorder(

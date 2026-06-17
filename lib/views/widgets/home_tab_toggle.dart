@@ -14,10 +14,10 @@ class HomeTabToggle extends StatelessWidget {
       height: 54,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.2),
+        color: Colors.black.withValues(alpha: 0.2),
         borderRadius: BorderRadius.circular(30),
         border: Border.all(
-          color: Colors.white.withOpacity(0.15),
+          color: Colors.white.withValues(alpha: 0.15),
           width: 1,
         ),
       ),
@@ -40,7 +40,7 @@ class HomeTabToggle extends StatelessWidget {
                   borderRadius: BorderRadius.circular(26),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
+                      color: Colors.black.withValues(alpha: 0.15),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -64,7 +64,7 @@ class HomeTabToggle extends StatelessWidget {
                             size: 16,
                             color: isGrocery
                                 ? Colors.black
-                                : Colors.white.withOpacity(0.7),
+                                : Colors.white.withValues(alpha: 0.7),
                           ),
                           const SizedBox(width: 8),
                           Text(
@@ -74,7 +74,7 @@ class HomeTabToggle extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                               color: isGrocery
                                   ? Colors.black
-                                  : Colors.white.withOpacity(0.8),
+                                  : Colors.white.withValues(alpha: 0.8),
                             ),
                           ),
                         ],
@@ -96,7 +96,7 @@ class HomeTabToggle extends StatelessWidget {
                             size: 16,
                             color: !isGrocery
                                 ? Colors.black
-                                : Colors.white.withOpacity(0.7),
+                                : Colors.white.withValues(alpha: 0.7),
                           ),
                           const SizedBox(width: 8),
                           Text(
@@ -106,7 +106,7 @@ class HomeTabToggle extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                               color: !isGrocery
                                   ? Colors.black
-                                  : Colors.white.withOpacity(0.8),
+                                  : Colors.white.withValues(alpha: 0.8),
                             ),
                           ),
                         ],

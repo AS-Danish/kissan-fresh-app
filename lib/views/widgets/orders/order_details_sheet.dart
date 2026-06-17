@@ -24,7 +24,7 @@ class OrderDetailsSheet {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, -5),
             ),
@@ -123,12 +123,12 @@ class OrderDetailsSheet {
                           decoration: BoxDecoration(
                             color: Theme.of(
                               context,
-                            ).primaryColor.withOpacity(0.05),
+                            ).primaryColor.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: Theme.of(
                                 context,
-                              ).primaryColor.withOpacity(0.1),
+                              ).primaryColor.withValues(alpha: 0.1),
                             ),
                           ),
                           child: Row(
@@ -139,7 +139,7 @@ class OrderDetailsSheet {
                                 decoration: BoxDecoration(
                                   color: Theme.of(
                                     context,
-                                  ).primaryColor.withOpacity(0.1),
+                                  ).primaryColor.withValues(alpha: 0.1),
                                   shape: BoxShape.circle,
                                 ),
                                 child: ClipOval(
@@ -265,10 +265,10 @@ class OrderDetailsSheet {
                                 color: isCod
                                     ? const Color(
                                         0xFF14B8A6,
-                                      ).withOpacity(0.1)
+                                      ).withValues(alpha: 0.1)
                                     : const Color(
                                         0xFF6366F1,
-                                      ).withOpacity(0.1),
+                                      ).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Row(
@@ -280,7 +280,7 @@ class OrderDetailsSheet {
                                         : Icons.account_balance_wallet_rounded,
                                     size: 14,
                                     color: isCod
-                                        ? const Color(0xFF14B8A6)
+                                        ? Theme.of(context).primaryColor
                                         : const Color(0xFF6366F1),
                                   ),
                                   const SizedBox(width: 6),
@@ -292,7 +292,7 @@ class OrderDetailsSheet {
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
                                       color: isCod
-                                          ? const Color(0xFF14B8A6)
+                                          ? Theme.of(context).primaryColor
                                           : const Color(0xFF6366F1),
                                     ),
                                   ),
@@ -334,7 +334,7 @@ class OrderDetailsSheet {
                                 height: 50,
                                 decoration: BoxDecoration(
                                   color: Theme.of(context).brightness == Brightness.dark
-                                      ? Colors.white.withOpacity(0.1)
+                                      ? Colors.white.withValues(alpha: 0.1)
                                       : Colors.white,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -381,7 +381,7 @@ class OrderDetailsSheet {
                                             color: Theme.of(context)
                                                 .colorScheme
                                                 .onSurface
-                                                .withOpacity(0.6),
+                                                .withValues(alpha: 0.6),
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -394,7 +394,7 @@ class OrderDetailsSheet {
                                               color: Theme.of(context)
                                                   .colorScheme
                                                   .onSurface
-                                                  .withOpacity(0.4),
+                                                  .withValues(alpha: 0.4),
                                               fontWeight: FontWeight.w500,
                                               decoration: TextDecoration.lineThrough,
                                             ),
@@ -500,7 +500,7 @@ class OrderDetailsSheet {
                 color: Theme.of(context).scaffoldBackgroundColor,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, -2),
                   ),
@@ -580,7 +580,7 @@ class OrderDetailsSheet {
         style: GoogleFonts.montserrat(
           fontSize: 12,
           fontWeight: FontWeight.w800,
-          color: Theme.of(context).primaryColor.withOpacity(0.8),
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.8),
           letterSpacing: 1.2,
         ),
       ),
@@ -600,7 +600,7 @@ class OrderDetailsSheet {
               style: GoogleFonts.montserrat(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
           ),
@@ -638,7 +638,7 @@ class OrderDetailsSheet {
             style: GoogleFonts.montserrat(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
           Text(
@@ -647,7 +647,7 @@ class OrderDetailsSheet {
               fontSize: 14,
               fontWeight: isGreen ? FontWeight.w700 : FontWeight.w600,
               color: isGreen
-                  ? const Color(0xFF14B8A6)
+                  ? Theme.of(context).primaryColor
                   : Theme.of(context).colorScheme.onSurface,
             ),
           ),

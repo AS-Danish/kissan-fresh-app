@@ -24,12 +24,12 @@ class OrderSuccessPopup {
                 height: 90,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFF14B8A6).withOpacity(0.12),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.12),
                 ),
-                child: const Center(
+                child: Center(
                   child: Icon(
                     Icons.check_circle_rounded,
-                    color: Color(0xFF14B8A6),
+                    color: Theme.of(context).primaryColor,
                     size: 60,
                   ),
                 ),
@@ -70,8 +70,8 @@ class OrderSuccessPopup {
                 ),
                 decoration: BoxDecoration(
                   color: isCod
-                      ? const Color(0xFF14B8A6).withOpacity(0.1)
-                      : const Color(0xFF6366F1).withOpacity(0.1),
+                      ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
+                      : const Color(0xFF6366F1).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -83,7 +83,7 @@ class OrderSuccessPopup {
                           : Icons.account_balance_wallet_rounded,
                       size: 16,
                       color: isCod
-                          ? const Color(0xFF14B8A6)
+                          ? Theme.of(context).primaryColor
                           : const Color(0xFF6366F1),
                     ),
                     const SizedBox(width: 6),
@@ -93,7 +93,7 @@ class OrderSuccessPopup {
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                         color: isCod
-                            ? const Color(0xFF14B8A6)
+                            ? Theme.of(context).primaryColor
                             : const Color(0xFF6366F1),
                       ),
                     ),

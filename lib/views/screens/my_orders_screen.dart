@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:kissanfresh/controllers/orders_controller.dart';
-import 'package:kissanfresh/routes/app_routes.dart';
 import 'package:kissanfresh/views/widgets/orders/empty_orders_state.dart';
 import 'package:kissanfresh/views/widgets/orders/order_card.dart';
 import 'package:kissanfresh/views/widgets/orders/order_success_popup.dart';
@@ -150,12 +149,12 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? Theme.of(context).primaryColor
-                            : Theme.of(context).primaryColor.withOpacity(0.05),
+                            : Theme.of(context).primaryColor.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: isSelected
                               ? Theme.of(context).primaryColor
-                              : Theme.of(context).primaryColor.withOpacity(0.1),
+                              : Theme.of(context).primaryColor.withValues(alpha: 0.1),
                         ),
                       ),
                       child: Text(

@@ -6,7 +6,7 @@ class BottomBarBinding extends Bindings {
   @override
   void dependencies() {
     // TODO: implement dependencies
-    Get.lazyPut<BottomBarController>(() => BottomBarController());
-    Get.lazyPut<ProductsController>(() => ProductsController());
+    Get.lazyPut<BottomBarController>(() => BottomBarController(), fenix: true);
+    Get.lazyPut<ProductsController>(() => ProductsController(), fenix: true);
   }
 }
