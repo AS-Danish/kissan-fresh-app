@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import 'package:kissanfresh/routes/app_routes.dart';
 import 'package:kissanfresh/services/location_service.dart';
+import 'package:kissanfresh/views/widgets/address_bottom_sheet.dart';
 
 class DeliveryInfoCard extends StatelessWidget {
   const DeliveryInfoCard({super.key});
@@ -48,34 +49,37 @@ class DeliveryInfoCard extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      "Delivering in ",
+                      "Delivering to ",
                       style: GoogleFonts.montserrat(
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade600,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
-                    Text(
-                      "12 mins",
-                      style: GoogleFonts.montserrat(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        color: Theme.of(context).primaryColor,
+                    Obx(
+                      () => Text(
+                        Get.find<LocationService>().currentAddressType.value,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: Theme.of(context).primaryColor,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Obx(
                   () => Text(
                     Get.find<LocationService>().currentAddress.value ??
                         'Fetching location...',
                     style: GoogleFonts.montserrat(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade600,
+                      height: 1.4,
                     ),
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -83,21 +87,19 @@ class DeliveryInfoCard extends StatelessWidget {
             ),
           ),
           InkWell(
-            onTap: () async {
-              // Navigate to address selection
-              final result = await Get.toNamed(AppRoutes.addressSelectionRoute);
-              if (result != null && result is Map<String, dynamic>) {
-                Get.find<LocationService>().currentAddress.value =
-                    result['address'] ?? '';
-              }
+            onTap: () {
+              AddressBottomSheet.show(context);
             },
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(8),
             child: Container(
-              padding: const EdgeInsets.all(8),
-              child: Icon(
-                Icons.edit_outlined,
-                color: Theme.of(context).primaryColor,
-                size: 20,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Text(
+                'Change',
+                style: GoogleFonts.montserrat(
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
               ),
             ),
           ),

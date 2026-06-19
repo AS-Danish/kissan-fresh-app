@@ -222,6 +222,7 @@ class OrderModel {
 
 class OrderItem {
   final String productId;
+  final String? variationId;
   final String title;
   final String unit;
   final String image;
@@ -231,6 +232,7 @@ class OrderItem {
 
   OrderItem({
     required this.productId,
+    this.variationId,
     required this.title,
     required this.unit,
     required this.image,
@@ -242,6 +244,7 @@ class OrderItem {
   Map<String, dynamic> toJson() {
     return {
       'productId': productId,
+      'variationId': variationId,
       'title': title,
       'unit': unit,
       'image': image,
@@ -254,6 +257,7 @@ class OrderItem {
   factory OrderItem.fromJson(Map<String, dynamic> json) {
     return OrderItem(
       productId: json['productId'] ?? '',
+      variationId: json['variationId'],
       title: json['title'] ?? '',
       unit: json['unit'] ?? 'unit',
       image: json['image'] ?? '',

@@ -377,7 +377,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                               // Modern Add Button
                               if (widget.showAddButton)
                                 GestureDetector(
-                                  onTap: widget.product.stockCount > 0
+                                  onTap: (widget.product.inStock && widget.product.stockCount > 0)
                                       ? widget.product.onAddToCart
                                       : null,
 

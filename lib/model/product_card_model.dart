@@ -33,7 +33,7 @@ class ProductVariation {
       discountPercentage: json['discountPercentage'] != null ? (json['discountPercentage'] as num).toDouble() : null,
       image: json['image']?.toString(),
       inStock: json['inStock'] ?? true,
-      stockCount: json['stockCount'] != null ? (json['stockCount'] as num).toInt() : (json['inStock'] == false ? 0 : 99),
+      stockCount: json['stockCount'] != null ? (json['stockCount'] as num).toInt() : 0,
     );
   }
 
@@ -131,7 +131,7 @@ class ProductCardModel {
     bool baseInStock = json['inStock'] ?? true;
     int baseStockCount = json['stockCount'] != null 
         ? (json['stockCount'] as num).toInt() 
-        : (baseInStock == false ? 0 : 99);
+        : 0; // Strict inventory tracking: do not assume 99
 
     if (hasVars && vars != null && vars.isNotEmpty) {
       if (basePrice == 0 || basePrice != vars.first.price) basePrice = vars.first.price;

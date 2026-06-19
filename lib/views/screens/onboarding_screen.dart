@@ -72,6 +72,8 @@ class OnboardingScreen extends GetView<OnboardingController> {
                   // The map screen returns {'address': address, 'lat': lat, 'lng': lng}
                   // We update the controller with the selected address
                   controller.addressController.text = result['address'] ?? '';
+                  controller.selectedLat = result['lat'];
+                  controller.selectedLng = result['lng'];
                 }
               },
             ),

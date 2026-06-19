@@ -148,22 +148,33 @@ class CartSummaryWidget extends StatelessWidget {
   Widget _buildPriceSummary(BuildContext context, CartController controller) {
     return Obx(
       () => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            'Bill Details',
+            style: GoogleFonts.montserrat(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 16),
           _buildPriceRow(
             context,
             controller,
-            'Subtotal',
+            'Item Total',
             '₹${controller.subtotal.toStringAsFixed(0)}',
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           _buildPriceRow(
             context,
             controller,
             'Delivery Fee',
-            '₹${controller.deliveryFee.toStringAsFixed(0)}',
+            controller.deliveryFee == 0 ? 'FREE' : '₹${controller.deliveryFee.toStringAsFixed(0)}',
             isDelivery: controller.deliveryFee == 0,
+            originalPrice: controller.deliveryFee == 0 ? '₹49' : null,
           ),
-          if (controller.discount > 0) const SizedBox(height: 8),
+          if (controller.discount > 0) const SizedBox(height: 12),
           if (controller.discount > 0)
             _buildPriceRow(
               context,
@@ -174,6 +185,30 @@ class CartSummaryWidget extends StatelessWidget {
               '-₹${controller.discount.toStringAsFixed(0)}',
               isDiscount: true,
             ),
+          const SizedBox(height: 12),
+          Divider(color: Theme.of(context).dividerColor.withValues(alpha: 0.5)),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'To Pay',
+                style: GoogleFonts.montserrat(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              Text(
+                '₹${controller.total.toStringAsFixed(0)}',
+                style: GoogleFonts.montserrat(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -186,6 +221,7 @@ class CartSummaryWidget extends StatelessWidget {
     String amount, {
     bool isDelivery = false,
     bool isDiscount = false,
+    String? originalPrice,
   }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -193,7 +229,7 @@ class CartSummaryWidget extends StatelessWidget {
         Text(
           label,
           style: GoogleFonts.montserrat(
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: FontWeight.w500,
             color: Colors.grey.shade600,
             letterSpacing: 0.1,
@@ -201,38 +237,27 @@ class CartSummaryWidget extends StatelessWidget {
         ),
         Row(
           children: [
-            if (isDelivery)
-              Container(
-                margin: const EdgeInsets.only(right: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  'FREE',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                    color: Theme.of(context).primaryColor,
-                    letterSpacing: 0.5,
-                  ),
+            if (isDelivery && originalPrice != null) ...[
+              Text(
+                originalPrice,
+                style: GoogleFonts.montserrat(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey.shade400,
+                  decoration: TextDecoration.lineThrough,
                 ),
               ),
+              const SizedBox(width: 6),
+            ],
             Text(
               amount,
               style: GoogleFonts.montserrat(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: isDiscount
+                fontSize: 13,
+                fontWeight: isDiscount || isDelivery ? FontWeight.w800 : FontWeight.w600,
+                color: isDiscount || isDelivery
                     ? Theme.of(context).primaryColor
-                    : isDelivery
-                    ? Colors.grey.shade400
                     : Theme.of(context).colorScheme.onSurface,
                 letterSpacing: 0.2,
-                decoration: isDelivery && controller.deliveryFee == 0
-                    ? TextDecoration.lineThrough
-                    : null,
               ),
             ),
           ],
@@ -435,58 +460,6 @@ class CartSummaryWidget extends StatelessWidget {
               ),
               const SizedBox(height: 24),
 
-              // Delivery Address Section
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Theme.of(
-                      context,
-                    ).primaryColor.withValues(alpha: 0.1),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.location_on_rounded,
-                      color: Theme.of(context).primaryColor,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Deliver to',
-                            style: GoogleFonts.montserrat(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                          ),
-                          Text(
-                            Get.find<LocationService>().currentAddress.value ??
-                                "No address selected",
-                            style: GoogleFonts.montserrat(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
               // Items List Summary
               Container(
                 constraints: BoxConstraints(maxHeight: Get.height * 0.25),
@@ -578,23 +551,34 @@ class CartSummaryWidget extends StatelessWidget {
 
               // Full Price Breakdown
               Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                    'Bill Details',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   _buildPriceRow(
                     context,
                     controller,
-                    'Subtotal',
+                    'Item Total',
                     '₹${controller.subtotal.toStringAsFixed(0)}',
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 12),
                   _buildPriceRow(
                     context,
                     controller,
                     'Delivery Fee',
-                    '₹${controller.deliveryFee.toStringAsFixed(0)}',
+                    controller.deliveryFee == 0 ? 'FREE' : '₹${controller.deliveryFee.toStringAsFixed(0)}',
                     isDelivery: controller.deliveryFee == 0,
+                    originalPrice: controller.deliveryFee == 0 ? '₹49' : null,
                   ),
                   if (controller.discount > 0) ...[
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 12),
                     _buildPriceRow(
                       context,
                       controller,

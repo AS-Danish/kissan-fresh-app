@@ -22,6 +22,9 @@ class ProfileController extends GetxController {
   var address = ''.obs;
   var phoneNumber = ''.obs;
 
+  // The full current user model
+  Rx<UserModel?> currentUser = Rx<UserModel?>(null);
+
   // Profile image (network URL)
   var profileImage = ''.obs;
   var initials = ''.obs;
@@ -63,15 +66,16 @@ class ProfileController extends GetxController {
     isLoading.value = false; // UI can show cached immediately
 
     // 2. Fetch latest from Firestore silently
-    final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser != null) {
-      final userModel = await _userService.getUser(currentUser.uid);
+    final authCurrentUser = FirebaseAuth.instance.currentUser;
+    if (authCurrentUser != null) {
+      final userModel = await _userService.getUser(authCurrentUser.uid);
       if (userModel != null) {
         name.value = userModel.name;
         email.value = userModel.email ?? '';
         address.value = userModel.address ?? '';
         phoneNumber.value = userModel.phoneNumber;
         profileImage.value = userModel.imageUrl ?? '';
+        currentUser.value = userModel;
         _updateInitials(name.value);
 
         nameController.text = name.value;
@@ -149,6 +153,7 @@ class ProfileController extends GetxController {
             imageUrl: existingUser.imageUrl,
             role: existingUser.role,
             onboardingCompleted: existingUser.onboardingCompleted,
+            savedAddresses: existingUser.savedAddresses,
             createdAt: existingUser.createdAt,
           );
 
@@ -325,6 +330,7 @@ class ProfileController extends GetxController {
           imageUrl: downloadUrl, // NEW URL
           role: existingUser.role,
           onboardingCompleted: existingUser.onboardingCompleted,
+          savedAddresses: existingUser.savedAddresses,
           createdAt: existingUser.createdAt,
         );
         await _userService.createUser(updatedModel); // Acts as a save/update

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../controllers/address_controller.dart';
+import '../../screens/address_details_screen.dart';
 
 class LocationConfirmSheet extends StatelessWidget {
   final AddressController controller;
@@ -68,7 +69,9 @@ class LocationConfirmSheet extends StatelessWidget {
             () => ElevatedButton(
               onPressed: controller.isLoading.value
                   ? null
-                  : controller.confirmLocation,
+                  : () {
+                      Get.to(() => const AddressDetailsScreen());
+                    },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryColor,
                 padding: const EdgeInsets.symmetric(vertical: 16),

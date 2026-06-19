@@ -31,6 +31,10 @@ class UserService {
     }
   }
 
+  Future<void> updateUser(UserModel user) async {
+    return createUser(user);
+  }
+
   Future<UserModel?> getUser(String uid) async {
     try {
       final docSnapshot = await _firestore

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -131,28 +132,39 @@ class CategorizedProductsController extends GetxController {
     }
   }
 
+  // Store subscriptions to avoid duplicates
+  final Map<String, StreamSubscription> _categorySubscriptions = {};
+
   Future<void> _fetchProductsForCategory(String category, String origin) async {
     try {
-      QuerySnapshot querySnapshot = await _firestore
+      _categorySubscriptions[category]?.cancel();
+      
+      _categorySubscriptions[category] = _firestore
           .collection('products')
           .where('productOrigin', isEqualTo: origin)
           .where('category', isEqualTo: category)
-          .limit(
-            6,
-          ) // limit to 6 products per category for the horizontal scroll
-          .get();
-
-      if (querySnapshot.docs.isNotEmpty) {
-        List<ProductCardModel> products = querySnapshot.docs
-            .map((doc) => _mapToProductCardModel(doc))
-            .toList();
-        categorizedProducts[category] = products;
-        // Save to persistent cache
-        _cacheService.saveCategorizedProducts(origin, categorizedProducts);
-      }
+          .limit(6)
+          .snapshots()
+          .listen((querySnapshot) {
+        if (querySnapshot.docs.isNotEmpty) {
+          List<ProductCardModel> products = querySnapshot.docs
+              .map((doc) => _mapToProductCardModel(doc))
+              .toList();
+          categorizedProducts[category] = products;
+          _cacheService.saveCategorizedProducts(origin, categorizedProducts);
+        }
+      }, onError: (e) => debugPrint("Error in category stream $category: $e"));
     } catch (e) {
       debugPrint("Error fetching category $category: $e");
     }
+  }
+
+  @override
+  void onClose() {
+    for (var sub in _categorySubscriptions.values) {
+      sub.cancel();
+    }
+    super.onClose();
   }
 
   ProductCardModel _mapToProductCardModel(DocumentSnapshot doc) {

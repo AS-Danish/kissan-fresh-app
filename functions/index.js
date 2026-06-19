@@ -269,33 +269,71 @@ exports.createOrder = require("firebase-functions/v2/https")
 
           try {
             const result = await db.runTransaction(async (transaction) => {
-              const productRefs = orderData.items.map((item) =>
-                db.collection("products").doc(item.productId));
+              const uniqueProductIds = [...new Set(orderData.items.map((item) => item.productId))];
+              const productRefs = uniqueProductIds.map((id) => db.collection("products").doc(id));
               const productSnaps = await transaction.getAll(...productRefs);
-              const stockUpdates = [];
+              
+              const productDataMap = {};
+              const productRefMap = {};
 
-              for (let i = 0; i < productSnaps.length; i++) {
-                const snap = productSnaps[i];
-                const item = orderData.items[i];
-
+              for (const snap of productSnaps) {
                 if (!snap.exists) {
-                  throw new HttpsError("failed-precondition",
-                      `Product ${item.title} no longer available.`,
-                      {reason: "product_unavailable"});
+                  throw new HttpsError("failed-precondition", "A product in your order is no longer available.", {reason: "product_unavailable"});
                 }
+                productDataMap[snap.id] = snap.data();
+                productRefMap[snap.id] = snap.ref;
+              }
 
-                const currentStock = snap.data().stockCount || 0;
-                if (currentStock < item.quantity) {
-                  throw new HttpsError("failed-precondition",
-                      `Insufficient stock for ${item.title}. ` +
-                      `Available: ${currentStock}`,
-                      {reason: "insufficient_stock"});
+              for (const item of orderData.items) {
+                const data = productDataMap[item.productId];
+
+                if (data.hasVariations && data.variations && data.variations.length > 0) {
+                  // If item.variationId is missing for a varied product, default to the first variation.
+                  // This handles legacy cart items that were added before variations were supported.
+                  let varIndex = -1;
+                  if (item.variationId) {
+                    varIndex = data.variations.findIndex((v) => {
+                      const vId = v.id ? v.id.toString() : null;
+                      if (vId !== null && vId === item.variationId) return true;
+                      const altId = `${v.unitValue || ""}${v.unit || ""}`;
+                      if (altId === item.variationId) return true;
+                      if (vId === null && item.variationId === "null") return true;
+                      return false;
+                    });
+                  }
+                  
+                  if (varIndex === -1) {
+                    // Fallback to first variation if none specified or not found
+                    varIndex = 0;
+                  }
+
+                  const variation = data.variations[varIndex];
+                  const currentStock = variation.stockCount != null ? variation.stockCount : 0;
+
+                  if (currentStock < item.quantity) {
+                    throw new HttpsError("failed-precondition",
+                        `Insufficient stock for ${item.title} (${item.unit}). Available: ${currentStock}`,
+                        {reason: "insufficient_stock"});
+                  }
+
+                  data.variations[varIndex].stockCount = currentStock - item.quantity;
+                  if (data.variations[varIndex].stockCount <= 0) {
+                    data.variations[varIndex].inStock = false;
+                  }
+                } else {
+                  const currentStock = data.stockCount != null ? data.stockCount : 0;
+                  
+                  if (currentStock < item.quantity) {
+                    throw new HttpsError("failed-precondition",
+                        `Insufficient stock for ${item.title}. Available: ${currentStock}`,
+                        {reason: "insufficient_stock"});
+                  }
+
+                  data.stockCount = currentStock - item.quantity;
+                  if (data.stockCount <= 0) {
+                    data.inStock = false;
+                  }
                 }
-
-                stockUpdates.push({
-                  ref: snap.ref,
-                  newStock: currentStock - item.quantity,
-                });
               }
 
               const slotRef = db.collection("slots").doc(selectedSlotId);
@@ -358,8 +396,12 @@ exports.createOrder = require("firebase-functions/v2/https")
                 }
               }
 
-              for (const update of stockUpdates) {
-                transaction.update(update.ref, {stockCount: update.newStock});
+              for (const [id, data] of Object.entries(productDataMap)) {
+                const updatePayload = {};
+                if (data.stockCount !== undefined) updatePayload.stockCount = data.stockCount;
+                if (data.inStock !== undefined) updatePayload.inStock = data.inStock;
+                if (data.variations) updatePayload.variations = data.variations;
+                transaction.update(productRefMap[id], updatePayload);
               }
 
               const newSlotAssignedOrders =

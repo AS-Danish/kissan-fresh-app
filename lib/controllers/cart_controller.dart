@@ -277,7 +277,16 @@ class CartController extends GetxController {
     }
 
     // Use product ID if available, otherwise use title
-    final productId = product.id ?? product.title;
+    String productId = product.id ?? product.title;
+    
+    // If product has variations, append the first variation's ID or unit to match ProductDetails behavior
+    if (product.hasVariations && product.variations != null && product.variations!.isNotEmpty) {
+      if (!productId.contains('_')) {
+        final v = product.variations!.first;
+        final vId = v.id ?? "${v.unitValue}${v.unit}";
+        productId = '${productId}_$vId';
+      }
+    }
 
     final cartItem = CartItem(
       id: productId,
@@ -399,8 +408,11 @@ class CartController extends GetxController {
         cartItems[index].count--;
         cartItems.refresh();
         _saveToHive();
+      } else if (cartItems[index].count == 1) {
+        cartItems.removeAt(index);
+        cartItems.refresh();
+        _saveToHive();
       }
-      // If count is 1, do nothing (don't remove the item)
     }
   }
 
@@ -477,7 +489,9 @@ class CartController extends GetxController {
               
               if (baseId == productId) {
                 double freshPrice = (data['price'] ?? 0).toDouble();
-                int freshStock = (data['stockCount'] ?? 0).toInt();
+                int freshStock = data['stockCount'] != null 
+                    ? (data['stockCount']).toInt() 
+                    : 0; // Strict tracking
                 bool freshInStock = (data['inStock'] ?? true) && freshStock > 0;
 
                 // If this cart item is a variation, extract specific price/stock
@@ -485,13 +499,27 @@ class CartController extends GetxController {
                   final variationId = cartItemId.substring(cartItemId.indexOf('_') + 1);
                   final variationsList = data['variations'] as List;
                   final variationData = variationsList.firstWhere(
-                    (v) => v['id']?.toString() == variationId,
+                    (v) {
+                      final vId = v['id']?.toString();
+                      if (vId != null && vId == variationId) return true;
+                      
+                      // Fallback for null IDs: match by unitValue+unit
+                      final altId = "${v['unitValue'] ?? ''}${v['unit'] ?? ''}";
+                      if (altId == variationId) return true;
+                      
+                      // Legacy cart items might just have 'null'
+                      if (vId == null && variationId == 'null') return true;
+                      
+                      return false;
+                    },
                     orElse: () => null,
                   );
 
                   if (variationData != null) {
                     freshPrice = (variationData['price'] ?? 0).toDouble();
-                    freshStock = (variationData['stockCount'] ?? 0).toInt();
+                    freshStock = variationData['stockCount'] != null 
+                        ? (variationData['stockCount']).toInt() 
+                        : 0; // Strict tracking
                     freshInStock = (variationData['inStock'] ?? true) && freshStock > 0;
                   } else {
                      freshInStock = false;
@@ -716,6 +744,7 @@ class CartController extends GetxController {
           .map(
             (item) => OrderItem(
               productId: item.id.split('_').first, // Ensure backend gets the base productId
+              variationId: item.id.contains('_') ? item.id.substring(item.id.indexOf('_') + 1) : null,
               title: item.name,
               unit: item.quantity,
               image: item.image,
@@ -891,22 +920,7 @@ class CartController extends GetxController {
       'No address selected',
     ];
 
-    // Priority 1: AddressController (user explicitly selected an address)
-    try {
-      if (Get.isRegistered<AddressController>()) {
-        final ctrl = Get.find<AddressController>();
-        final addr = ctrl.currentAddress.value;
-        if (!invalidValues.contains(addr)) {
-          return ResolvedAddress(
-            address: addr,
-            latitude: ctrl.selectedLocation.value.latitude,
-            longitude: ctrl.selectedLocation.value.longitude,
-          );
-        }
-      }
-    } catch (_) {}
-
-    // Priority 2: LocationService (GPS-detected address)
+    // Priority 1: LocationService (GPS-detected or manually updated detailed address)
     try {
       if (Get.isRegistered<LocationService>()) {
         final loc = Get.find<LocationService>();
@@ -1044,28 +1058,61 @@ class CartController extends GetxController {
 
     bool needsUpdate = false;
     try {
-      final List<String> itemIds = cartItems.map((e) => e.id).toList();
+      // Get unique base IDs for querying Firebase (stripping variation extensions)
+      final List<String> baseIds = cartItems.map((e) => e.id.split('_').first).toSet().toList();
 
       // Process in chunks of 30 due to whereIn limits
-      for (int i = 0; i < itemIds.length; i += 30) {
-        final chunk = itemIds.skip(i).take(30).toList();
+      for (int i = 0; i < baseIds.length; i += 30) {
+        final chunk = baseIds.skip(i).take(30).toList();
 
         final querySnap = await _firestore
             .collection('products')
             .where(FieldPath.documentId, whereIn: chunk)
             .get();
-        final docMap = {for (var doc in querySnap.docs) doc.id: doc};
+        final docMap = {for (var doc in querySnap.docs) doc.id: doc.data()};
 
         for (int j = 0; j < cartItems.length; j++) {
           var cartItem = cartItems[j];
-          if (!chunk.contains(cartItem.id)) continue;
+          final baseId = cartItem.id.split('_').first;
+          
+          if (!chunk.contains(baseId)) continue;
 
-          if (docMap.containsKey(cartItem.id)) {
-            final data = docMap[cartItem.id]!.data();
-            final double freshPrice = (data['price'] ?? 0).toDouble();
-            final int freshStockCount = (data['stockCount'] ?? 0).toInt();
-            final bool freshStockStatus =
-                (data['inStock'] ?? true) && freshStockCount > 0;
+          if (docMap.containsKey(baseId)) {
+            final data = docMap[baseId]!;
+            
+            double freshPrice = (data['price'] ?? 0).toDouble();
+            int freshStockCount = data['stockCount'] != null 
+                ? (data['stockCount']).toInt() 
+                : 0; // Strict tracking
+            bool freshStockStatus = (data['inStock'] ?? true) && freshStockCount > 0;
+
+            // Handle variation specific stock if applicable
+            if (cartItem.id.contains('_') && data['hasVariations'] == true && data['variations'] != null) {
+              final variationId = cartItem.id.substring(cartItem.id.indexOf('_') + 1);
+              final variationsList = data['variations'] as List;
+              final variationData = variationsList.firstWhere(
+                (v) {
+                  final vId = v['id']?.toString();
+                  if (vId != null && vId == variationId) return true;
+                  final altId = "${v['unitValue'] ?? ''}${v['unit'] ?? ''}";
+                  if (altId == variationId) return true;
+                  if (vId == null && variationId == 'null') return true;
+                  return false;
+                },
+                orElse: () => null,
+              );
+
+              if (variationData != null) {
+                freshPrice = (variationData['price'] ?? 0).toDouble();
+                freshStockCount = variationData['stockCount'] != null 
+                    ? (variationData['stockCount']).toInt() 
+                    : 0; // Strict tracking
+                freshStockStatus = (variationData['inStock'] ?? true) && freshStockCount > 0;
+              } else {
+                freshStockStatus = false;
+                freshStockCount = 0;
+              }
+            }
 
             if (cartItem.price != freshPrice ||
                 cartItem.inStock != freshStockStatus ||
@@ -1074,7 +1121,7 @@ class CartController extends GetxController {
               cartItem.inStock = freshStockStatus;
               cartItem.availableStock = freshStockCount;
 
-              if (cartItem.count > freshStockCount) {
+              if (cartItem.count > freshStockCount && freshStockCount >= 0) {
                 cartItem.count = freshStockCount;
               }
               if (freshStockCount <= 0) {

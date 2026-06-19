@@ -172,6 +172,31 @@ class ProfileScreen extends StatelessWidget {
                   }
                 },
               ),
+              const SizedBox(height: 16),
+              
+              // Manage Addresses Button
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: OutlinedButton.icon(
+                  onPressed: () => Get.toNamed(AppRoutes.manageAddressesRoute),
+                  icon: Icon(Icons.location_on_rounded, color: Theme.of(context).primaryColor),
+                  label: Text(
+                    'Manage Saved Addresses',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Theme.of(context).primaryColor, width: 1.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ),
 
               const SizedBox(height: 32),
 

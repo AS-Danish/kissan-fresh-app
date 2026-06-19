@@ -288,8 +288,9 @@ class ProductDetailsController extends GetxController {
       ProductCardModel productToAdd = p;
       if (p.hasVariations && selectedVariation.value != null) {
         final v = selectedVariation.value!;
+        final vId = v.id ?? "${v.unitValue}${v.unit}";
         productToAdd = p.copyWith(
-          id: '${p.id}_${v.id}',
+          id: '${p.id}_$vId',
           price: v.price,
           mrp: v.mrp,
           unit: v.unit,

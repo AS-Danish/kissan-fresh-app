@@ -8,6 +8,7 @@ import '../../controllers/profile_controller.dart';
 import '../../routes/app_routes.dart';
 import '../../services/location_service.dart';
 import 'home_tab_toggle.dart';
+import 'package:kissanfresh/views/widgets/address_bottom_sheet.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
@@ -75,16 +76,8 @@ class HomeHeader extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
                       InkWell(
-                        onTap: () async {
-                          final result = await Get.toNamed(
-                            AppRoutes.addressSelectionRoute,
-                          );
-                          if (result != null &&
-                              result is Map<String, dynamic>) {
-                            Get.find<HomepageController>().updateAddress(
-                              result['address'] ?? '',
-                            );
-                          }
+                        onTap: () {
+                          AddressBottomSheet.show(context);
                         },
                         borderRadius: BorderRadius.circular(8),
                         child: Padding(
@@ -141,18 +134,30 @@ class HomeHeader extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 8),
                                 Flexible(
-                                  child: Text(
-                                    Get.find<HomepageController>()
-                                            .currentAddress
-                                            .value ??
-                                        'Fetching location...',
-                                    style: GoogleFonts.montserrat(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 13,
-                                      letterSpacing: 0.2,
-                                    ),
+                                  child: RichText(
+                                    maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
+                                    text: TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: "${locationService.currentAddressType.value} - ",
+                                          style: GoogleFonts.montserrat(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        TextSpan(
+                                          text: locationService.currentAddress.value ?? 'Fetching location...',
+                                          style: GoogleFonts.montserrat(
+                                            color: Colors.white.withValues(alpha: 0.9),
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 13,
+                                            letterSpacing: 0.2,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 4),

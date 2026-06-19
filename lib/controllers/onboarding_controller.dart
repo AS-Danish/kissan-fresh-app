@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:kissanfresh/model/user_model.dart';
+import 'package:kissanfresh/model/address_model.dart';
 import 'package:kissanfresh/services/user_service.dart';
 import 'package:kissanfresh/routes/app_routes.dart';
 import 'package:kissanfresh/services/location_service.dart';
@@ -12,6 +13,9 @@ class OnboardingController extends GetxController {
   final nameController = TextEditingController();
   final addressController = TextEditingController();
   final emailController = TextEditingController();
+
+  double? selectedLat;
+  double? selectedLng;
 
   var isLoading = false.obs;
 
@@ -28,10 +32,10 @@ class OnboardingController extends GetxController {
     final address = addressController.text.trim();
     final email = emailController.text.trim();
 
-    if (name.isEmpty || address.isEmpty) {
+    if (name.isEmpty || address.isEmpty || selectedLat == null || selectedLng == null) {
       Get.snackbar(
         'Error',
-        'Name and Address are required',
+        'Name and Address (via map) are required',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.redAccent,
         colorText: Colors.white,
@@ -51,6 +55,15 @@ class OnboardingController extends GetxController {
 
     isLoading.value = true;
     try {
+
+      final newAddress = AddressModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        type: 'Home',
+        mapAddress: address,
+        latitude: selectedLat!,
+        longitude: selectedLng!,
+      );
+
       final userModel = UserModel(
         id: currentUser.uid,
         name: name,
@@ -60,6 +73,7 @@ class OnboardingController extends GetxController {
         imageUrl: null,
         role: 'user',
         onboardingCompleted: true,
+        savedAddresses: [newAddress],
         createdAt: DateTime.now(),
       );
 

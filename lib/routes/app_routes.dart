@@ -24,6 +24,7 @@ import 'package:kissanfresh/views/screens/terms_conditions_screen.dart';
 import 'package:kissanfresh/views/screens/help_support_screen.dart';
 import 'package:kissanfresh/views/screens/slot_selection_screen.dart';
 import 'package:kissanfresh/bindings/onboarding_binding.dart';
+import 'package:kissanfresh/views/screens/manage_addresses_screen.dart';
 import 'package:kissanfresh/middleware/auth_middleware.dart';
 import 'package:kissanfresh/views/screens/section_products_screen.dart';
 import 'package:kissanfresh/views/screens/account_deletion_screen.dart';
@@ -43,6 +44,7 @@ abstract class AppRoutes {
   static const addressSelectionRoute = '/select-address';
   static const otpVerificationRoute = '/otp-verification';
   static const onboardingRoute = '/onboarding';
+  static const manageAddressesRoute = '/manage-addresses';
   static const paymentMethodRoute = '/payment-method';
   static const aboutUsRoute = '/about-us';
   static const privacyPolicyRoute = '/privacy-policy';
@@ -102,6 +104,11 @@ abstract class AppRoutes {
       name: onboardingRoute,
       page: () => const OnboardingScreen(),
       binding: OnboardingBinding(),
+    ),
+    GetPage(
+      name: manageAddressesRoute,
+      page: () => const ManageAddressesScreen(),
+      transition: Transition.rightToLeft,
     ),
     GetPage(name: paymentMethodRoute, page: () => PaymentMethodScreen()),
     GetPage(name: aboutUsRoute, page: () => const AboutUsScreen()),

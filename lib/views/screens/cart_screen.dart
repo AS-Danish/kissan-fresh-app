@@ -55,15 +55,10 @@ class CartScreen extends StatelessWidget {
 
         return Column(
           children: [
-            // Delivery Info Card
-            const DeliveryInfoCard(),
-
-            const SizedBox(height: 16),
-
             // Cart Items List
             Expanded(
               child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.only(left: 20, right: 20, bottom: 24, top: 16),
                 itemCount: controller.cartItems.length,
                 separatorBuilder: (context, index) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {

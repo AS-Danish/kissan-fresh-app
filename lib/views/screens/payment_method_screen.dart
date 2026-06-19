@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/cart_controller.dart';
 import '../../services/location_service.dart';
+import '../../views/widgets/address_bottom_sheet.dart';
 
 class PaymentMethodScreen extends StatelessWidget {
   PaymentMethodScreen({super.key});
@@ -133,14 +134,30 @@ class PaymentMethodScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Delivering to',
-                  style: GoogleFonts.montserrat(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: theme.primaryColor,
-                    letterSpacing: 0.5,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      'Delivering to ',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    Flexible(
+                      child: Obx(
+                        () => Text(
+                          Get.find<LocationService>().currentAddressType.value,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: theme.primaryColor,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 6),
                 Obx(
@@ -149,15 +166,32 @@ class PaymentMethodScreen extends StatelessWidget {
                         'No address selected',
                     style: GoogleFonts.montserrat(
                       fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: theme.colorScheme.onSurface,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade600,
                       height: 1.4,
                     ),
-                    maxLines: 3,
+                    maxLines: 6,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
+            ),
+          ),
+          InkWell(
+            onTap: () {
+              AddressBottomSheet.show(context);
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Text(
+                'Change',
+                style: GoogleFonts.montserrat(
+                  color: theme.primaryColor,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
+              ),
             ),
           ),
         ],

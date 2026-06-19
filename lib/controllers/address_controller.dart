@@ -4,7 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:kissanfresh/model/address_model.dart';
+import 'package:kissanfresh/model/user_model.dart';
+import 'package:kissanfresh/services/user_service.dart';
+import 'package:kissanfresh/services/location_service.dart';
 import 'package:uuid/uuid.dart';
 import 'package:kissanfresh/services/maps_cache_service.dart';
 
@@ -25,7 +30,11 @@ class AddressController extends GetxController {
   GoogleMapController? _mapController;
 
   final TextEditingController searchController = TextEditingController();
-
+  final TextEditingController landmarkController = TextEditingController();
+  final TextEditingController flatNoController = TextEditingController();
+  
+  final RxString selectedAddressType = 'Home'.obs; // Default to Home
+  
   final MapsCacheService _mapsCacheService = MapsCacheService();
 
   Timer? _geocodeDebounce;
@@ -47,10 +56,22 @@ class AddressController extends GetxController {
       currentAddress.value = savedAddress;
       searchController.text = savedAddress;
     }
+    
+    final flatNo = _settingsBox.get('current_flat_no');
+    if (flatNo != null) {
+      flatNoController.text = flatNo;
+    }
+    
+    final landmark = _settingsBox.get('current_landmark');
+    if (landmark != null) {
+      landmarkController.text = landmark;
+    }
   }
 
-  void _saveAddressToHive(String address) {
+  void _saveAddressToHive(String address, String flatNo, String landmark) {
     _settingsBox.put('current_address', address);
+    _settingsBox.put('current_flat_no', flatNo);
+    _settingsBox.put('current_landmark', landmark);
   }
 
   void _refreshSessionToken() {
@@ -61,6 +82,8 @@ class AddressController extends GetxController {
   @override
   void onClose() {
     searchController.dispose();
+    landmarkController.dispose();
+    flatNoController.dispose();
     _geocodeDebounce?.cancel();
     _autocompleteDebounce?.cancel();
     _mapController?.dispose();
@@ -242,12 +265,77 @@ class AddressController extends GetxController {
     }
   }
 
-  void confirmLocation() {
-    final address = currentAddress.value;
-    _saveAddressToHive(address);
+  void saveFinalAddress() {
+    final flatNo = flatNoController.text.trim();
+    final landmark = landmarkController.text.trim();
+    final mapAddress = currentAddress.value;
+
+    List<String> parts = [];
+    if (flatNo.isNotEmpty) parts.add(flatNo);
+    if (landmark.isNotEmpty) parts.add(landmark);
+    parts.add(mapAddress);
+
+    final finalAddress = parts.join(', ');
+
+    _saveAddressToHive(finalAddress, flatNo, landmark);
+    
+    // Update the global location service with the new complete address
+    if (Get.isRegistered<LocationService>()) {
+      Get.find<LocationService>().currentAddress.value = finalAddress;
+      
+      // Update last_known_lat/lng so the auto-fetch doesn't immediately overwrite it
+      _settingsBox.put('last_known_lat', selectedLocation.value.latitude);
+      _settingsBox.put('last_known_lng', selectedLocation.value.longitude);
+    }
+    
+    // Save to user profile if authenticated
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      final newAddress = AddressModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        type: selectedAddressType.value,
+        mapAddress: mapAddress,
+        flatNo: flatNo.isNotEmpty ? flatNo : null,
+        landmark: landmark.isNotEmpty ? landmark : null,
+        latitude: selectedLocation.value.latitude,
+        longitude: selectedLocation.value.longitude,
+      );
+
+      final userService = UserService();
+      userService.getUser(currentUser.uid).then((userModel) {
+        if (userModel != null) {
+          final updatedAddresses = List<AddressModel>.from(userModel.savedAddresses);
+          updatedAddresses.add(newAddress);
+          
+          final updatedUser = UserModel(
+            id: userModel.id,
+            name: userModel.name,
+            phoneNumber: userModel.phoneNumber,
+            email: userModel.email,
+            address: userModel.address,
+            imageUrl: userModel.imageUrl,
+            role: userModel.role,
+            onboardingCompleted: userModel.onboardingCompleted,
+            savedAddresses: updatedAddresses,
+            createdAt: userModel.createdAt,
+          );
+          
+          userService.updateUser(updatedUser);
+        }
+      });
+    }
+
+    // Clear the controllers for next time (they will be reloaded from Hive if edited)
+    flatNoController.clear();
+    landmarkController.clear();
+    selectedAddressType.value = 'Home';
+
+    // Pop the Details Screen
+    Get.back();
+    // Pop the Address Selection Screen and return the result to the original caller
     Get.back(
       result: {
-        'address': address,
+        'address': finalAddress,
         'lat': selectedLocation.value.latitude,
         'lng': selectedLocation.value.longitude,
       },
@@ -256,7 +344,7 @@ class AddressController extends GetxController {
     Future.delayed(const Duration(milliseconds: 300), () {
       Get.snackbar(
         'Location Updated',
-        address,
+        finalAddress,
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Get.theme.primaryColor,
         colorText: Colors.white,

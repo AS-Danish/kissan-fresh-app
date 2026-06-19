@@ -18,7 +18,7 @@ class UserActivityController extends GetxController {
   
   static const String _recentViewsKey = 'recent_views';
   static const String _viewCountsKey = 'view_counts';
-  static const int _maxItems = 12;
+  static const int _maxItems = 10;
   static const int _viewThreshold = 3;
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -59,6 +59,7 @@ class UserActivityController extends GetxController {
             .map((item) => item.id)
             .where((id) => id != null)
             .cast<String>()
+            .take(10) // Firestore whereIn limit
             .toList();
 
     if (productIds.isEmpty) {
@@ -82,8 +83,26 @@ class UserActivityController extends GetxController {
                 final fetchedIds = snapshot.docs.map((doc) => doc.id).toList();
                 final deletedIds = productIds.where((id) => !fetchedIds.contains(id)).toList();
                 
+                bool changed = false;
+
+                // Update existing items with fresh data
+                for (int i = 0; i < personalizedProducts.length; i++) {
+                  final id = personalizedProducts[i].id;
+                  if (id != null && newData.containsKey(id)) {
+                    final freshData = newData[id]!;
+                    freshData['id'] = id; // ensure ID is present for parsing
+                    final freshProduct = ProductCardModel.fromJson(freshData);
+                    
+                    // Maintain the callbacks but update the data
+                    personalizedProducts[i] = freshProduct.copyWith(
+                      onTap: personalizedProducts[i].onTap,
+                      onAddToCart: personalizedProducts[i].onAddToCart,
+                    );
+                    changed = true;
+                  }
+                }
+
                 if (deletedIds.isNotEmpty) {
-                  bool changed = false;
                   personalizedProducts.removeWhere((item) {
                     if (deletedIds.contains(item.id)) {
                       changed = true;
@@ -92,9 +111,11 @@ class UserActivityController extends GetxController {
                     return false;
                   });
 
-                  if (changed) {
-                    _removeFromRecentViews(deletedIds);
-                  }
+                  _removeFromRecentViews(deletedIds);
+                }
+
+                if (changed) {
+                  personalizedProducts.refresh();
                 }
               },
               onError: (e) => debugPrint("Error in personalized products stream: $e"),
