@@ -60,7 +60,7 @@ class HomeCategoryGridSection extends StatelessWidget {
                 crossAxisCount: 3,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 16,
-                childAspectRatio: 0.62, // Adjusted for ProductCardWidget
+                childAspectRatio: 0.52, // Adjusted for ProductCardWidget to avoid overflow
               ),
               itemCount: displayProducts.length,
               itemBuilder: (context, index) {

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
-import 'package:lottie/lottie.dart';
 import '../../model/product_card_model.dart';
 import '../../controllers/theme_controller.dart';
 
@@ -99,7 +98,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                 children: [
                   // Image Section
                   Expanded(
-                    flex: 13,
+                    flex: 11,
                     child: Stack(
                       children: [
                         Positioned.fill(
@@ -234,7 +233,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
 
                   // Details Section
                   Expanded(
-                    flex: 11,
+                    flex: 13,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,

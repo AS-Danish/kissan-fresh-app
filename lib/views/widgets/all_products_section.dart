@@ -167,7 +167,7 @@ class AllProductsSection extends StatelessWidget {
                     crossAxisCount: 3,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
-                    childAspectRatio: 0.58,
+                    childAspectRatio: 0.52,
                   ),
                   itemCount: controller.products.length,
                   itemBuilder: (context, index) {

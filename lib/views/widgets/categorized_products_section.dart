@@ -129,7 +129,7 @@ class CategorizedProductsSection extends StatelessWidget {
               ),
               // Horizontal Scroll
               SizedBox(
-                height: 200, // Height for ProductCardWidget in 3-column layout
+                height: 230, // Height for ProductCardWidget in 3-column layout
                 child: ListView.separated(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   scrollDirection: Axis.horizontal,

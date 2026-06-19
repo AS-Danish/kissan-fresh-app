@@ -293,8 +293,7 @@ class ProductSearchController extends GetxController {
           if (selectedCategory.value != 'All' && p.category != selectedCategory.value) {
             return false;
           }
-          final name = p.title.toLowerCase();
-          return name.contains(sq);
+          return _fuzzyMatch(sq, p.title);
         }).toList();
 
         searchResults.assignAll(filtered);
@@ -427,6 +426,61 @@ class ProductSearchController extends GetxController {
         onAddToCart: () {},
       ),
     );
+  }
+
+  bool _fuzzyMatch(String query, String target) {
+    query = query.toLowerCase().trim();
+    target = target.toLowerCase().trim();
+    
+    if (query.isEmpty) return true;
+    if (target.contains(query) || query.contains(target)) return true;
+    
+    List<String> queryWords = query.split(RegExp(r'\s+'));
+    List<String> targetWords = target.split(RegExp(r'\s+'));
+    
+    bool allWordsMatch = true;
+    for (String qWord in queryWords) {
+      if (qWord.isEmpty) continue;
+      
+      bool wordMatched = false;
+      String qBase = qWord;
+      if (qWord.length > 3) {
+        if (qWord.endsWith('ies')) {
+          qBase = qWord.substring(0, qWord.length - 3) + 'y';
+        } else if (qWord.endsWith('es')) {
+          qBase = qWord.substring(0, qWord.length - 2);
+        } else if (qWord.endsWith('s')) {
+          qBase = qWord.substring(0, qWord.length - 1);
+        }
+      }
+      
+      for (String tWord in targetWords) {
+        if (tWord.isEmpty) continue;
+        
+        String tBase = tWord;
+        if (tWord.length > 3) {
+          if (tWord.endsWith('ies')) {
+            tBase = tWord.substring(0, tWord.length - 3) + 'y';
+          } else if (tWord.endsWith('es')) {
+            tBase = tWord.substring(0, tWord.length - 2);
+          } else if (tWord.endsWith('s')) {
+            tBase = tWord.substring(0, tWord.length - 1);
+          }
+        }
+        
+        if (tWord == qWord || tBase == qBase || tWord.contains(qBase) || qWord.contains(tBase)) {
+          wordMatched = true;
+          break;
+        }
+      }
+      
+      if (!wordMatched) {
+        allWordsMatch = false;
+        break;
+      }
+    }
+    
+    return allWordsMatch;
   }
 
   @override

@@ -83,9 +83,9 @@ class SectionProductsScreen extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 0.58,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 0.52,
           ),
           itemCount: products.length,
           itemBuilder: (context, index) {
