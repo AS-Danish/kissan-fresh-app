@@ -21,13 +21,15 @@ class FloatingCartSnackbar extends StatelessWidget {
       final itemCount = cartController.totalItemCount;
       final discount = cartController.discount;
 
-      return Padding(
-        padding: EdgeInsets.only(
-          left: 16.0,
-          right: 16.0,
-          bottom: bottomPadding,
-        ),
-        child: Material(
+      return SafeArea(
+        bottom: true,
+        child: Padding(
+          padding: EdgeInsets.only(
+            left: 16.0,
+            right: 16.0,
+            bottom: bottomPadding,
+          ),
+          child: Material(
           color: Colors.transparent,
           elevation: 16,
           borderRadius: BorderRadius.circular(16),
@@ -167,6 +169,7 @@ class FloatingCartSnackbar extends StatelessWidget {
                 ],
               ),
             ),
+          ),
           ),
         ),
       );

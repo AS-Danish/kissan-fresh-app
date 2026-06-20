@@ -122,16 +122,6 @@ class MyApp extends StatelessWidget {
         home: const SplashScreen(),
         defaultTransition: Transition.cupertino,
         transitionDuration: const Duration(milliseconds: 300),
-        builder: (context, child) {
-          return MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              // Remove bottom padding so SafeArea inside routes doesn't double-pad
-              padding: MediaQuery.of(context).padding.copyWith(bottom: 0),
-              viewPadding: MediaQuery.of(context).viewPadding.copyWith(bottom: 0),
-            ),
-            child: child ?? const SizedBox.shrink(),
-          );
-        },
       ),
     );
   }
