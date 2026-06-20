@@ -19,34 +19,31 @@ class ProductCardWidget extends StatefulWidget {
   State<ProductCardWidget> createState() => _ProductCardWidgetState();
 }
 
-class _ProductCardWidgetState extends State<ProductCardWidget>
-    with SingleTickerProviderStateMixin {
+class _ProductCardWidgetState extends State<ProductCardWidget> {
   bool _isPressed = false;
-  late AnimationController _floatController;
-  late Animation<double> _floatAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _floatController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat(reverse: true);
-    
-    _floatAnimation = Tween<double>(begin: -4.0, end: 4.0).animate(
-      CurvedAnimation(parent: _floatController, curve: Curves.easeInOutSine),
-    );
-  }
-
-  @override
-  void dispose() {
-    _floatController.dispose();
-    super.dispose();
-  }
 
   bool _isNetworkImage(String path) {
     return path.startsWith('http://') || path.startsWith('https://');
   }
+
+  Widget _buildImage() {
+    return _isNetworkImage(widget.product.image)
+        ? CachedNetworkImage(
+            imageUrl: widget.product.image,
+            fit: BoxFit.cover,
+            memCacheWidth: 400,
+            memCacheHeight: 400,
+            placeholder: (context, url) => _buildPlaceholder(),
+            errorWidget: (context, url, error) => _buildErrorPlaceholder(),
+          )
+        : Image.asset(
+            widget.product.image,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => _buildErrorPlaceholder(),
+          );
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -106,34 +103,15 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                             borderRadius: const BorderRadius.vertical(
                               top: Radius.circular(18),
                             ),
-                            child: ColorFiltered(
-                              colorFilter: widget.product.inStock
-                                  ? const ColorFilter.mode(
-                                      Colors.transparent,
-                                      BlendMode.multiply,
-                                    )
-                                  : const ColorFilter.mode(
+                            child: widget.product.inStock
+                                ? _buildImage()
+                                : ColorFiltered(
+                                    colorFilter: const ColorFilter.mode(
                                       Colors.grey,
                                       BlendMode.saturation,
                                     ),
-                              child: _isNetworkImage(widget.product.image)
-                                  ? CachedNetworkImage(
-                                      imageUrl: widget.product.image,
-                                      fit: BoxFit.cover,
-                                      memCacheWidth: 400,
-                                      memCacheHeight: 400,
-                                      placeholder: (context, url) =>
-                                          _buildPlaceholder(),
-                                      errorWidget: (context, url, error) =>
-                                          _buildErrorPlaceholder(),
-                                    )
-                                  : Image.asset(
-                                      widget.product.image,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) =>
-                                          _buildErrorPlaceholder(),
-                                    ),
-                            ),
+                                    child: _buildImage(),
+                                  ),
                           ),
                         ),
 
@@ -445,15 +423,10 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                     ],
                   ),
                   child: Center(
-                    child: AnimatedBuilder(
-                      animation: _floatAnimation,
-                      builder: (context, child) {
-                        return Transform.translate(
-                          offset: Offset(0, _floatAnimation.value),
-                          child: Transform.rotate(
-                            angle: 0.1,
-                            child: CachedNetworkImage(
-                              imageUrl: isEid
+                    child: Transform.rotate(
+                      angle: 0.1,
+                      child: CachedNetworkImage(
+                        imageUrl: isEid
                                   ? [
                                       'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f319.png', // Crescent Moon
                                       'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/2b50.png',  // Star
@@ -476,12 +449,9 @@ class _ProductCardWidgetState extends State<ProductCardWidget>
                               ),
                             ),
                           ),
-                        );
-                      },
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
           ],
         ),
       ),
