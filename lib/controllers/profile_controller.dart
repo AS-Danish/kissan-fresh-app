@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -124,7 +125,7 @@ class ProfileController extends GetxController {
     // Validate inputs (basic)
     if (nameController.text.trim().isEmpty ||
         addressController.text.trim().isEmpty) {
-      Get.snackbar(
+      CustomSnackBar.show(
         'Error',
         'Name and Address are required',
         snackPosition: SnackPosition.BOTTOM,
@@ -175,7 +176,7 @@ class ProfileController extends GetxController {
           Get.find<LocationService>().currentAddress.value =
               updatedModel.address;
 
-          Get.snackbar(
+          CustomSnackBar.show(
             'Success',
             'Profile updated successfully',
             snackPosition: SnackPosition.BOTTOM,
@@ -187,7 +188,7 @@ class ProfileController extends GetxController {
         }
       }
     } catch (e) {
-      Get.snackbar(
+      CustomSnackBar.show(
         'Error',
         'Could not update profile',
         snackPosition: SnackPosition.BOTTOM,
@@ -215,7 +216,7 @@ class ProfileController extends GetxController {
             .collection('orders')
             .where('userId', isEqualTo: uid)
             .get();
-        
+
         final batch = FirebaseFirestore.instance.batch();
         for (var doc in ordersSnapshot.docs) {
           batch.update(doc.reference, {
@@ -245,9 +246,11 @@ class ProfileController extends GetxController {
 
         try {
           if (Hive.isBoxOpen('cart_box')) await Hive.box('cart_box').clear();
-          if (Hive.isBoxOpen('wishlist_box')) await Hive.box('wishlist_box').clear();
-          if (Hive.isBoxOpen('user_activity')) await Hive.box('user_activity').clear();
-        } catch(e) {
+          if (Hive.isBoxOpen('wishlist_box'))
+            await Hive.box('wishlist_box').clear();
+          if (Hive.isBoxOpen('user_activity'))
+            await Hive.box('user_activity').clear();
+        } catch (e) {
           debugPrint("Error clearing hive boxes: $e");
         }
 
@@ -256,14 +259,14 @@ class ProfileController extends GetxController {
           await currentUser.delete();
         } on FirebaseAuthException catch (e) {
           if (e.code == 'requires-recent-login') {
-             // Bypass the error by just signing out, because all data is wiped anyway
-             await FirebaseAuth.instance.signOut();
+            // Bypass the error by just signing out, because all data is wiped anyway
+            await FirebaseAuth.instance.signOut();
           } else {
-             rethrow;
+            rethrow;
           }
         }
 
-        Get.snackbar(
+        CustomSnackBar.show(
           'Account Deleted',
           'Your account has been permanently deleted.',
           snackPosition: SnackPosition.BOTTOM,
@@ -276,7 +279,7 @@ class ProfileController extends GetxController {
         Get.offAllNamed(AppRoutes.loginScreen);
       }
     } catch (e) {
-      Get.snackbar(
+      CustomSnackBar.show(
         'Error',
         'Failed to delete account. Please try again.',
         backgroundColor: Colors.red,
@@ -335,7 +338,7 @@ class ProfileController extends GetxController {
         );
         await _userService.createUser(updatedModel); // Acts as a save/update
 
-        Get.snackbar(
+        CustomSnackBar.show(
           'Success',
           'Profile picture updated!',
           snackPosition: SnackPosition.BOTTOM,
@@ -344,7 +347,7 @@ class ProfileController extends GetxController {
         );
       }
     } catch (e) {
-      Get.snackbar(
+      CustomSnackBar.show(
         'Upload Failed',
         'Could not upload image. Please try again.',
         snackPosition: SnackPosition.BOTTOM,

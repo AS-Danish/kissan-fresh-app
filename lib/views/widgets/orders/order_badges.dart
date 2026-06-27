@@ -9,7 +9,8 @@ class OrderTypeBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isCod = orderType.toUpperCase() == 'COD' ||
+    final bool isCod =
+        orderType.toUpperCase() == 'COD' ||
         orderType.toUpperCase() == 'CASH ON DELIVERY';
 
     return Container(
@@ -26,7 +27,9 @@ class OrderTypeBadge extends StatelessWidget {
           Icon(
             isCod ? Icons.money_rounded : Icons.account_balance_wallet_rounded,
             size: 12,
-            color: isCod ? Theme.of(context).primaryColor : const Color(0xFF6366F1),
+            color: isCod
+                ? Theme.of(context).primaryColor
+                : const Color(0xFF6366F1),
           ),
           const SizedBox(width: 4),
           Text(
@@ -34,7 +37,9 @@ class OrderTypeBadge extends StatelessWidget {
             style: GoogleFonts.montserrat(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: isCod ? Theme.of(context).primaryColor : const Color(0xFF6366F1),
+              color: isCod
+                  ? Theme.of(context).primaryColor
+                  : const Color(0xFF6366F1),
               letterSpacing: 0.3,
             ),
           ),

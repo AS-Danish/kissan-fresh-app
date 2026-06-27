@@ -25,7 +25,10 @@ class OrderCard extends StatelessWidget {
             offset: const Offset(0, 2),
           ),
         ],
-        border: Border.all(color: Theme.of(context).colorScheme.outline, width: 1),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline,
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,7 +101,9 @@ class OrderCard extends StatelessWidget {
                               width: 50,
                               height: 50,
                               decoration: BoxDecoration(
-                                color: Theme.of(context).brightness == Brightness.dark
+                                color:
+                                    Theme.of(context).brightness ==
+                                        Brightness.dark
                                     ? Colors.white.withValues(alpha: 0.1)
                                     : Colors.grey.shade100,
                                 borderRadius: BorderRadius.circular(10),
@@ -110,7 +115,9 @@ class OrderCard extends StatelessWidget {
                                   fit: BoxFit.cover,
                                   errorWidget: (context, url, error) {
                                     return Container(
-                                      color: Theme.of(context).brightness == Brightness.dark
+                                      color:
+                                          Theme.of(context).brightness ==
+                                              Brightness.dark
                                           ? Colors.white.withValues(alpha: 0.05)
                                           : Colors.grey.shade200,
                                       child: const Icon(
@@ -133,37 +140,47 @@ class OrderCard extends StatelessWidget {
                                     style: GoogleFonts.montserrat(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
-                                      color: Theme.of(context).colorScheme.onSurface,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
                                       letterSpacing: 0.2,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   const SizedBox(height: 2),
-                                    Row(
-                                      children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        '${item.quantity} x ₹${item.price.toStringAsFixed(0)}',
+                                        style: GoogleFonts.montserrat(
+                                          fontSize: 12,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withValues(alpha: 0.6),
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      if (item.mrp != null &&
+                                          item.mrp! > item.price) ...[
+                                        const SizedBox(width: 6),
                                         Text(
-                                          '${item.quantity} x ₹${item.price.toStringAsFixed(0)}',
+                                          '₹${item.mrp!.toStringAsFixed(0)}',
                                           style: GoogleFonts.montserrat(
-                                            fontSize: 12,
-                                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                                            fontSize: 10,
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSurface
+                                                .withValues(alpha: 0.4),
                                             fontWeight: FontWeight.w500,
+                                            decoration:
+                                                TextDecoration.lineThrough,
                                           ),
                                         ),
-                                        if (item.mrp != null && item.mrp! > item.price) ...[
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            '₹${item.mrp!.toStringAsFixed(0)}',
-                                            style: GoogleFonts.montserrat(
-                                              fontSize: 10,
-                                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
-                                              fontWeight: FontWeight.w500,
-                                              decoration: TextDecoration.lineThrough,
-                                            ),
-                                          ),
-                                        ],
                                       ],
-                                    ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
@@ -185,7 +202,10 @@ class OrderCard extends StatelessWidget {
                                     style: GoogleFonts.montserrat(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w500,
-                                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(alpha: 0.4),
                                       decoration: TextDecoration.lineThrough,
                                     ),
                                   ),
@@ -266,7 +286,9 @@ class OrderCard extends StatelessWidget {
                           style: GoogleFonts.montserrat(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
                           ),
                         ),
                         const SizedBox(height: 2),
@@ -290,7 +312,9 @@ class OrderCard extends StatelessWidget {
                             style: GoogleFonts.montserrat(
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
-                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withValues(alpha: 0.6),
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -345,7 +369,8 @@ class OrderCard extends StatelessWidget {
                     SizedBox(
                       height: 44,
                       child: OutlinedButton.icon(
-                        onPressed: () => PdfReceiptService.generateAndDownloadReceipt(order),
+                        onPressed: () =>
+                            PdfReceiptService.generateAndDownloadReceipt(order),
                         icon: const Icon(Icons.receipt_long_rounded, size: 16),
                         label: Text(
                           'Receipt',

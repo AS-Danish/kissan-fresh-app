@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -35,11 +36,12 @@ class ProductDetailsController extends GetxController {
   // Initialize with product passed as parameter
   void initializeProduct(ProductCardModel productData) {
     observableProduct.value = productData;
-    
-    if (productData.hasVariations && productData.variations != null && productData.variations!.isNotEmpty) {
+
+    if (productData.hasVariations &&
+        productData.variations != null &&
+        productData.variations!.isNotEmpty) {
       selectedVariation.value = productData.variations!.first;
     }
-
 
     // Universally track product view whenever product details are opened
     try {
@@ -47,7 +49,7 @@ class ProductDetailsController extends GetxController {
     } catch (e) {
       debugPrint("Error tracking product view: $e");
     }
-    
+
     _startProductListener();
     _fetchSimilarProducts(productData);
     // Check if product is already in wishlist using safe Get.put
@@ -80,13 +82,17 @@ class ProductDetailsController extends GetxController {
               unit: () {
                 String baseUnit = data['unit']?.toString() ?? current.unit;
                 String? prefix;
-                if (data['quantity'] != null && data['quantity'].toString().isNotEmpty) {
+                if (data['quantity'] != null &&
+                    data['quantity'].toString().isNotEmpty) {
                   prefix = data['quantity'].toString();
-                } else if (data['weight'] != null && data['weight'].toString().isNotEmpty) {
+                } else if (data['weight'] != null &&
+                    data['weight'].toString().isNotEmpty) {
                   prefix = data['weight'].toString();
-                } else if (data['unitQuantity'] != null && data['unitQuantity'].toString().isNotEmpty) {
+                } else if (data['unitQuantity'] != null &&
+                    data['unitQuantity'].toString().isNotEmpty) {
                   prefix = data['unitQuantity'].toString();
-                } else if (data['unitValue'] != null && data['unitValue'].toString().isNotEmpty) {
+                } else if (data['unitValue'] != null &&
+                    data['unitValue'].toString().isNotEmpty) {
                   prefix = data['unitValue'].toString();
                 }
                 if (prefix != null) {
@@ -97,7 +103,12 @@ class ProductDetailsController extends GetxController {
                 }
                 return baseUnit;
               }(),
-              quantity: data['quantity']?.toString() ?? data['weight']?.toString() ?? data['unitQuantity']?.toString() ?? data['unitValue']?.toString() ?? current.quantity,
+              quantity:
+                  data['quantity']?.toString() ??
+                  data['weight']?.toString() ??
+                  data['unitQuantity']?.toString() ??
+                  data['unitValue']?.toString() ??
+                  current.quantity,
               category: current.category,
               stockCount: (data['stockCount'] ?? 0).toInt(),
               inStock:
@@ -105,26 +116,42 @@ class ProductDetailsController extends GetxController {
               tags: current.tags,
               hasVariations: data['hasVariations'] ?? false,
               variations: data['variations'] != null
-                  ? (data['variations'] as List).map((v) => ProductVariation.fromJson(Map<String, dynamic>.from(v))).toList()
+                  ? (data['variations'] as List)
+                        .map(
+                          (v) => ProductVariation.fromJson(
+                            Map<String, dynamic>.from(v),
+                          ),
+                        )
+                        .toList()
                   : current.variations,
               onTap: current.onTap,
               onAddToCart: current.onAddToCart,
             );
 
             // Maintain selected variation
-            if (observableProduct.value!.hasVariations && observableProduct.value!.variations != null && observableProduct.value!.variations!.isNotEmpty) {
+            if (observableProduct.value!.hasVariations &&
+                observableProduct.value!.variations != null &&
+                observableProduct.value!.variations!.isNotEmpty) {
               if (selectedVariation.value != null) {
-                final existing = observableProduct.value!.variations!.firstWhereOrNull((v) => 
-                  (v.id != null && v.id == selectedVariation.value!.id) || 
-                  (v.id == null && v.unit == selectedVariation.value!.unit && v.unitValue == selectedVariation.value!.unitValue)
-                );
+                final existing = observableProduct.value!.variations!
+                    .firstWhereOrNull(
+                      (v) =>
+                          (v.id != null &&
+                              v.id == selectedVariation.value!.id) ||
+                          (v.id == null &&
+                              v.unit == selectedVariation.value!.unit &&
+                              v.unitValue ==
+                                  selectedVariation.value!.unitValue),
+                    );
                 if (existing != null) {
                   selectedVariation.value = existing;
                 } else {
-                  selectedVariation.value = observableProduct.value!.variations!.first;
+                  selectedVariation.value =
+                      observableProduct.value!.variations!.first;
                 }
               } else {
-                selectedVariation.value = observableProduct.value!.variations!.first;
+                selectedVariation.value =
+                    observableProduct.value!.variations!.first;
               }
             }
           }
@@ -137,26 +164,29 @@ class ProductDetailsController extends GetxController {
       similarProducts.clear();
 
       final List<ProductCardModel> fetchedProducts = [];
-      
+
       // 1. Fetch from the same category
-      if (productData.category != null && productData.category!.isNotEmpty && productData.category != 'All') {
-        final query = FirebaseFirestore.instance.collection('products')
+      if (productData.category != null &&
+          productData.category!.isNotEmpty &&
+          productData.category != 'All') {
+        final query = FirebaseFirestore.instance
+            .collection('products')
             .where('category', isEqualTo: productData.category)
             .limit(11);
         final snapshot = await query.get();
-        
+
         for (var doc in snapshot.docs) {
           if (doc.id == productData.id) continue; // Skip the current product
-          
+
           final data = doc.data();
           data['id'] = doc.id;
-          
+
           try {
             fetchedProducts.add(_mapSimilarProduct(data));
           } catch (e) {
             debugPrint("Error parsing similar product: $e");
           }
-          
+
           if (fetchedProducts.length >= 10) break;
         }
       }
@@ -165,31 +195,36 @@ class ProductDetailsController extends GetxController {
       if (fetchedProducts.length < 10) {
         int remaining = 10 - fetchedProducts.length;
         Query fallbackQuery = FirebaseFirestore.instance.collection('products');
-        
-        if (productData.category != null && productData.category!.isNotEmpty && productData.category != 'All') {
-          fallbackQuery = fallbackQuery.where('category', isNotEqualTo: productData.category);
+
+        if (productData.category != null &&
+            productData.category!.isNotEmpty &&
+            productData.category != 'All') {
+          fallbackQuery = fallbackQuery.where(
+            'category',
+            isNotEqualTo: productData.category,
+          );
         }
-        
+
         final fallbackSnapshot = await fallbackQuery.limit(remaining + 1).get();
-        
+
         for (var doc in fallbackSnapshot.docs) {
           if (doc.id == productData.id) continue;
-          
+
           if (fetchedProducts.any((p) => p.id == doc.id)) continue;
-          
+
           final data = doc.data() as Map<String, dynamic>;
           data['id'] = doc.id;
-          
+
           try {
             fetchedProducts.add(_mapSimilarProduct(data));
           } catch (e) {
             debugPrint("Error parsing similar product: $e");
           }
-          
+
           if (fetchedProducts.length >= 10) break;
         }
       }
-      
+
       similarProducts.value = fetchedProducts;
     } catch (e) {
       debugPrint("Error fetching similar products: $e");
@@ -206,7 +241,7 @@ class ProductDetailsController extends GetxController {
       },
       onAddToCart: () {
         // Handled by widget/cart controller
-      }
+      },
     );
   }
 
@@ -231,7 +266,7 @@ class ProductDetailsController extends GetxController {
     final authController = Get.find<AuthController>();
     if (authController.firebaseUser.value == null) {
       Get.toNamed(AppRoutes.loginScreen);
-      Get.snackbar(
+      CustomSnackBar.show(
         'Login Required',
         'Please login to save favorite items across devices.',
         snackPosition: SnackPosition.BOTTOM,
@@ -250,7 +285,7 @@ class ProductDetailsController extends GetxController {
         observableProduct.value != null &&
         wishlistController.isInWishlist(observableProduct.value!);
 
-    Get.snackbar(
+    CustomSnackBar.show(
       isFav ? 'Added to Favorites' : 'Removed from Favorites',
       isFav
           ? '${observableProduct.value?.title} added to your favorites'
@@ -269,7 +304,7 @@ class ProductDetailsController extends GetxController {
     final authController = Get.find<AuthController>();
     if (authController.firebaseUser.value == null) {
       Get.toNamed(AppRoutes.loginScreen);
-      Get.snackbar(
+      CustomSnackBar.show(
         'Login Required',
         'Please login to add items to your cart.',
         snackPosition: SnackPosition.BOTTOM,
@@ -317,7 +352,7 @@ class ProductDetailsController extends GetxController {
       }
     } catch (e) {
       debugPrint('Error adding to cart: $e');
-      Get.snackbar(
+      CustomSnackBar.show(
         'Error',
         'Failed to add to cart',
         snackPosition: SnackPosition.BOTTOM,
@@ -332,7 +367,8 @@ class ProductDetailsController extends GetxController {
 
   /// Calculate total price
   double get totalPrice =>
-      (selectedVariation.value?.price ?? observableProduct.value?.price ?? 0) * quantity.value;
+      (selectedVariation.value?.price ?? observableProduct.value?.price ?? 0) *
+      quantity.value;
 
   @override
   void onClose() {

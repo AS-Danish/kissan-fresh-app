@@ -12,9 +12,9 @@ class LocationService extends GetxService {
   var currentAddressType = 'Current Location'.obs;
   var isLocationEnabled = false.obs;
   var locationPermissionDenied = false.obs;
-  
+
   Future<void>? initializationFuture;
-  
+
   // Service Area Configuration
   static const double serviceCenterLat = 19.8762;
   static const double serviceCenterLng = 75.3433;
@@ -112,13 +112,13 @@ class LocationService extends GetxService {
         debugPrint('User moved significantly. Using new GPS location.');
         if (gpsAddress != null) {
           currentAddress.value = gpsAddress;
-          
+
           await box.put('last_known_lat', position.latitude);
           await box.put('last_known_lng', position.longitude);
           await box.put('current_address', gpsAddress);
           await box.put('current_address_type', 'Current Location');
           currentAddressType.value = 'Current Location';
-          
+
           // Clear old manual entries
           await box.delete('current_flat_no');
           await box.delete('current_landmark');
@@ -127,7 +127,7 @@ class LocationService extends GetxService {
         // User is in the same location. Prefer the detailed address from Hive if it exists.
         final savedAddress = box.get('current_address');
         final savedType = box.get('current_address_type') ?? 'Current Location';
-        
+
         if (savedAddress != null && savedAddress.toString().isNotEmpty) {
           currentAddress.value = savedAddress;
           currentAddressType.value = savedType;
@@ -155,7 +155,9 @@ class LocationService extends GetxService {
       serviceCenterLng,
     );
 
-    debugPrint('Service Area Check: Distance is ${(distance / 1000).toStringAsFixed(2)} km');
+    debugPrint(
+      'Service Area Check: Distance is ${(distance / 1000).toStringAsFixed(2)} km',
+    );
     return distance <= maxServiceRadiusMeters;
   }
 }

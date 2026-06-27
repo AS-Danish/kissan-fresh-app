@@ -7,7 +7,10 @@ class HomepageBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<HomepageController>(() => HomepageController(), fenix: true);
-    Get.lazyPut<BestsellersController>(() => BestsellersController(), fenix: true);
+    Get.lazyPut<BestsellersController>(
+      () => BestsellersController(),
+      fenix: true,
+    );
     Get.lazyPut<CategorizedProductsController>(
       () => CategorizedProductsController(),
       fenix: true,

@@ -72,7 +72,10 @@ class MapsCacheService {
   }
 
   String _cleanAddress(String address) {
-    return address.replaceAll(RegExp(r'^[a-zA-Z0-9]{2,8}\+[a-zA-Z0-9]{2,3}[\s,]+'), '');
+    return address.replaceAll(
+      RegExp(r'^[a-zA-Z0-9]{2,8}\+[a-zA-Z0-9]{2,3}[\s,]+'),
+      '',
+    );
   }
 
   Future<void> _saveToCache(String key, dynamic resultData) async {

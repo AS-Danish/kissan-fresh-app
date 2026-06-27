@@ -1,8 +1,10 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import '../model/slot_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../services/network_service.dart';
 
 class SlotSelectionController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -24,6 +26,12 @@ class SlotSelectionController extends GetxController {
   Future<void> fetchSlots() async {
     isLoading.value = true;
     try {
+      if (!await NetworkService.isConnected()) {
+        NetworkService.showNoInternetSnackbar();
+        isLoading.value = false;
+        return;
+      }
+
       final now = DateTime.now();
       // Fetch upcoming slots, order by endTime to show chronological order
       // Limit to 50 to ensure we get plenty of slots for today and tomorrow
@@ -60,7 +68,7 @@ class SlotSelectionController extends GetxController {
       }
     } catch (e) {
       debugPrint("Error fetching slots: $e");
-      Get.snackbar(
+      CustomSnackBar.show(
         'Error',
         'Could not fetch delivery slots. Please try again.',
         backgroundColor: Colors.red,

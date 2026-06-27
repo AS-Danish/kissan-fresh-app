@@ -253,8 +253,11 @@ class PdfReceiptService {
     );
   }
 
-  static pw.Widget _pdfTotalRow(String label, String value,
-      {bool isGreen = false}) {
+  static pw.Widget _pdfTotalRow(
+    String label,
+    String value, {
+    bool isGreen = false,
+  }) {
     return pw.Padding(
       padding: const pw.EdgeInsets.only(bottom: 6),
       child: pw.Row(

@@ -50,7 +50,11 @@ class EmptyCartState extends StatelessWidget {
             onPressed: () {
               if (Get.isRegistered<BottomBarController>()) {
                 Get.find<BottomBarController>().changePage(0);
-                Get.until((route) => route.settings.name == AppRoutes.mainLayout || route.isFirst);
+                Get.until(
+                  (route) =>
+                      route.settings.name == AppRoutes.mainLayout ||
+                      route.isFirst,
+                );
               } else {
                 Get.offAllNamed(AppRoutes.mainLayout);
               }

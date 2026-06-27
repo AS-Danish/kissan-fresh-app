@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -88,17 +89,14 @@ class ProductsController extends GetxController {
       final boundData = cached.map((p) {
         return p.copyWith(
           onTap: () {
-            Get.toNamed(
-              AppRoutes.productDetailsRoute,
-              arguments: p,
-            );
+            Get.toNamed(AppRoutes.productDetailsRoute, arguments: p);
           },
           onAddToCart: () {
             try {
               final cartController = Get.find<CartController>();
               bool added = cartController.addToCart(p, 1);
               if (added) {
-                Get.snackbar(
+                CustomSnackBar.show(
                   'Added to Cart',
                   '${p.title} added to cart',
                   snackPosition: SnackPosition.BOTTOM,
@@ -242,17 +240,14 @@ class ProductsController extends GetxController {
 
     return model.copyWith(
       onTap: () {
-        Get.toNamed(
-          AppRoutes.productDetailsRoute,
-          arguments: model,
-        );
+        Get.toNamed(AppRoutes.productDetailsRoute, arguments: model);
       },
       onAddToCart: () {
         try {
           final cartController = Get.find<CartController>();
           bool added = cartController.addToCart(model, 1);
           if (added) {
-            Get.snackbar(
+            CustomSnackBar.show(
               'Added to Cart',
               '${model.title} added to cart',
               snackPosition: SnackPosition.BOTTOM,

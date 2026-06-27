@@ -17,7 +17,7 @@ class NotificationController extends GetxController {
   void toggleNotifications(bool value) async {
     isNotificationsEnabled.value = value;
     await _box.put(_key, value);
-    
+
     if (value) {
       // Re-enable: request permission and save token
       await NotificationService().initialize();

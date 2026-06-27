@@ -18,10 +18,14 @@ class DynamicSectionsWidget extends StatelessWidget {
     return Obx(() {
       // Force rebuild on theme change
       Get.find<ThemeController>().isDarkMode.value;
-      
+
       // Filter sections based on current tab
-      String activeTab = controller.currentTab.value == 'Grocery' ? 'kissan-fresh' : 'home-food';
-      final activeSections = controller.sections.where((s) => s.type == activeTab).toList();
+      String activeTab = controller.currentTab.value == 'Grocery'
+          ? 'kissan-fresh'
+          : 'home-food';
+      final activeSections = controller.sections
+          .where((s) => s.type == activeTab)
+          .toList();
 
       if (controller.isLoadingSections.value && activeSections.isEmpty) {
         return const Padding(
@@ -61,7 +65,9 @@ class DynamicSectionsWidget extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                        color: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
                         letterSpacing: 0.1,
                       ),
                     ),
@@ -70,7 +76,9 @@ class DynamicSectionsWidget extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -108,16 +116,20 @@ class DynamicSectionsWidget extends StatelessWidget {
     });
   }
 
-  Widget _buildSectionCard(BuildContext context, SectionModel section, List<ProductCardModel> products) {
+  Widget _buildSectionCard(
+    BuildContext context,
+    SectionModel section,
+    List<ProductCardModel> products,
+  ) {
     // We need 4 images. If products length < 4, we use empty placeholders.
     String img1 = products.isNotEmpty ? products[0].image : '';
     String img2 = products.length > 1 ? products[1].image : '';
     String img3 = products.length > 2 ? products[2].image : '';
     String img4 = products.length > 3 ? products[3].image : '';
-    
+
     // Show "View All" only if we have 5 products (meaning more exist in DB)
     int fetchedCount = products.length;
-    String moreCount = fetchedCount > 4 ? 'VIEW' : ''; 
+    String moreCount = fetchedCount > 4 ? 'VIEW' : '';
     bool showMoreOverlay = fetchedCount > 4;
     return GestureDetector(
       onTap: () {
@@ -152,13 +164,9 @@ class DynamicSectionsWidget extends StatelessWidget {
                     Expanded(
                       child: Column(
                         children: [
-                          Expanded(
-                            child: _buildImageContainer(context, img1),
-                          ),
+                          Expanded(child: _buildImageContainer(context, img1)),
                           const SizedBox(height: 4),
-                          Expanded(
-                            child: _buildImageContainer(context, img2),
-                          ),
+                          Expanded(child: _buildImageContainer(context, img2)),
                         ],
                       ),
                     ),
@@ -167,9 +175,7 @@ class DynamicSectionsWidget extends StatelessWidget {
                     Expanded(
                       child: Column(
                         children: [
-                          Expanded(
-                            child: _buildImageContainer(context, img3),
-                          ),
+                          Expanded(child: _buildImageContainer(context, img3)),
                           const SizedBox(height: 4),
                           Expanded(
                             child: _buildMoreContainer(
@@ -234,12 +240,12 @@ class DynamicSectionsWidget extends StatelessWidget {
 
   Widget _buildImageContainer(BuildContext context, String imageUrl) {
     if (imageUrl.isEmpty) {
-       return Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(12),
-          ),
-       );
+      return Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+        ),
+      );
     }
     return Container(
       decoration: BoxDecoration(
@@ -277,12 +283,12 @@ class DynamicSectionsWidget extends StatelessWidget {
     bool showOverlay = true,
   }) {
     if (imageUrl.isEmpty) {
-       return Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(12),
-          ),
-       );
+      return Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+        ),
+      );
     }
     return Stack(
       children: [

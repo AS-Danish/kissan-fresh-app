@@ -16,11 +16,11 @@ import 'dart:math' as math;
 class UpdateController extends GetxController {
   final ShorebirdUpdater _updater = ShorebirdUpdater();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   RxBool isCheckingForUpdate = false.obs;
   RxBool isUpdateAvailable = false.obs;
   RxBool isDownloading = false.obs;
-  
+
   Future<void>? initializationFuture;
 
   @override
@@ -40,44 +40,54 @@ class UpdateController extends GetxController {
     try {
       final PackageInfo packageInfo = await PackageInfo.fromPlatform();
       final String currentVersion = packageInfo.version;
-      
-      final doc = await _firestore.collection('app_config').doc('versioning').get();
-      
+
+      final doc = await _firestore
+          .collection('app_config')
+          .doc('versioning')
+          .get();
+
       if (doc.exists) {
         final data = doc.data()!;
-        
+
         // --- Added check for remote catalog updates ---
         if (data.containsKey('catalog_status_last_updated_time')) {
-          final dynamic catalogTimestampRaw = data['catalog_status_last_updated_time'];
+          final dynamic catalogTimestampRaw =
+              data['catalog_status_last_updated_time'];
           String remoteTimeStr = '';
-          
+
           if (catalogTimestampRaw is Timestamp) {
             remoteTimeStr = catalogTimestampRaw.toDate().toIso8601String();
           } else if (catalogTimestampRaw != null) {
             remoteTimeStr = catalogTimestampRaw.toString();
           }
-          
+
           if (remoteTimeStr.isNotEmpty) {
             final cacheService = Get.find<CacheService>();
-            final localTimestamp = cacheService.getRaw('local_catalog_timestamp');
-            
+            final localTimestamp = cacheService.getRaw(
+              'local_catalog_timestamp',
+            );
+
             if (localTimestamp != remoteTimeStr) {
-               debugPrint("Catalog data changed on server, clearing cache...");
-               await cacheService.clearCache();
-               await cacheService.saveRaw('local_catalog_timestamp', remoteTimeStr);
-               
-               // Trigger a refresh if controllers are active
-               if (Get.isRegistered<HomepageController>()) {
-                   Get.find<HomepageController>().fetchCategories();
-               }
-               if (Get.isRegistered<CategorizedProductsController>()) {
-                   Get.find<CategorizedProductsController>().fetchCategorizedProducts();
-               }
+              debugPrint("Catalog data changed on server, clearing cache...");
+              await cacheService.clearCache();
+              await cacheService.saveRaw(
+                'local_catalog_timestamp',
+                remoteTimeStr,
+              );
+
+              // Trigger a refresh if controllers are active
+              if (Get.isRegistered<HomepageController>()) {
+                Get.find<HomepageController>().fetchCategories();
+              }
+              if (Get.isRegistered<CategorizedProductsController>()) {
+                Get.find<CategorizedProductsController>()
+                    .fetchCategorizedProducts();
+              }
             }
           }
         }
         // ---------------------------------------------
-        
+
         final String minVersion = data['min_version'] ?? '1.0.0';
         final String storeUrl = data['store_url'] ?? '';
         final bool forceUpdateEnabled = data['force_update'] ?? false;
@@ -102,10 +112,10 @@ class UpdateController extends GetxController {
       debugPrint("UpdateController: Checking for Shorebird updates...");
       final status = await _updater.checkForUpdate();
       debugPrint("UpdateController: Shorebird status: $status");
-      
+
       if (status == UpdateStatus.outdated) {
         isUpdateAvailable.value = true;
-        
+
         debugPrint("UpdateController: New patch found. Downloading...");
         isDownloading.value = true;
         await _updater.update();
@@ -157,11 +167,7 @@ class UpdateController extends GetxController {
               const Text(
                 'A new update has been downloaded and is ready to be applied. Restart the app now to see the latest changes.',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                  height: 1.5,
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey, height: 1.5),
               ),
               const SizedBox(height: 32),
               Row(
@@ -171,7 +177,10 @@ class UpdateController extends GetxController {
                       onPressed: () => Get.back(),
                       child: const Text(
                         'Later',
-                        style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),

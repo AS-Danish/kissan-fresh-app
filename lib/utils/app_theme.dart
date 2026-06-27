@@ -14,8 +14,12 @@ class AppTheme {
   // Signature Midnight & Teal Dark Theme (BlinkIt Style - Production Ready)
   static const Color darkPrimary = Color(0xFF14B8A6); // Professional Teal
   static const Color darkSecondary = Color(0xFF14B8A6); // Unified Teal
-  static const Color darkBackground = Color(0xFF0C0E12); // Deep Midnight Blue-Gray (60% Base)
-  static const Color darkSurface = Color(0xFF171B22); // Refined Slate Navy (30% Surface)
+  static const Color darkBackground = Color(
+    0xFF0C0E12,
+  ); // Deep Midnight Blue-Gray (60% Base)
+  static const Color darkSurface = Color(
+    0xFF171B22,
+  ); // Refined Slate Navy (30% Surface)
   static const Color darkPrimaryText = Color(0xFFF1F5F9); // Slate 50 (Text)
   static const Color darkSecondaryText = Color(0xFF94A3B8); // Slate 400 (Muted)
   static const Color darkBorder = Color(0xFF232936); // Subtle Slate (Borders)
@@ -140,18 +144,28 @@ class AppTheme {
   );
 
   // --- Professional Christmas Theme Palette (Frozen Icy Blue) ---
-  static const Color christmasPrimary = Color(0xFF4BA3E3); // Soft Frost Blue (Lighter & less intense)
+  static const Color christmasPrimary = Color(
+    0xFF4BA3E3,
+  ); // Soft Frost Blue (Lighter & less intense)
   static const Color christmasSecondary = Color(0xFF4BA3E3);
-  
+
   // Light Palette
-  static const Color christmasLightBackground = Color(0xFFF0F9FF); // Icy blue tint (Sky 50)
+  static const Color christmasLightBackground = Color(
+    0xFFF0F9FF,
+  ); // Icy blue tint (Sky 50)
   static const Color christmasLightSurface = Colors.white;
   static const Color christmasLightBorder = Color(0xFFE0F2FE); // Sky 100
-  
+
   // Dark Palette
-  static const Color christmasDarkBackground = Color(0xFF08121E); // Deep frozen midnight
-  static const Color christmasDarkSurface = Color(0xFF112031); // Dark Ice surface
-  static const Color christmasDarkBorder = Color(0xFF1B3047); // Subtle frost border
+  static const Color christmasDarkBackground = Color(
+    0xFF08121E,
+  ); // Deep frozen midnight
+  static const Color christmasDarkSurface = Color(
+    0xFF112031,
+  ); // Dark Ice surface
+  static const Color christmasDarkBorder = Color(
+    0xFF1B3047,
+  ); // Subtle frost border
 
   static final ThemeData christmasLightTheme = ThemeData(
     useMaterial3: true,
@@ -274,14 +288,16 @@ class AppTheme {
   // --- Professional Eid Theme Palette (Crescent Green) ---
   static const Color eidPrimary = Color(0xFF059669); // Rich Emerald
   static const Color eidSecondary = Color(0xFF059669);
-  
+
   // Light Palette
   static const Color eidLightBackground = Color(0xFFF0FDF4); // Subtle mint tint
   static const Color eidLightSurface = Colors.white;
   static const Color eidLightBorder = Color(0xFFD1FAE5); // Mint 100
-  
+
   // Dark Palette
-  static const Color eidDarkBackground = Color(0xFF0B1711); // Deep forest midnight
+  static const Color eidDarkBackground = Color(
+    0xFF0B1711,
+  ); // Deep forest midnight
   static const Color eidDarkSurface = Color(0xFF14241B); // Dark forest surface
   static const Color eidDarkBorder = Color(0xFF1B3326); // Subtle forest border
 

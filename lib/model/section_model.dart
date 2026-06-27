@@ -26,11 +26,6 @@ class SectionModel {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'rank': rank,
-      'type': type,
-      'categories': categories,
-    };
+    return {'name': name, 'rank': rank, 'type': type, 'categories': categories};
   }
 }

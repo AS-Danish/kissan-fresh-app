@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -66,7 +67,7 @@ class CartSummaryWidget extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: hasCoupon 
+            color: hasCoupon
                 ? Theme.of(context).primaryColor.withValues(alpha: 0.05)
                 : Theme.of(context).scaffoldBackgroundColor,
             borderRadius: BorderRadius.circular(16),
@@ -81,14 +82,18 @@ class CartSummaryWidget extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: hasCoupon 
+                  color: hasCoupon
                       ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
                       : Theme.of(context).primaryColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  hasCoupon ? Icons.check_circle_rounded : Icons.confirmation_num_outlined,
-                  color: hasCoupon ? Theme.of(context).primaryColor : Theme.of(context).primaryColor,
+                  hasCoupon
+                      ? Icons.check_circle_rounded
+                      : Icons.confirmation_num_outlined,
+                  color: hasCoupon
+                      ? Theme.of(context).primaryColor
+                      : Theme.of(context).primaryColor,
                   size: 18,
                 ),
               ),
@@ -98,21 +103,29 @@ class CartSummaryWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      hasCoupon ? 'Coupon "${controller.appliedCoupon.value}" applied' : 'Apply Coupon',
+                      hasCoupon
+                          ? 'Coupon "${controller.appliedCoupon.value}" applied'
+                          : 'Apply Coupon',
                       style: GoogleFonts.montserrat(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
-                        color: hasCoupon ? Theme.of(context).primaryColor : Theme.of(context).colorScheme.onSurface,
+                        color: hasCoupon
+                            ? Theme.of(context).primaryColor
+                            : Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     Text(
-                      hasCoupon 
-                          ? 'You saved ₹${controller.discount.toStringAsFixed(0)}!' 
+                      hasCoupon
+                          ? 'You saved ₹${controller.discount.toStringAsFixed(0)}!'
                           : 'Save more on your order',
                       style: GoogleFonts.montserrat(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: hasCoupon ? Theme.of(context).primaryColor.withValues(alpha: 0.8) : Colors.grey.shade600,
+                        color: hasCoupon
+                            ? Theme.of(
+                                context,
+                              ).primaryColor.withValues(alpha: 0.8)
+                            : Colors.grey.shade600,
                       ),
                     ),
                   ],
@@ -170,7 +183,9 @@ class CartSummaryWidget extends StatelessWidget {
             context,
             controller,
             'Delivery Fee',
-            controller.deliveryFee == 0 ? 'FREE' : '₹${controller.deliveryFee.toStringAsFixed(0)}',
+            controller.deliveryFee == 0
+                ? 'FREE'
+                : '₹${controller.deliveryFee.toStringAsFixed(0)}',
             isDelivery: controller.deliveryFee == 0,
             originalPrice: controller.deliveryFee == 0 ? '₹49' : null,
           ),
@@ -253,7 +268,9 @@ class CartSummaryWidget extends StatelessWidget {
               amount,
               style: GoogleFonts.montserrat(
                 fontSize: 13,
-                fontWeight: isDiscount || isDelivery ? FontWeight.w800 : FontWeight.w600,
+                fontWeight: isDiscount || isDelivery
+                    ? FontWeight.w800
+                    : FontWeight.w600,
                 color: isDiscount || isDelivery
                     ? Theme.of(context).primaryColor
                     : Theme.of(context).colorScheme.onSurface,
@@ -318,7 +335,7 @@ class CartSummaryWidget extends StatelessWidget {
                     // Check if user is logged in
                     if (AuthController.instance.firebaseUser.value == null) {
                       Get.toNamed(AppRoutes.loginScreen);
-                      Get.snackbar(
+                      CustomSnackBar.show(
                         'Login Required',
                         'Please login to proceed with checkout',
                         snackPosition: SnackPosition.BOTTOM,
@@ -513,7 +530,8 @@ class CartSummaryWidget extends StatelessWidget {
                                       color: Colors.grey.shade600,
                                     ),
                                   ),
-                                  if (item.mrp != null && item.mrp! > item.price) ...[
+                                  if (item.mrp != null &&
+                                      item.mrp! > item.price) ...[
                                     const SizedBox(width: 4),
                                     Text(
                                       '₹${item.mrp!.toStringAsFixed(0)}',
@@ -573,7 +591,9 @@ class CartSummaryWidget extends StatelessWidget {
                     context,
                     controller,
                     'Delivery Fee',
-                    controller.deliveryFee == 0 ? 'FREE' : '₹${controller.deliveryFee.toStringAsFixed(0)}',
+                    controller.deliveryFee == 0
+                        ? 'FREE'
+                        : '₹${controller.deliveryFee.toStringAsFixed(0)}',
                     isDelivery: controller.deliveryFee == 0,
                     originalPrice: controller.deliveryFee == 0 ? '₹49' : null,
                   ),
@@ -678,7 +698,7 @@ class CartSummaryWidget extends StatelessWidget {
   void _showCouponBottomSheet(BuildContext context, CartController controller) {
     final homepageController = Get.find<HomepageController>();
     final allCoupons = homepageController.activeCoupons;
-    
+
     // Pagination: Show first 5
     final displayedCoupons = allCoupons.take(5).toList();
 
@@ -727,14 +747,18 @@ class CartSummaryWidget extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 20),
-            
+
             if (displayedCoupons.isEmpty)
               Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 40),
                   child: Column(
                     children: [
-                      Icon(Icons.confirmation_num_outlined, size: 48, color: Colors.grey.shade300),
+                      Icon(
+                        Icons.confirmation_num_outlined,
+                        size: 48,
+                        color: Colors.grey.shade300,
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         'No coupons available right now',
@@ -756,40 +780,59 @@ class CartSummaryWidget extends StatelessWidget {
                   separatorBuilder: (_, _) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
                     final coupon = displayedCoupons[index];
-                    final validationError = controller.getCouponValidation(coupon);
+                    final validationError = controller.getCouponValidation(
+                      coupon,
+                    );
                     final bool isApplicable = validationError == null;
 
                     return Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: isApplicable 
-                              ? Theme.of(context).primaryColor.withValues(alpha: 0.3)
-                              : Theme.of(context).dividerColor.withValues(alpha: 0.5),
+                          color: isApplicable
+                              ? Theme.of(
+                                  context,
+                                ).primaryColor.withValues(alpha: 0.3)
+                              : Theme.of(
+                                  context,
+                                ).dividerColor.withValues(alpha: 0.5),
                         ),
-                        color: isApplicable 
-                            ? Theme.of(context).primaryColor.withValues(alpha: 0.02)
-                            : Theme.of(context).disabledColor.withValues(alpha: 0.05),
+                        color: isApplicable
+                            ? Theme.of(
+                                context,
+                              ).primaryColor.withValues(alpha: 0.02)
+                            : Theme.of(
+                                context,
+                              ).disabledColor.withValues(alpha: 0.05),
                       ),
                       child: Column(
                         children: [
                           ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            onTap: isApplicable ? () {
-                              Get.back();
-                              controller.applyCouponModel(coupon);
-                            } : null,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            onTap: isApplicable
+                                ? () {
+                                    Get.back();
+                                    controller.applyCouponModel(coupon);
+                                  }
+                                : null,
                             leading: Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: isApplicable 
-                                    ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
-                                    : Theme.of(context).disabledColor.withValues(alpha: 0.1),
+                                color: isApplicable
+                                    ? Theme.of(
+                                        context,
+                                      ).primaryColor.withValues(alpha: 0.1)
+                                    : Theme.of(
+                                        context,
+                                      ).disabledColor.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
                                 Icons.local_offer_outlined,
-                                color: isApplicable 
+                                color: isApplicable
                                     ? Theme.of(context).primaryColor
                                     : Colors.grey,
                                 size: 20,
@@ -802,17 +845,27 @@ class CartSummaryWidget extends StatelessWidget {
                                   style: GoogleFonts.montserrat(
                                     fontWeight: FontWeight.w800,
                                     fontSize: 16,
-                                    color: isApplicable 
-                                        ? Theme.of(context).colorScheme.onSurface
-                                        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+                                    color: isApplicable
+                                        ? Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface
+                                        : Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withValues(alpha: 0.3),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
                                 if (coupon.applicableCategory != null)
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: Colors.orange.withValues(alpha: 0.1),
+                                      color: Colors.orange.withValues(
+                                        alpha: 0.1,
+                                      ),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
@@ -825,7 +878,8 @@ class CartSummaryWidget extends StatelessWidget {
                                     ),
                                   ),
                                 const Spacer(),
-                                if (controller.appliedCoupon.value == coupon.code)
+                                if (controller.appliedCoupon.value ==
+                                    coupon.code)
                                   TextButton(
                                     onPressed: () {
                                       Get.back();
@@ -861,16 +915,26 @@ class CartSummaryWidget extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style: GoogleFonts.montserrat(
                                     fontSize: 12,
-                                    color: isApplicable 
-                                        ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7) 
-                                        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+                                    color: isApplicable
+                                        ? Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withValues(alpha: 0.7)
+                                        : Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withValues(alpha: 0.3),
                                   ),
                                 ),
                                 if (!isApplicable) ...[
                                   const SizedBox(height: 4),
                                   Row(
                                     children: [
-                                      const Icon(Icons.info_outline, size: 12, color: Colors.orange),
+                                      const Icon(
+                                        Icons.info_outline,
+                                        size: 12,
+                                        color: Colors.orange,
+                                      ),
                                       const SizedBox(width: 4),
                                       Expanded(
                                         child: Text(
@@ -890,7 +954,8 @@ class CartSummaryWidget extends StatelessWidget {
                           ),
                           const Divider(height: 1),
                           InkWell(
-                            onTap: () => _showCouponDetailDialog(context, coupon),
+                            onTap: () =>
+                                _showCouponDetailDialog(context, coupon),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 8),
                               child: Row(
@@ -905,7 +970,11 @@ class CartSummaryWidget extends StatelessWidget {
                                     ),
                                   ),
                                   const SizedBox(width: 4),
-                                  Icon(Icons.keyboard_arrow_down, size: 14, color: Theme.of(context).primaryColor),
+                                  Icon(
+                                    Icons.keyboard_arrow_down,
+                                    size: 14,
+                                    color: Theme.of(context).primaryColor,
+                                  ),
                                 ],
                               ),
                             ),
@@ -939,10 +1008,15 @@ class CartSummaryWidget extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                      color: Theme.of(
+                        context,
+                      ).primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(Icons.confirmation_num_outlined, color: Theme.of(context).primaryColor),
+                    child: Icon(
+                      Icons.confirmation_num_outlined,
+                      color: Theme.of(context).primaryColor,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Column(
@@ -976,17 +1050,25 @@ class CartSummaryWidget extends StatelessWidget {
               const SizedBox(height: 24),
               _buildDetailItem(context, 'Description', coupon.description),
               _buildDetailItem(
-                context, 
-                'Discount', 
-                coupon.discountType == 'percentage' 
-                    ? '${coupon.discountValue}% Off' 
-                    : '₹${coupon.discountValue} Off'
+                context,
+                'Discount',
+                coupon.discountType == 'percentage'
+                    ? '${coupon.discountValue}% Off'
+                    : '₹${coupon.discountValue} Off',
               ),
               if (coupon.minOrderValue != null)
-                _buildDetailItem(context, 'Minimum Order', '₹${coupon.minOrderValue}'),
+                _buildDetailItem(
+                  context,
+                  'Minimum Order',
+                  '₹${coupon.minOrderValue}',
+                ),
               _buildDetailItem(context, 'Valid For', coupon.productType),
               if (coupon.applicableCategory != null)
-                _buildDetailItem(context, 'Applicable Category', coupon.applicableCategory!),
+                _buildDetailItem(
+                  context,
+                  'Applicable Category',
+                  coupon.applicableCategory!,
+                ),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
@@ -995,10 +1077,15 @@ class CartSummaryWidget extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).primaryColor,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  child: Text('GOT IT', style: GoogleFonts.montserrat(fontWeight: FontWeight.w800)),
+                  child: Text(
+                    'GOT IT',
+                    style: GoogleFonts.montserrat(fontWeight: FontWeight.w800),
+                  ),
                 ),
               ),
             ],
@@ -1037,4 +1124,3 @@ class CartSummaryWidget extends StatelessWidget {
     );
   }
 }
-

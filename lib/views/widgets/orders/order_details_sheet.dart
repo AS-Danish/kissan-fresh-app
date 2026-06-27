@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
@@ -73,11 +74,7 @@ class OrderDetailsSheet {
                       // Section: Order Information
                       _buildSectionHeader(context, 'Order Information'),
                       const SizedBox(height: 12),
-                      _buildDetailRow(
-                        context,
-                        'Order ID',
-                        order.id,
-                      ),
+                      _buildDetailRow(context, 'Order ID', order.id),
                       _buildDetailRow(
                         context,
                         'Internal Ref', // renamed from Order Number to keep it as secondary
@@ -146,11 +143,10 @@ class OrderDetailsSheet {
                                   child: CachedNetworkImage(
                                     imageUrl: order.rider!.avatarUrl,
                                     fit: BoxFit.cover,
-                                    errorWidget:
-                                        (context, url, error) => Icon(
-                                          Icons.person,
-                                          color: Theme.of(context).primaryColor,
-                                        ),
+                                    errorWidget: (context, url, error) => Icon(
+                                      Icons.person,
+                                      color: Theme.of(context).primaryColor,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -205,7 +201,7 @@ class OrderDetailsSheet {
                                       if (await canLaunchUrl(launchUri)) {
                                         await launchUrl(launchUri);
                                       } else {
-                                        Get.snackbar(
+                                        CustomSnackBar.show(
                                           'Error',
                                           'Could not launch dialer for $phone',
                                           snackPosition: SnackPosition.BOTTOM,
@@ -214,7 +210,7 @@ class OrderDetailsSheet {
                                         );
                                       }
                                     } catch (e) {
-                                      Get.snackbar(
+                                      CustomSnackBar.show(
                                         'Error',
                                         'An error occurred while launching the dialer',
                                         snackPosition: SnackPosition.BOTTOM,
@@ -325,7 +321,9 @@ class OrderDetailsSheet {
                           decoration: BoxDecoration(
                             color: Theme.of(context).colorScheme.surface,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Theme.of(context).colorScheme.outline),
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.outline,
+                            ),
                           ),
                           child: Row(
                             children: [
@@ -333,7 +331,9 @@ class OrderDetailsSheet {
                                 width: 50,
                                 height: 50,
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).brightness == Brightness.dark
+                                  color:
+                                      Theme.of(context).brightness ==
+                                          Brightness.dark
                                       ? Colors.white.withValues(alpha: 0.1)
                                       : Colors.white,
                                   borderRadius: BorderRadius.circular(10),
@@ -343,12 +343,8 @@ class OrderDetailsSheet {
                                   child: CachedNetworkImage(
                                     imageUrl: item.image,
                                     fit: BoxFit.cover,
-                                    errorWidget:
-                                        (
-                                          context,
-                                          url,
-                                          error,
-                                        ) => const Icon(
+                                    errorWidget: (context, url, error) =>
+                                        const Icon(
                                           Icons.image_not_supported_outlined,
                                           color: Colors.grey,
                                         ),
@@ -385,7 +381,8 @@ class OrderDetailsSheet {
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
-                                        if (item.mrp != null && item.mrp! > item.price) ...[
+                                        if (item.mrp != null &&
+                                            item.mrp! > item.price) ...[
                                           const SizedBox(width: 6),
                                           Text(
                                             '₹${item.mrp!.toStringAsFixed(0)}',
@@ -396,7 +393,8 @@ class OrderDetailsSheet {
                                                   .onSurface
                                                   .withValues(alpha: 0.4),
                                               fontWeight: FontWeight.w500,
-                                              decoration: TextDecoration.lineThrough,
+                                              decoration:
+                                                  TextDecoration.lineThrough,
                                             ),
                                           ),
                                         ],
@@ -511,7 +509,8 @@ class OrderDetailsSheet {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () => PdfReceiptService.generateAndDownloadReceipt(order),
+                      onPressed: () =>
+                          PdfReceiptService.generateAndDownloadReceipt(order),
                       icon: const Icon(Icons.receipt_long_rounded, size: 20),
                       label: Text(
                         'Download Receipt',
@@ -587,7 +586,11 @@ class OrderDetailsSheet {
     );
   }
 
-  static Widget _buildDetailRow(BuildContext context, String label, String value) {
+  static Widget _buildDetailRow(
+    BuildContext context,
+    String label,
+    String value,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -600,7 +603,9 @@ class OrderDetailsSheet {
               style: GoogleFonts.montserrat(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
           ),
@@ -638,7 +643,9 @@ class OrderDetailsSheet {
             style: GoogleFonts.montserrat(
               fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
           Text(

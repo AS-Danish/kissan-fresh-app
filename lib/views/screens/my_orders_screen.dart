@@ -29,12 +29,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
         final orderType = args['orderType'] ?? 'Online';
         final paymentId = args['paymentId'];
         final orderId = args['orderId'];
-        OrderSuccessPopup.show(
-          context,
-          orderType,
-          paymentId,
-          orderId: orderId,
-        );
+        OrderSuccessPopup.show(context, orderType, paymentId, orderId: orderId);
         _popupShown = true;
       }
     });
@@ -149,19 +144,25 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? Theme.of(context).primaryColor
-                            : Theme.of(context).primaryColor.withValues(alpha: 0.05),
+                            : Theme.of(
+                                context,
+                              ).primaryColor.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: isSelected
                               ? Theme.of(context).primaryColor
-                              : Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                              : Theme.of(
+                                  context,
+                                ).primaryColor.withValues(alpha: 0.1),
                         ),
                       ),
                       child: Text(
                         filter,
                         style: GoogleFonts.montserrat(
                           fontSize: 14,
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w600,
                           color: isSelected
                               ? Colors.white
                               : Theme.of(context).primaryColor,

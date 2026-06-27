@@ -42,7 +42,9 @@ class SlotSelectionScreen extends StatelessWidget {
       body: Obx(() {
         if (controller.isLoading.value) {
           return Center(
-            child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
+            child: CircularProgressIndicator(
+              color: Theme.of(context).primaryColor,
+            ),
           );
         }
 
@@ -252,7 +254,11 @@ class SlotSelectionScreen extends StatelessWidget {
                 const Positioned(
                   top: 6,
                   right: 6,
-                  child: Icon(Icons.check_circle, color: Colors.white, size: 14),
+                  child: Icon(
+                    Icons.check_circle,
+                    color: Colors.white,
+                    size: 14,
+                  ),
                 ),
             ],
           ),

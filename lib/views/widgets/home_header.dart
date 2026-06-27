@@ -43,260 +43,273 @@ class HomeHeader extends StatelessWidget {
             ),
           ],
         ),
-      child: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "DELIVERING IN",
-                        style: GoogleFonts.montserrat(
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1,
-                          color: Colors.white.withValues(alpha: 0.9),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        "12 mins",
-                        style: GoogleFonts.montserrat(
-                          fontSize: 38,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                          height: 1.1,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      InkWell(
-                        onTap: () {
-                          AddressBottomSheet.show(context);
-                        },
-                        borderRadius: BorderRadius.circular(8),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 4,
-                            horizontal: 0,
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "DELIVERING IN",
+                          style: GoogleFonts.montserrat(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1,
+                            color: Colors.white.withValues(alpha: 0.9),
                           ),
-                          child: Obx(() {
-                            final locationService = Get.find<LocationService>();
-                            final isDenied =
-                                locationService.locationPermissionDenied.value;
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          "12 mins",
+                          style: GoogleFonts.montserrat(
+                            fontSize: 38,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            height: 1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        InkWell(
+                          onTap: () {
+                            AddressBottomSheet.show(context);
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 4,
+                              horizontal: 0,
+                            ),
+                            child: Obx(() {
+                              final locationService =
+                                  Get.find<LocationService>();
+                              final isDenied = locationService
+                                  .locationPermissionDenied
+                                  .value;
 
-                            if (isDenied) {
+                              if (isDenied) {
+                                return Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.cancel,
+                                      color: Colors.redAccent,
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        'Location Disabled',
+                                        style: GoogleFonts.montserrat(
+                                          color: Colors.redAccent,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 13,
+                                          letterSpacing: 0.2,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Icon(
+                                      Icons.keyboard_arrow_down,
+                                      color: Colors.redAccent,
+                                      size: 20,
+                                    ),
+                                  ],
+                                );
+                              }
+
                               return Row(
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   const Icon(
-                                    Icons.cancel,
-                                    color: Colors.redAccent,
-                                    size: 16,
+                                    Icons.location_on,
+                                    color: Colors.white,
+                                    size: 13,
                                   ),
                                   const SizedBox(width: 8),
                                   Flexible(
-                                    child: Text(
-                                      'Location Disabled',
-                                      style: GoogleFonts.montserrat(
-                                        color: Colors.redAccent,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 13,
-                                        letterSpacing: 0.2,
-                                      ),
+                                    child: RichText(
+                                      maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
+                                      text: TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text:
+                                                "${locationService.currentAddressType.value} - ",
+                                            style: GoogleFonts.montserrat(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text:
+                                                locationService
+                                                    .currentAddress
+                                                    .value ??
+                                                'Fetching location...',
+                                            style: GoogleFonts.montserrat(
+                                              color: Colors.white.withValues(
+                                                alpha: 0.9,
+                                              ),
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 13,
+                                              letterSpacing: 0.2,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 4),
                                   const Icon(
                                     Icons.keyboard_arrow_down,
-                                    color: Colors.redAccent,
+                                    color: Colors.white,
                                     size: 20,
                                   ),
                                 ],
                               );
-                            }
-
-                            return Row(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.location_on,
-                                  color: Colors.white,
-                                  size: 13,
-                                ),
-                                const SizedBox(width: 8),
-                                Flexible(
-                                  child: RichText(
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    text: TextSpan(
-                                      children: [
-                                        TextSpan(
-                                          text: "${locationService.currentAddressType.value} - ",
-                                          style: GoogleFonts.montserrat(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w800,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                        TextSpan(
-                                          text: locationService.currentAddress.value ?? 'Fetching location...',
-                                          style: GoogleFonts.montserrat(
-                                            color: Colors.white.withValues(alpha: 0.9),
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 13,
-                                            letterSpacing: 0.2,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                const Icon(
-                                  Icons.keyboard_arrow_down,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ],
-                            );
-                          }),
+                            }),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                GetBuilder<ProfileController>(
-                  init: ProfileController(),
-                  builder: (profileController) {
-                    return GestureDetector(
-                      onTap: () {
-                        Get.toNamed(AppRoutes.profileRoute);
-                      },
-                      child: Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: profileController.profileImage.value.isEmpty
-                              ? Colors.white.withValues(alpha: 0.2)
-                              : Colors.transparent,
-                          shape: BoxShape.circle,
-                        ),
-                        clipBehavior: Clip.antiAlias,
-                        child: Obx(
-                          () => profileController.profileImage.value.isEmpty
-                              ? Center(
-                                  child: Text(
-                                    profileController.initials.value.isNotEmpty
-                                        ? profileController.initials.value
-                                        : 'U',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                )
-                              : CachedNetworkImage(
-                                  imageUrl: profileController.profileImage.value,
-                                  fit: BoxFit.cover,
-                                  errorWidget: (context, url, error) =>
-                                      const Icon(
-                                        Icons.person,
+                  const SizedBox(width: 12),
+                  GetBuilder<ProfileController>(
+                    init: ProfileController(),
+                    builder: (profileController) {
+                      return GestureDetector(
+                        onTap: () {
+                          Get.toNamed(AppRoutes.profileRoute);
+                        },
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: profileController.profileImage.value.isEmpty
+                                ? Colors.white.withValues(alpha: 0.2)
+                                : Colors.transparent,
+                            shape: BoxShape.circle,
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: Obx(
+                            () => profileController.profileImage.value.isEmpty
+                                ? Center(
+                                    child: Text(
+                                      profileController
+                                              .initials
+                                              .value
+                                              .isNotEmpty
+                                          ? profileController.initials.value
+                                          : 'U',
+                                      style: const TextStyle(
                                         color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                ),
+                                    ),
+                                  )
+                                : CachedNetworkImage(
+                                    imageUrl:
+                                        profileController.profileImage.value,
+                                    fit: BoxFit.cover,
+                                    errorWidget: (context, url, error) =>
+                                        const Icon(
+                                          Icons.person,
+                                          color: Colors.white,
+                                        ),
+                                  ),
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
+                      );
+                    },
                   ),
                 ],
               ),
-              child: GestureDetector(
-                onTap: () {
-                  Get.toNamed(AppRoutes.searchRoute);
-                },
-                behavior: HitTestBehavior.opaque,
-                child: IgnorePointer(
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Search "fresh organic avocados"',
-                      hintStyle: GoogleFonts.montserrat(
+              const SizedBox(height: 24),
+
+              Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: GestureDetector(
+                  onTap: () {
+                    Get.toNamed(AppRoutes.searchRoute);
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: IgnorePointer(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Search "fresh organic avocados"',
+                        hintStyle: GoogleFonts.montserrat(
+                          fontSize: 14,
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 16,
+                          horizontal: 16,
+                        ),
+                        prefixIcon: Padding(
+                          padding: const EdgeInsets.only(left: 4),
+                          child: Icon(
+                            Icons.search,
+                            size: 24,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                        suffixIcon: Padding(
+                          padding: const EdgeInsets.only(right: 4),
+                          child: IconButton(
+                            icon: const Icon(
+                              Icons.mic,
+                              size: 22,
+                              color: Color(0xFF9AA7AC),
+                            ),
+                            onPressed: () {
+                              Get.toNamed(
+                                AppRoutes.searchRoute,
+                                arguments: {'startSpeech': true},
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      style: GoogleFonts.montserrat(
                         fontSize: 14,
-                        color: Theme.of(context).textTheme.bodyMedium?.color,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontWeight: FontWeight.w500,
                       ),
-                      border: InputBorder.none,
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 16,
-                        horizontal: 16,
-                      ),
-                      prefixIcon: Padding(
-                        padding: const EdgeInsets.only(left: 4),
-                        child: Icon(
-                          Icons.search,
-                          size: 24,
-                          color: Theme.of(context).primaryColor,
-                        ),
-                      ),
-                      suffixIcon: Padding(
-                        padding: const EdgeInsets.only(right: 4),
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.mic,
-                            size: 22,
-                            color: Color(0xFF9AA7AC),
-                          ),
-                          onPressed: () {
-                            Get.toNamed(
-                              AppRoutes.searchRoute,
-                              arguments: {'startSpeech': true},
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    style: GoogleFonts.montserrat(
-                      fontSize: 14,
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            // Toggle Switch
-            const HomeTabToggle(),
-          ],
+              const SizedBox(height: 24),
+              // Toggle Switch
+              const HomeTabToggle(),
+            ],
+          ),
         ),
-      ),
-    );
+      );
     });
   }
 }

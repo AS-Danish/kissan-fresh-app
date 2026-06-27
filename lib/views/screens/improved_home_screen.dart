@@ -34,10 +34,13 @@ class ImprovedHomeScreen extends StatelessWidget {
                 if (controller.categories.isEmpty) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                
+
                 final int selectedIdx = controller.selectedIndex.value;
-                final bool isValidIndex = selectedIdx >= 0 && selectedIdx < controller.categories.length;
-                final isAll = isValidIndex && 
+                final bool isValidIndex =
+                    selectedIdx >= 0 &&
+                    selectedIdx < controller.categories.length;
+                final isAll =
+                    isValidIndex &&
                     controller.categories[selectedIdx].label == 'All';
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,4 +114,3 @@ class ImprovedHomeScreen extends StatelessWidget {
     );
   }
 }
-

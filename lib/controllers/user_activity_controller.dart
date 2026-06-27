@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,11 +12,12 @@ import 'orders_controller.dart';
 
 class UserActivityController extends GetxController {
   late Box _activityBox;
-  final RxList<ProductCardModel> personalizedProducts = <ProductCardModel>[].obs;
+  final RxList<ProductCardModel> personalizedProducts =
+      <ProductCardModel>[].obs;
   // Real-time product data map: productId -> product data
   RxMap<String, Map<String, dynamic>> realTimeProductData =
       <String, Map<String, dynamic>>{}.obs;
-  
+
   static const String _recentViewsKey = 'recent_views';
   static const String _viewCountsKey = 'view_counts';
   static const int _maxItems = 10;
@@ -30,7 +32,7 @@ class UserActivityController extends GetxController {
     super.onInit();
     _activityBox = Hive.box('user_activity');
     _loadPersonalizedData();
-    
+
     // Start listening to product changes whenever personalizedProducts changes
     _personalizedWorker = ever(personalizedProducts, (_) {
       _updateProductsSubscription();
@@ -38,7 +40,7 @@ class UserActivityController extends GetxController {
 
     // Manually trigger initial subscription to ensure real-time data from start
     _updateProductsSubscription();
-    
+
     // Refresh when orders change
     final ordersController = Get.find<OrdersController>();
     ever(ordersController.orders, (_) => _loadPersonalizedData());
@@ -54,72 +56,73 @@ class UserActivityController extends GetxController {
   void _updateProductsSubscription() {
     _productsSubscription?.cancel();
 
-    final productIds =
-        personalizedProducts
-            .map((item) => item.id)
-            .where((id) => id != null)
-            .cast<String>()
-            .take(10) // Firestore whereIn limit
-            .toList();
+    final productIds = personalizedProducts
+        .map((item) => item.id)
+        .where((id) => id != null)
+        .cast<String>()
+        .take(10) // Firestore whereIn limit
+        .toList();
 
     if (productIds.isEmpty) {
       realTimeProductData.clear();
       return;
     }
 
-    _productsSubscription =
-        _firestore
-            .collection('products')
-            .where(FieldPath.documentId, whereIn: productIds)
-            .snapshots()
-            .listen(
-              (snapshot) {
-                final Map<String, Map<String, dynamic>> newData = {};
-                for (var doc in snapshot.docs) {
-                  newData[doc.id] = doc.data();
+    _productsSubscription = _firestore
+        .collection('products')
+        .where(FieldPath.documentId, whereIn: productIds)
+        .snapshots()
+        .listen(
+          (snapshot) {
+            final Map<String, Map<String, dynamic>> newData = {};
+            for (var doc in snapshot.docs) {
+              newData[doc.id] = doc.data();
+            }
+            realTimeProductData.assignAll(newData);
+
+            final fetchedIds = snapshot.docs.map((doc) => doc.id).toList();
+            final deletedIds = productIds
+                .where((id) => !fetchedIds.contains(id))
+                .toList();
+
+            bool changed = false;
+
+            // Update existing items with fresh data
+            for (int i = 0; i < personalizedProducts.length; i++) {
+              final id = personalizedProducts[i].id;
+              if (id != null && newData.containsKey(id)) {
+                final freshData = newData[id]!;
+                freshData['id'] = id; // ensure ID is present for parsing
+                final freshProduct = ProductCardModel.fromJson(freshData);
+
+                // Maintain the callbacks but update the data
+                personalizedProducts[i] = freshProduct.copyWith(
+                  onTap: personalizedProducts[i].onTap,
+                  onAddToCart: personalizedProducts[i].onAddToCart,
+                );
+                changed = true;
+              }
+            }
+
+            if (deletedIds.isNotEmpty) {
+              personalizedProducts.removeWhere((item) {
+                if (deletedIds.contains(item.id)) {
+                  changed = true;
+                  return true;
                 }
-                realTimeProductData.assignAll(newData);
+                return false;
+              });
 
-                final fetchedIds = snapshot.docs.map((doc) => doc.id).toList();
-                final deletedIds = productIds.where((id) => !fetchedIds.contains(id)).toList();
-                
-                bool changed = false;
+              _removeFromRecentViews(deletedIds);
+            }
 
-                // Update existing items with fresh data
-                for (int i = 0; i < personalizedProducts.length; i++) {
-                  final id = personalizedProducts[i].id;
-                  if (id != null && newData.containsKey(id)) {
-                    final freshData = newData[id]!;
-                    freshData['id'] = id; // ensure ID is present for parsing
-                    final freshProduct = ProductCardModel.fromJson(freshData);
-                    
-                    // Maintain the callbacks but update the data
-                    personalizedProducts[i] = freshProduct.copyWith(
-                      onTap: personalizedProducts[i].onTap,
-                      onAddToCart: personalizedProducts[i].onAddToCart,
-                    );
-                    changed = true;
-                  }
-                }
-
-                if (deletedIds.isNotEmpty) {
-                  personalizedProducts.removeWhere((item) {
-                    if (deletedIds.contains(item.id)) {
-                      changed = true;
-                      return true;
-                    }
-                    return false;
-                  });
-
-                  _removeFromRecentViews(deletedIds);
-                }
-
-                if (changed) {
-                  personalizedProducts.refresh();
-                }
-              },
-              onError: (e) => debugPrint("Error in personalized products stream: $e"),
-            );
+            if (changed) {
+              personalizedProducts.refresh();
+            }
+          },
+          onError: (e) =>
+              debugPrint("Error in personalized products stream: $e"),
+        );
   }
 
   void _removeFromRecentViews(List<String> deletedIds) {
@@ -127,10 +130,12 @@ class UserActivityController extends GetxController {
     if (cachedViews != null) {
       try {
         final List<dynamic> decoded = jsonDecode(cachedViews);
-        List<Map<String, dynamic>> viewsList = decoded.map((e) => Map<String, dynamic>.from(e)).toList();
-        
+        List<Map<String, dynamic>> viewsList = decoded
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+
         viewsList.removeWhere((item) => deletedIds.contains(item['id']));
-        
+
         _activityBox.put(_recentViewsKey, jsonEncode(viewsList));
       } catch (e) {
         debugPrint('Error decoding views list for deletion: $e');
@@ -160,7 +165,7 @@ class UserActivityController extends GetxController {
                 final productModel = ProductCardModel.fromJson(productData);
                 bool added = cartController.addToCart(productModel, 1);
                 if (added) {
-                  Get.snackbar(
+                  CustomSnackBar.show(
                     'Added to Cart',
                     '${productModel.title} added to cart',
                     snackPosition: SnackPosition.BOTTOM,
@@ -192,7 +197,7 @@ class UserActivityController extends GetxController {
       for (var order in ordersController.orders) {
         for (var item in order.items) {
           // We only have basic info in order items, but we can construct a ProductCardModel
-          // Or we can just use what we have. 
+          // Or we can just use what we have.
           // Note: OrderItem might not have the full ProductCardModel structure.
           if (!uniqueIds.contains(item.productId)) {
             combined.add(
@@ -234,7 +239,7 @@ class UserActivityController extends GetxController {
                     );
                     bool added = cartController.addToCart(productModel, 1);
                     if (added) {
-                      Get.snackbar(
+                      CustomSnackBar.show(
                         'Added to Cart',
                         '${productModel.title} added to cart',
                         snackPosition: SnackPosition.BOTTOM,
@@ -320,15 +325,12 @@ class UserActivityController extends GetxController {
 
     // Save
     _activityBox.put(_recentViewsKey, jsonEncode(viewsList));
-    
+
     // Refresh UI
     _loadPersonalizedData();
   }
 
   void _navigateToProductDetails(ProductCardModel product) {
-    Get.toNamed(
-      AppRoutes.productDetailsRoute,
-      arguments: product,
-    );
+    Get.toNamed(AppRoutes.productDetailsRoute, arguments: product);
   }
 }

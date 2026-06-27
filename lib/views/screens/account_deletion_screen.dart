@@ -37,7 +37,10 @@ class _AccountDeletionScreenState extends State<AccountDeletionScreen> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Theme.of(context).colorScheme.onSurface),
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           onPressed: () => Get.back(),
         ),
         title: Text(
@@ -66,7 +69,11 @@ class _AccountDeletionScreenState extends State<AccountDeletionScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
+                    const Icon(
+                      Icons.warning_amber_rounded,
+                      color: Colors.red,
+                      size: 28,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
@@ -97,7 +104,9 @@ class _AccountDeletionScreenState extends State<AccountDeletionScreen> {
                 style: GoogleFonts.montserrat(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                  color: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
                 ),
               ),
               const SizedBox(height: 16),
@@ -121,7 +130,10 @@ class _AccountDeletionScreenState extends State<AccountDeletionScreen> {
                       groupValue: selectedReason,
                       activeColor: Colors.red,
                       contentPadding: EdgeInsets.zero,
-                      visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                      visualDensity: const VisualDensity(
+                        horizontal: -4,
+                        vertical: -4,
+                      ),
                       onChanged: (value) {
                         setState(() {
                           selectedReason = value;
@@ -150,11 +162,17 @@ class _AccountDeletionScreenState extends State<AccountDeletionScreen> {
                     fillColor: Theme.of(context).colorScheme.surface,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).dividerColor,
+                      ),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.5)),
+                      borderSide: BorderSide(
+                        color: Theme.of(
+                          context,
+                        ).dividerColor.withValues(alpha: 0.5),
+                      ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -167,39 +185,45 @@ class _AccountDeletionScreenState extends State<AccountDeletionScreen> {
               SizedBox(
                 width: double.infinity,
                 height: 56,
-                child: Obx(() => ElevatedButton(
-                  onPressed: controller.isLoading.value ? null : () {
-                    String finalReason = selectedReason == "Other" 
-                        ? (otherReasonController.text.trim().isNotEmpty ? otherReasonController.text.trim() : "Other")
-                        : (selectedReason ?? "No reason provided");
-                    controller.processAccountDeletion(finalReason);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                child: Obx(
+                  () => ElevatedButton(
+                    onPressed: controller.isLoading.value
+                        ? null
+                        : () {
+                            String finalReason = selectedReason == "Other"
+                                ? (otherReasonController.text.trim().isNotEmpty
+                                      ? otherReasonController.text.trim()
+                                      : "Other")
+                                : (selectedReason ?? "No reason provided");
+                            controller.processAccountDeletion(finalReason);
+                          },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
+                    child: controller.isLoading.value
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            'Delete My Account',
+                            style: GoogleFonts.montserrat(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
                   ),
-                  child: controller.isLoading.value
-                      ? const SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : Text(
-                          'Delete My Account',
-                          style: GoogleFonts.montserrat(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                )),
+                ),
               ),
               const SizedBox(height: 16),
               SizedBox(
@@ -217,7 +241,9 @@ class _AccountDeletionScreenState extends State<AccountDeletionScreen> {
                     style: GoogleFonts.montserrat(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.7),
                     ),
                   ),
                 ),

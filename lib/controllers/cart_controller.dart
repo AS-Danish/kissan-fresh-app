@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'dart:async';
 
 import 'package:get/get.dart';
@@ -60,17 +61,22 @@ class CartController extends GetxController {
 
   double get discount {
     if (activeCouponModel.value != null) {
-      double applicableSubtotal = _calculateApplicableSubtotal(activeCouponModel.value!);
+      double applicableSubtotal = _calculateApplicableSubtotal(
+        activeCouponModel.value!,
+      );
       if (applicableSubtotal == 0) return 0;
-      
+
       double calculatedDiscount = 0;
       if (activeCouponModel.value!.discountType == 'percentage') {
-        calculatedDiscount = applicableSubtotal * (activeCouponModel.value!.discountValue / 100);
+        calculatedDiscount =
+            applicableSubtotal * (activeCouponModel.value!.discountValue / 100);
       } else {
         // flat/fixed
         calculatedDiscount = activeCouponModel.value!.discountValue;
       }
-      return calculatedDiscount > applicableSubtotal ? applicableSubtotal : calculatedDiscount;
+      return calculatedDiscount > applicableSubtotal
+          ? applicableSubtotal
+          : calculatedDiscount;
     }
 
     // Legacy auto-applied discount (15% off above ₹499)
@@ -82,16 +88,21 @@ class CartController extends GetxController {
 
   double get couponDiscountValue {
     if (activeCouponModel.value != null) {
-      double applicableSubtotal = _calculateApplicableSubtotal(activeCouponModel.value!);
+      double applicableSubtotal = _calculateApplicableSubtotal(
+        activeCouponModel.value!,
+      );
       if (applicableSubtotal == 0) return 0;
-      
+
       double calculatedDiscount = 0;
       if (activeCouponModel.value!.discountType == 'percentage') {
-        calculatedDiscount = applicableSubtotal * (activeCouponModel.value!.discountValue / 100);
+        calculatedDiscount =
+            applicableSubtotal * (activeCouponModel.value!.discountValue / 100);
       } else {
         calculatedDiscount = activeCouponModel.value!.discountValue;
       }
-      return calculatedDiscount > applicableSubtotal ? applicableSubtotal : calculatedDiscount;
+      return calculatedDiscount > applicableSubtotal
+          ? applicableSubtotal
+          : calculatedDiscount;
     }
     return 0;
   }
@@ -131,8 +142,12 @@ class CartController extends GetxController {
           .get();
 
       if (querySnapshot.docs.isEmpty) {
-        Get.snackbar('Invalid Coupon', 'The coupon code you entered is not valid.',
-            backgroundColor: Colors.red, colorText: Colors.white);
+        CustomSnackBar.show(
+          'Invalid Coupon',
+          'The coupon code you entered is not valid.',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
         return;
       }
 
@@ -148,8 +163,12 @@ class CartController extends GetxController {
   Future<void> applyCouponModel(CouponModel coupon) async {
     final validationError = getCouponValidation(coupon);
     if (validationError != null) {
-      Get.snackbar('Cannot Apply', validationError,
-          backgroundColor: Colors.orange, colorText: Colors.white);
+      CustomSnackBar.show(
+        'Cannot Apply',
+        validationError,
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
       return;
     }
 
@@ -161,9 +180,14 @@ class CartController extends GetxController {
           .where('couponCode', isEqualTo: coupon.code)
           .count()
           .get();
-      if (userOrders.count != null && userOrders.count! >= coupon.maxUsesPerUser!) {
-        Get.snackbar('Limit Exceeded', 'You have already used this coupon maximum times.',
-            backgroundColor: Colors.red, colorText: Colors.white);
+      if (userOrders.count != null &&
+          userOrders.count! >= coupon.maxUsesPerUser!) {
+        CustomSnackBar.show(
+          'Limit Exceeded',
+          'You have already used this coupon maximum times.',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
         return;
       }
     }
@@ -171,9 +195,14 @@ class CartController extends GetxController {
     activeCouponModel.value = coupon;
     appliedCoupon.value = coupon.code;
     cartItems.refresh();
-    
-    Get.snackbar('Coupon Applied', 'Discount applied successfully!',
-        backgroundColor: Colors.green, colorText: Colors.white, snackPosition: SnackPosition.TOP);
+
+    CustomSnackBar.show(
+      'Coupon Applied',
+      'Discount applied successfully!',
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+    );
   }
 
   String? getCouponValidation(CouponModel coupon) {
@@ -193,7 +222,8 @@ class CartController extends GetxController {
       return 'Min order ₹${coupon.minOrderValue?.toStringAsFixed(0)} required';
     }
 
-    if (coupon.totalUsageLimit != null && coupon.currentUsageCount >= coupon.totalUsageLimit!) {
+    if (coupon.totalUsageLimit != null &&
+        coupon.currentUsageCount >= coupon.totalUsageLimit!) {
       return 'Coupon usage limit reached';
     }
 
@@ -208,20 +238,24 @@ class CartController extends GetxController {
 
   double _calculateApplicableSubtotal(CouponModel coupon) {
     // If applyTo is "all" or specific restrictions are null, apply to all items
-    if (coupon.applyTo == 'all' || (coupon.applicableCategory == null && coupon.applicableProduct == null)) {
+    if (coupon.applyTo == 'all' ||
+        (coupon.applicableCategory == null &&
+            coupon.applicableProduct == null)) {
       return subtotal;
     }
-    
+
     double appSubtotal = 0;
     for (var item in cartItems) {
       bool isApplicable = false;
-      
-      if (coupon.applicableCategory != null && item.category == coupon.applicableCategory) {
+
+      if (coupon.applicableCategory != null &&
+          item.category == coupon.applicableCategory) {
         isApplicable = true;
-      } else if (coupon.applicableProduct != null && item.id.split('_').first == coupon.applicableProduct) {
+      } else if (coupon.applicableProduct != null &&
+          item.id.split('_').first == coupon.applicableProduct) {
         isApplicable = true;
       }
-      
+
       if (isApplicable) {
         appSubtotal += (item.price * item.count);
       }
@@ -233,7 +267,7 @@ class CartController extends GetxController {
     appliedCoupon.value = '';
     activeCouponModel.value = null;
     cartItems.refresh();
-    Get.snackbar(
+    CustomSnackBar.show(
       'Coupon Removed',
       'Coupon has been removed from your cart.',
       backgroundColor: Colors.black87,
@@ -254,7 +288,7 @@ class CartController extends GetxController {
 
     if (_authController.firebaseUser.value == null) {
       Get.toNamed(AppRoutes.loginScreen);
-      Get.snackbar(
+      CustomSnackBar.show(
         'Login Required',
         'Please login to add items to your cart.',
         snackPosition: SnackPosition.BOTTOM,
@@ -266,7 +300,7 @@ class CartController extends GetxController {
 
     // Check if item is in stock at all
     if (!product.inStock || product.stockCount <= 0) {
-      Get.snackbar(
+      CustomSnackBar.show(
         'Out of Stock',
         'Sorry, ${product.title} is currently out of stock.',
         snackPosition: SnackPosition.BOTTOM,
@@ -278,9 +312,11 @@ class CartController extends GetxController {
 
     // Use product ID if available, otherwise use title
     String productId = product.id ?? product.title;
-    
+
     // If product has variations, append the first variation's ID or unit to match ProductDetails behavior
-    if (product.hasVariations && product.variations != null && product.variations!.isNotEmpty) {
+    if (product.hasVariations &&
+        product.variations != null &&
+        product.variations!.isNotEmpty) {
       if (!productId.contains('_')) {
         final v = product.variations!.first;
         final vId = v.id ?? "${v.unitValue}${v.unit}";
@@ -307,7 +343,7 @@ class CartController extends GetxController {
       // Check stock limit
       if (cartItems[existingIndex].count + quantity >
           cartItems[existingIndex].availableStock) {
-        Get.snackbar(
+        CustomSnackBar.show(
           'Stock Limit Reached',
           'Only ${cartItems[existingIndex].availableStock} units available for ${product.title}',
           backgroundColor: Colors.orange,
@@ -332,7 +368,7 @@ class CartController extends GetxController {
   bool addItem(CartItem item) {
     if (_authController.firebaseUser.value == null) {
       Get.toNamed(AppRoutes.loginScreen);
-      Get.snackbar(
+      CustomSnackBar.show(
         'Login Required',
         'Please login to add items to your cart.',
         snackPosition: SnackPosition.BOTTOM,
@@ -344,7 +380,7 @@ class CartController extends GetxController {
 
     // Check if item is in stock
     if (!item.inStock || item.availableStock <= 0) {
-      Get.snackbar(
+      CustomSnackBar.show(
         'Out of Stock',
         'Sorry, ${item.name} is currently out of stock.',
         snackPosition: SnackPosition.BOTTOM,
@@ -359,7 +395,7 @@ class CartController extends GetxController {
     if (existingIndex >= 0) {
       if (cartItems[existingIndex].count + 1 >
           cartItems[existingIndex].availableStock) {
-        Get.snackbar(
+        CustomSnackBar.show(
           'Stock Limit Reached',
           'Only ${cartItems[existingIndex].availableStock} units available.',
           backgroundColor: Colors.orange,
@@ -387,7 +423,7 @@ class CartController extends GetxController {
     final index = cartItems.indexWhere((item) => item.id == itemId);
     if (index >= 0) {
       if (cartItems[index].count + 1 > cartItems[index].availableStock) {
-        Get.snackbar(
+        CustomSnackBar.show(
           'Stock Limit Reached',
           'Only ${cartItems[index].availableStock} units available.',
           backgroundColor: Colors.orange,
@@ -435,6 +471,11 @@ class CartController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+
+    ever(_authController.firebaseUser, (user) {
+      _loadFromHive();
+    });
+
     _loadFromHive();
     _startStockListener();
     _initializeRazorpay();
@@ -454,7 +495,10 @@ class CartController extends GetxController {
     _stockSubscription?.cancel();
     if (items.isEmpty) return;
 
-    final productIds = items.map((item) => item.id.split('_').first).toSet().toList();
+    final productIds = items
+        .map((item) => item.id.split('_').first)
+        .toSet()
+        .toList();
 
     // Firestore whereIn limit is 30. If cart > 30, we'd need chunks.
     // For this app, 30 is likely sufficient.
@@ -466,10 +510,12 @@ class CartController extends GetxController {
         .snapshots()
         .listen((snapshot) {
           bool changed = false;
-          
+
           final fetchedIds = snapshot.docs.map((doc) => doc.id).toList();
-          final deletedIds = limitedIds.where((id) => !fetchedIds.contains(id)).toList();
-          
+          final deletedIds = limitedIds
+              .where((id) => !fetchedIds.contains(id))
+              .toList();
+
           if (deletedIds.isNotEmpty) {
             cartItems.removeWhere((item) {
               final baseId = item.id.split('_').first;
@@ -481,49 +527,51 @@ class CartController extends GetxController {
           for (var doc in snapshot.docs) {
             final data = doc.data();
             final productId = doc.id;
-            
+
             // Handle variations: find all cart items matching this base product
             for (int index = 0; index < cartItems.length; index++) {
               final cartItemId = cartItems[index].id;
               final baseId = cartItemId.split('_').first;
-              
+
               if (baseId == productId) {
                 double freshPrice = (data['price'] ?? 0).toDouble();
-                int freshStock = data['stockCount'] != null 
-                    ? (data['stockCount']).toInt() 
+                int freshStock = data['stockCount'] != null
+                    ? (data['stockCount']).toInt()
                     : 0; // Strict tracking
                 bool freshInStock = (data['inStock'] ?? true) && freshStock > 0;
 
                 // If this cart item is a variation, extract specific price/stock
-                if (cartItemId.contains('_') && data['hasVariations'] == true && data['variations'] != null) {
-                  final variationId = cartItemId.substring(cartItemId.indexOf('_') + 1);
-                  final variationsList = data['variations'] as List;
-                  final variationData = variationsList.firstWhere(
-                    (v) {
-                      final vId = v['id']?.toString();
-                      if (vId != null && vId == variationId) return true;
-                      
-                      // Fallback for null IDs: match by unitValue+unit
-                      final altId = "${v['unitValue'] ?? ''}${v['unit'] ?? ''}";
-                      if (altId == variationId) return true;
-                      
-                      // Legacy cart items might just have 'null'
-                      if (vId == null && variationId == 'null') return true;
-                      
-                      return false;
-                    },
-                    orElse: () => null,
+                if (cartItemId.contains('_') &&
+                    data['hasVariations'] == true &&
+                    data['variations'] != null) {
+                  final variationId = cartItemId.substring(
+                    cartItemId.indexOf('_') + 1,
                   );
+                  final variationsList = data['variations'] as List;
+                  final variationData = variationsList.firstWhere((v) {
+                    final vId = v['id']?.toString();
+                    if (vId != null && vId == variationId) return true;
+
+                    // Fallback for null IDs: match by unitValue+unit
+                    final altId = "${v['unitValue'] ?? ''}${v['unit'] ?? ''}";
+                    if (altId == variationId) return true;
+
+                    // Legacy cart items might just have 'null'
+                    if (vId == null && variationId == 'null') return true;
+
+                    return false;
+                  }, orElse: () => null);
 
                   if (variationData != null) {
                     freshPrice = (variationData['price'] ?? 0).toDouble();
-                    freshStock = variationData['stockCount'] != null 
-                        ? (variationData['stockCount']).toInt() 
+                    freshStock = variationData['stockCount'] != null
+                        ? (variationData['stockCount']).toInt()
                         : 0; // Strict tracking
-                    freshInStock = (variationData['inStock'] ?? true) && freshStock > 0;
+                    freshInStock =
+                        (variationData['inStock'] ?? true) && freshStock > 0;
                   } else {
-                     freshInStock = false;
-                     freshStock = 0;
+                    freshInStock = false;
+                    freshStock = 0;
                   }
                 }
 
@@ -599,7 +647,7 @@ class CartController extends GetxController {
       }
     } catch (e) {
       debugPrint("Error in _handlePaymentSuccess: $e");
-      Get.snackbar(
+      CustomSnackBar.show(
         'Order Processing Failed',
         'Your payment (ID: ${response.paymentId}) was successful but we encountered an error. Please contact support.',
         backgroundColor: Colors.orange,
@@ -618,7 +666,7 @@ class CartController extends GetxController {
   void _handlePaymentError(PaymentFailureResponse response) {
     isProcessingOrder.value = false;
     if (Get.isDialogOpen ?? false) Get.back();
-    Get.snackbar(
+    CustomSnackBar.show(
       'Payment Failed',
       'Error: ${response.message}',
       backgroundColor: Colors.red,
@@ -630,7 +678,7 @@ class CartController extends GetxController {
   void _handleExternalWallet(ExternalWalletResponse response) {
     isProcessingOrder.value = false;
     if (Get.isDialogOpen ?? false) Get.back();
-    Get.snackbar(
+    CustomSnackBar.show(
       'External Wallet',
       'Wallet: ${response.walletName}',
       backgroundColor: Colors.blue,
@@ -666,7 +714,7 @@ class CartController extends GetxController {
 
     // Check if any items became out of stock
     if (cartItems.any((item) => !item.inStock)) {
-      Get.snackbar(
+      CustomSnackBar.show(
         'Out of Stock',
         'Some items in your cart are now out of stock. Please review.',
         backgroundColor: Colors.red,
@@ -678,7 +726,7 @@ class CartController extends GetxController {
 
     final razorpayKey = dotenv.env['RAZORPAY_API_KEY'];
     if (razorpayKey == null || razorpayKey.isEmpty) {
-      Get.snackbar('Config Error', 'Razorpay API Key not found in .env');
+      CustomSnackBar.show('Config Error', 'Razorpay API Key not found in .env');
       isProcessingOrder.value = false;
       return;
     }
@@ -713,7 +761,7 @@ class CartController extends GetxController {
     } catch (e) {
       if (Get.isDialogOpen ?? false) Get.back();
       debugPrint('Exception opening Razorpay: $e');
-      Get.snackbar(
+      CustomSnackBar.show(
         'Payment Initialization Failed',
         'Could not open payment gateway. Please try again.',
         backgroundColor: Colors.red,
@@ -743,8 +791,12 @@ class CartController extends GetxController {
       items: cartItems
           .map(
             (item) => OrderItem(
-              productId: item.id.split('_').first, // Ensure backend gets the base productId
-              variationId: item.id.contains('_') ? item.id.substring(item.id.indexOf('_') + 1) : null,
+              productId: item.id
+                  .split('_')
+                  .first, // Ensure backend gets the base productId
+              variationId: item.id.contains('_')
+                  ? item.id.substring(item.id.indexOf('_') + 1)
+                  : null,
               title: item.name,
               unit: item.quantity,
               image: item.image,
@@ -776,12 +828,14 @@ class CartController extends GetxController {
       );
 
       // We pass the order data. The CF expects {'order': orderMap}
-      final HttpsCallableResult result = await httpsCallable.call({'order': order.toJson()});
+      final HttpsCallableResult result = await httpsCallable.call({
+        'order': order.toJson(),
+      });
 
       // The CF returns { success: true, orderId: "KF-XXXXXX", ... }
       if (result.data != null && result.data['success'] == true) {
         final String? serverOrderId = result.data['orderId'];
-        
+
         // Increment coupon usage if applied
         if (activeCouponModel.value != null && appliedCoupon.value.isNotEmpty) {
           try {
@@ -793,14 +847,14 @@ class CartController extends GetxController {
             if (querySnapshot.docs.isNotEmpty) {
               final docRef = querySnapshot.docs.first.reference;
               await docRef.update({
-                'currentUsageCount': FieldValue.increment(1)
+                'currentUsageCount': FieldValue.increment(1),
               });
             }
           } catch (e) {
             debugPrint("Failed to update coupon usage: $e");
           }
         }
-        
+
         clearCart();
         return serverOrderId ?? ''; // Return the actual ID from server
       }
@@ -844,7 +898,7 @@ class CartController extends GetxController {
         }
       }
 
-      Get.snackbar(
+      CustomSnackBar.show(
         title,
         message,
         snackPosition: SnackPosition.BOTTOM,
@@ -879,7 +933,7 @@ class CartController extends GetxController {
       );
 
       if (!isServiceable) {
-        Get.snackbar(
+        CustomSnackBar.show(
           'Service Unavailable',
           'We are not in your area yet. Currently, we only serve Chattrapati Sambhaji Nagar.',
           snackPosition: SnackPosition.BOTTOM,
@@ -896,7 +950,7 @@ class CartController extends GetxController {
     // Fallback if no coordinates: If it's a valid string, return true but log it.
     // However, it's safer to require map selection for precision.
     if (resolved.address == 'Address not available') {
-      Get.snackbar(
+      CustomSnackBar.show(
         'Address Error',
         'Please select a valid delivery address.',
         backgroundColor: Colors.red,
@@ -943,11 +997,7 @@ class CartController extends GetxController {
       final lng = box.get('last_known_lng');
 
       if (addr != null && addr is String && !invalidValues.contains(addr)) {
-        return ResolvedAddress(
-          address: addr,
-          latitude: lat,
-          longitude: lng,
-        );
+        return ResolvedAddress(address: addr, latitude: lat, longitude: lng);
       }
     } catch (_) {}
 
@@ -999,7 +1049,7 @@ class CartController extends GetxController {
     Get.back();
 
     if (cartItems.any((item) => !item.inStock)) {
-      Get.snackbar(
+      CustomSnackBar.show(
         'Out of Stock',
         'Some items in your cart are now out of stock. Please review.',
         backgroundColor: Colors.red,
@@ -1042,7 +1092,7 @@ class CartController extends GetxController {
     } catch (e) {
       if (Get.isDialogOpen ?? false) Get.back();
       debugPrint('Error in placeCodOrder: $e');
-      Get.snackbar(
+      CustomSnackBar.show(
         'Order Failed',
         'Something went wrong. Please try again.',
         backgroundColor: Colors.red,
@@ -1059,7 +1109,10 @@ class CartController extends GetxController {
     bool needsUpdate = false;
     try {
       // Get unique base IDs for querying Firebase (stripping variation extensions)
-      final List<String> baseIds = cartItems.map((e) => e.id.split('_').first).toSet().toList();
+      final List<String> baseIds = cartItems
+          .map((e) => e.id.split('_').first)
+          .toSet()
+          .toList();
 
       // Process in chunks of 30 due to whereIn limits
       for (int i = 0; i < baseIds.length; i += 30) {
@@ -1074,40 +1127,43 @@ class CartController extends GetxController {
         for (int j = 0; j < cartItems.length; j++) {
           var cartItem = cartItems[j];
           final baseId = cartItem.id.split('_').first;
-          
+
           if (!chunk.contains(baseId)) continue;
 
           if (docMap.containsKey(baseId)) {
             final data = docMap[baseId]!;
-            
+
             double freshPrice = (data['price'] ?? 0).toDouble();
-            int freshStockCount = data['stockCount'] != null 
-                ? (data['stockCount']).toInt() 
+            int freshStockCount = data['stockCount'] != null
+                ? (data['stockCount']).toInt()
                 : 0; // Strict tracking
-            bool freshStockStatus = (data['inStock'] ?? true) && freshStockCount > 0;
+            bool freshStockStatus =
+                (data['inStock'] ?? true) && freshStockCount > 0;
 
             // Handle variation specific stock if applicable
-            if (cartItem.id.contains('_') && data['hasVariations'] == true && data['variations'] != null) {
-              final variationId = cartItem.id.substring(cartItem.id.indexOf('_') + 1);
-              final variationsList = data['variations'] as List;
-              final variationData = variationsList.firstWhere(
-                (v) {
-                  final vId = v['id']?.toString();
-                  if (vId != null && vId == variationId) return true;
-                  final altId = "${v['unitValue'] ?? ''}${v['unit'] ?? ''}";
-                  if (altId == variationId) return true;
-                  if (vId == null && variationId == 'null') return true;
-                  return false;
-                },
-                orElse: () => null,
+            if (cartItem.id.contains('_') &&
+                data['hasVariations'] == true &&
+                data['variations'] != null) {
+              final variationId = cartItem.id.substring(
+                cartItem.id.indexOf('_') + 1,
               );
+              final variationsList = data['variations'] as List;
+              final variationData = variationsList.firstWhere((v) {
+                final vId = v['id']?.toString();
+                if (vId != null && vId == variationId) return true;
+                final altId = "${v['unitValue'] ?? ''}${v['unit'] ?? ''}";
+                if (altId == variationId) return true;
+                if (vId == null && variationId == 'null') return true;
+                return false;
+              }, orElse: () => null);
 
               if (variationData != null) {
                 freshPrice = (variationData['price'] ?? 0).toDouble();
-                freshStockCount = variationData['stockCount'] != null 
-                    ? (variationData['stockCount']).toInt() 
+                freshStockCount = variationData['stockCount'] != null
+                    ? (variationData['stockCount']).toInt()
                     : 0; // Strict tracking
-                freshStockStatus = (variationData['inStock'] ?? true) && freshStockCount > 0;
+                freshStockStatus =
+                    (variationData['inStock'] ?? true) && freshStockCount > 0;
               } else {
                 freshStockStatus = false;
                 freshStockCount = 0;
@@ -1156,24 +1212,57 @@ class CartController extends GetxController {
 
   void _loadFromHive() {
     try {
-      final savedData = _cartBox.get('cart_items_list');
+      final user = _authController.firebaseUser.value;
+      if (user == null) {
+        cartItems.clear();
+        return;
+      }
+
+      final String cartKey = 'cart_items_list_${user.uid}';
+      final String timestampKey = 'cart_timestamp_${user.uid}';
+
+      final savedData = _cartBox.get(cartKey);
+      final savedTimestamp = _cartBox.get(timestampKey);
+
       if (savedData != null) {
+        if (savedTimestamp != null) {
+          final DateTime lastUpdated = DateTime.fromMillisecondsSinceEpoch(
+            savedTimestamp,
+          );
+          final Duration difference = DateTime.now().difference(lastUpdated);
+          if (difference.inDays >= 7) {
+            _cartBox.delete(cartKey);
+            _cartBox.delete(timestampKey);
+            cartItems.clear();
+            return;
+          }
+        }
+
         List<dynamic> itemsList = jsonDecode(savedData);
         cartItems.value = itemsList
             .map((item) => CartItem.fromJson(item))
             .toList();
+      } else {
+        cartItems.clear();
       }
     } catch (e) {
-      Get.snackbar('Cart Error', 'Failed to load local cart items.');
+      CustomSnackBar.show('Cart Error', 'Failed to load local cart items.');
     }
   }
 
   void _saveToHive() {
     try {
+      final user = _authController.firebaseUser.value;
+      if (user == null) return;
+
+      final String cartKey = 'cart_items_list_${user.uid}';
+      final String timestampKey = 'cart_timestamp_${user.uid}';
+
       List<Map<String, dynamic>> jsonData = cartItems
           .map((item) => item.toJson())
           .toList();
-      _cartBox.put('cart_items_list', jsonEncode(jsonData));
+      _cartBox.put(cartKey, jsonEncode(jsonData));
+      _cartBox.put(timestampKey, DateTime.now().millisecondsSinceEpoch);
     } catch (e) {
       debugPrint("Error saving cart to Hive: $e");
     }
@@ -1185,11 +1274,7 @@ class ResolvedAddress {
   final double? latitude;
   final double? longitude;
 
-  ResolvedAddress({
-    required this.address,
-    this.latitude,
-    this.longitude,
-  });
+  ResolvedAddress({required this.address, this.latitude, this.longitude});
 }
 
 class CartItem {

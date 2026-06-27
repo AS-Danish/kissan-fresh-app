@@ -8,9 +8,8 @@ import 'product_card_widget.dart';
 class CategorizedProductsSection extends StatelessWidget {
   CategorizedProductsSection({super.key});
 
-  final CategorizedProductsController controller = Get.find<
-    CategorizedProductsController
-  >();
+  final CategorizedProductsController controller =
+      Get.find<CategorizedProductsController>();
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +71,11 @@ class CategorizedProductsSection extends StatelessWidget {
                             style: GoogleFonts.montserrat(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                              color: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.color
+                                  ?.withValues(alpha: 0.7),
                               letterSpacing: 0.1,
                             ),
                             maxLines: 2,

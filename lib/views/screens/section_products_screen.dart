@@ -14,7 +14,7 @@ class SectionProductsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final HomepageController controller = Get.find<HomepageController>();
-    
+
     // Fetch full products list when page is opened
     WidgetsBinding.instance.addPostFrameCallback((_) {
       controller.fetchFullProductsForSection(section);

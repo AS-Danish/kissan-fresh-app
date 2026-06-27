@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -53,14 +54,16 @@ class AddressDetailsScreen extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Obx(() => Text(
-                          controller.currentAddress.value,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: Theme.of(context).textTheme.bodyMedium?.color,
-                          ),
-                        )),
+                    child: Obx(
+                      () => Text(
+                        controller.currentAddress.value,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -93,7 +96,10 @@ class AddressDetailsScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Theme.of(context).primaryColor),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -124,10 +130,13 @@ class AddressDetailsScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Theme.of(context).primaryColor),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
 
             // Address Type Selection
@@ -139,23 +148,40 @@ class AddressDetailsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            Obx(() => Row(
-              children: [
-                _buildTypeChip(context, controller, 'Home', Icons.home_rounded),
-                const SizedBox(width: 12),
-                _buildTypeChip(context, controller, 'Office', Icons.work_rounded),
-                const SizedBox(width: 12),
-                _buildTypeChip(context, controller, 'Other', Icons.location_on_rounded),
-              ],
-            )),
-            
+            Obx(
+              () => Row(
+                children: [
+                  _buildTypeChip(
+                    context,
+                    controller,
+                    'Home',
+                    Icons.home_rounded,
+                  ),
+                  const SizedBox(width: 12),
+                  _buildTypeChip(
+                    context,
+                    controller,
+                    'Office',
+                    Icons.work_rounded,
+                  ),
+                  const SizedBox(width: 12),
+                  _buildTypeChip(
+                    context,
+                    controller,
+                    'Other',
+                    Icons.location_on_rounded,
+                  ),
+                ],
+              ),
+            ),
+
             const SizedBox(height: 40),
 
             // Save Button
             ElevatedButton(
               onPressed: () {
                 if (controller.landmarkController.text.trim().isEmpty) {
-                  Get.snackbar(
+                  CustomSnackBar.show(
                     'Required',
                     'Please enter a landmark to help delivery partners locate you.',
                     snackPosition: SnackPosition.BOTTOM,
@@ -175,8 +201,9 @@ class AddressDetailsScreen extends StatelessWidget {
                 ),
               ),
               child: Text(
-                controller.flatNoController.text.isNotEmpty || controller.landmarkController.text.isNotEmpty 
-                    ? 'Update Address' 
+                controller.flatNoController.text.isNotEmpty ||
+                        controller.landmarkController.text.isNotEmpty
+                    ? 'Update Address'
                     : 'Save Address',
                 style: GoogleFonts.montserrat(
                   fontWeight: FontWeight.w600,
@@ -191,7 +218,12 @@ class AddressDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTypeChip(BuildContext context, AddressController controller, String type, IconData icon) {
+  Widget _buildTypeChip(
+    BuildContext context,
+    AddressController controller,
+    String type,
+    IconData icon,
+  ) {
     final isSelected = controller.selectedAddressType.value == type;
     return Expanded(
       child: GestureDetector(
@@ -199,13 +231,13 @@ class AddressDetailsScreen extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: isSelected 
-                ? Theme.of(context).primaryColor.withValues(alpha: 0.1) 
+            color: isSelected
+                ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
                 : Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected 
-                  ? Theme.of(context).primaryColor 
+              color: isSelected
+                  ? Theme.of(context).primaryColor
                   : Colors.grey.shade300,
               width: isSelected ? 1.5 : 1,
             ),
@@ -216,7 +248,9 @@ class AddressDetailsScreen extends StatelessWidget {
               Icon(
                 icon,
                 size: 18,
-                color: isSelected ? Theme.of(context).primaryColor : Colors.grey.shade600,
+                color: isSelected
+                    ? Theme.of(context).primaryColor
+                    : Colors.grey.shade600,
               ),
               const SizedBox(width: 6),
               Text(
@@ -224,7 +258,9 @@ class AddressDetailsScreen extends StatelessWidget {
                 style: GoogleFonts.montserrat(
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? Theme.of(context).primaryColor : Colors.grey.shade700,
+                  color: isSelected
+                      ? Theme.of(context).primaryColor
+                      : Colors.grey.shade700,
                 ),
               ),
             ],

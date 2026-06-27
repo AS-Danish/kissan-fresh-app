@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
@@ -10,11 +11,7 @@ class CartItemTile extends StatelessWidget {
   final CartItem item;
   final CartController controller;
 
-  const CartItemTile({
-    super.key,
-    required this.item,
-    required this.controller,
-  });
+  const CartItemTile({super.key, required this.item, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -44,11 +41,14 @@ class CartItemTile extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
           ),
           child: const Icon(
-              Icons.delete_outline, color: Colors.white, size: 28),
+            Icons.delete_outline,
+            color: Colors.white,
+            size: 28,
+          ),
         ),
         onDismissed: (direction) {
           controller.removeItem(item.id);
-          Get.snackbar(
+          CustomSnackBar.show(
             'Removed',
             '${item.name} removed from cart',
             snackPosition: SnackPosition.BOTTOM,
@@ -62,10 +62,7 @@ class CartItemTile extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Theme
-                .of(context)
-                .colorScheme
-                .surface,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
@@ -77,10 +74,7 @@ class CartItemTile extends StatelessWidget {
             border: Border.all(
               color: isCouponApplied
                   ? Theme.of(context).primaryColor.withValues(alpha: 0.5)
-                  : Theme
-                  .of(context)
-                  .dividerColor
-                  .withValues(alpha: 0.5),
+                  : Theme.of(context).dividerColor.withValues(alpha: 0.5),
               width: isCouponApplied ? 2 : 1,
             ),
           ),
@@ -101,24 +95,20 @@ class CartItemTile extends StatelessWidget {
                     child: CachedNetworkImage(
                       imageUrl: item.image,
                       fit: BoxFit.cover,
-                      placeholder: (context, url) =>
-                          Center(
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Theme
-                                  .of(context)
-                                  .primaryColor,
-                            ),
-                          ),
-                      errorWidget: (context, url, error) =>
-                          Container(
-                            color: Colors.grey.shade200,
-                            child: const Icon(
-                              Icons.image_not_supported_outlined,
-                              color: Colors.grey,
-                              size: 32,
-                            ),
-                          ),
+                      placeholder: (context, url) => Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        color: Colors.grey.shade200,
+                        child: const Icon(
+                          Icons.image_not_supported_outlined,
+                          color: Colors.grey,
+                          size: 32,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -139,10 +129,7 @@ class CartItemTile extends StatelessWidget {
                             style: GoogleFonts.montserrat(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
-                              color: Theme
-                                  .of(context)
-                                  .colorScheme
-                                  .onSurface,
+                              color: Theme.of(context).colorScheme.onSurface,
                               letterSpacing: 0.2,
                             ),
                             maxLines: 2,
@@ -152,7 +139,7 @@ class CartItemTile extends StatelessWidget {
                         InkWell(
                           onTap: () {
                             controller.removeItem(item.id);
-                            Get.snackbar(
+                            CustomSnackBar.show(
                               'Removed',
                               '${item.name} removed from cart',
                               snackPosition: SnackPosition.BOTTOM,
@@ -193,7 +180,9 @@ class CartItemTile extends StatelessWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                              color: const Color(
+                                0xFFEF4444,
+                              ).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text(
@@ -214,14 +203,19 @@ class CartItemTile extends StatelessWidget {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                              color: Theme.of(
+                                context,
+                              ).primaryColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.confirmation_num, size: 10,
-                                    color: Theme.of(context).primaryColor),
+                                Icon(
+                                  Icons.confirmation_num,
+                                  size: 10,
+                                  color: Theme.of(context).primaryColor,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Coupon Applied',
@@ -258,7 +252,9 @@ class CartItemTile extends StatelessWidget {
                             style: GoogleFonts.montserrat(
                               fontSize: 17,
                               fontWeight: FontWeight.w800,
-                              color: Theme.of(context).primaryColor, // Success Green
+                              color: Theme.of(
+                                context,
+                              ).primaryColor, // Success Green
                               letterSpacing: 0.3,
                             ),
                           ),
@@ -307,13 +303,18 @@ class CartItemTile extends StatelessWidget {
     } else {
       // Proportional distribution for flat discounts
       double applicableSubtotal = controller.cartItems
-          .where((i) => i.category == coupon.applicableCategory || coupon.applyTo == 'all')
+          .where(
+            (i) =>
+                i.category == coupon.applicableCategory ||
+                coupon.applyTo == 'all',
+          )
           .fold(0.0, (sum, i) => sum + (i.price * i.count));
-          
+
       if (applicableSubtotal == 0) return item.price;
-      
+
       double itemTotal = item.price * item.count;
-      double proportionalDiscount = (itemTotal / applicableSubtotal) * coupon.discountValue;
+      double proportionalDiscount =
+          (itemTotal / applicableSubtotal) * coupon.discountValue;
       return (itemTotal - proportionalDiscount) / item.count;
     }
   }

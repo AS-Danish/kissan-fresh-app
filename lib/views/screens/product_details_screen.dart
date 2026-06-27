@@ -167,7 +167,9 @@ class ProductDetailsScreen extends StatelessWidget {
                       final v = controller.selectedVariation.value;
                       final displayPrice = v?.price ?? p.price;
                       final displayMrp = v?.mrp ?? p.mrp;
-                      final displayUnit = v != null ? '${v.unitValue} ${v.unit}' : p.unit;
+                      final displayUnit = v != null
+                          ? '${v.unitValue} ${v.unit}'
+                          : p.unit;
 
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,7 +188,8 @@ class ProductDetailsScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.baseline,
                             textBaseline: TextBaseline.alphabetic,
                             children: [
-                              if (displayMrp != null && displayMrp > displayPrice)
+                              if (displayMrp != null &&
+                                  displayMrp > displayPrice)
                                 Padding(
                                   padding: const EdgeInsets.only(right: 8.0),
                                   child: Text(
@@ -229,8 +232,10 @@ class ProductDetailsScreen extends StatelessWidget {
                   Obx(() {
                     final p = controller.observableProduct.value ?? product;
                     final currentSelected = controller.selectedVariation.value;
-                    
-                    if (!p.hasVariations || p.variations == null || p.variations!.isEmpty) {
+
+                    if (!p.hasVariations ||
+                        p.variations == null ||
+                        p.variations!.isEmpty) {
                       return const SizedBox.shrink();
                     }
                     return Column(
@@ -255,7 +260,8 @@ class ProductDetailsScreen extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 20),
                             scrollDirection: Axis.horizontal,
                             itemCount: p.variations!.length,
-                            separatorBuilder: (context, index) => const SizedBox(width: 12),
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(width: 12),
                             itemBuilder: (context, index) {
                               final v = p.variations![index];
                               final isSelected = currentSelected == v;
@@ -265,30 +271,45 @@ class ProductDetailsScreen extends StatelessWidget {
                                   width: 120,
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: isSelected ? Theme.of(context).primaryColor.withValues(alpha: 0.1) : Theme.of(context).colorScheme.surface,
+                                    color: isSelected
+                                        ? Theme.of(
+                                            context,
+                                          ).primaryColor.withValues(alpha: 0.1)
+                                        : Theme.of(context).colorScheme.surface,
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
-                                      color: isSelected ? Theme.of(context).primaryColor : Colors.grey.shade300,
+                                      color: isSelected
+                                          ? Theme.of(context).primaryColor
+                                          : Colors.grey.shade300,
                                       width: isSelected ? 2 : 1,
                                     ),
-                                    boxShadow: isSelected ? [] : [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.05),
-                                        blurRadius: 5,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
+                                    boxShadow: isSelected
+                                        ? []
+                                        : [
+                                            BoxShadow(
+                                              color: Colors.black.withValues(
+                                                alpha: 0.05,
+                                              ),
+                                              blurRadius: 5,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
                                   ),
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       Text(
                                         '${v.unitValue} ${v.unit}',
                                         style: GoogleFonts.montserrat(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w800,
-                                          color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).colorScheme.onSurface,
+                                          color: isSelected
+                                              ? Theme.of(context).primaryColor
+                                              : Theme.of(
+                                                  context,
+                                                ).colorScheme.onSurface,
                                         ),
                                       ),
                                       const SizedBox(height: 4),
@@ -307,7 +328,8 @@ class ProductDetailsScreen extends StatelessWidget {
                                             fontSize: 12,
                                             fontWeight: FontWeight.w500,
                                             color: Colors.grey.shade400,
-                                            decoration: TextDecoration.lineThrough,
+                                            decoration:
+                                                TextDecoration.lineThrough,
                                           ),
                                         ),
                                     ],
@@ -381,8 +403,10 @@ class ProductDetailsScreen extends StatelessWidget {
                             final p =
                                 controller.observableProduct.value ?? product;
                             final v = controller.selectedVariation.value;
-                            final stockCount = v != null ? v.stockCount : p.stockCount;
-                            
+                            final stockCount = v != null
+                                ? v.stockCount
+                                : p.stockCount;
+
                             return _buildDetailRow(
                               context: context,
                               icon: Icons.inventory_2_outlined,
@@ -399,22 +423,31 @@ class ProductDetailsScreen extends StatelessWidget {
                           }),
 
                           Obx(() {
-                            final p = controller.observableProduct.value ?? product;
+                            final p =
+                                controller.observableProduct.value ?? product;
                             final v = controller.selectedVariation.value;
-                            final displayQuantity = v != null ? v.unitValue : p.quantity;
+                            final displayQuantity = v != null
+                                ? v.unitValue
+                                : p.quantity;
                             final displayUnit = v != null ? v.unit : p.unit;
 
-                            if (displayQuantity != null && displayQuantity.isNotEmpty) {
+                            if (displayQuantity != null &&
+                                displayQuantity.isNotEmpty) {
                               return Column(
                                 children: [
                                   const SizedBox(height: 12),
-                                  Divider(color: Colors.grey.shade200, height: 1),
+                                  Divider(
+                                    color: Colors.grey.shade200,
+                                    height: 1,
+                                  ),
                                   const SizedBox(height: 12),
                                   _buildDetailRow(
                                     context: context,
                                     icon: Icons.scale_outlined,
                                     label: 'Quantity',
-                                    value: '$displayQuantity ${displayUnit.replaceAll(displayQuantity, '')}'.trim(),
+                                    value:
+                                        '$displayQuantity ${displayUnit.replaceAll(displayQuantity, '')}'
+                                            .trim(),
                                     valueColor: Colors.grey.shade700,
                                   ),
                                 ],
@@ -518,7 +551,7 @@ class ProductDetailsScreen extends StatelessWidget {
                         ),
                       );
                     }
-                    
+
                     if (controller.similarProducts.isEmpty) {
                       return const SizedBox.shrink();
                     }
@@ -536,7 +569,9 @@ class ProductDetailsScreen extends StatelessWidget {
                                 style: GoogleFonts.montserrat(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w800,
-                                  color: Theme.of(context).colorScheme.onSurface,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface,
                                   letterSpacing: 0.3,
                                 ),
                               ),
@@ -547,7 +582,8 @@ class ProductDetailsScreen extends StatelessWidget {
                                 style: TextButton.styleFrom(
                                   padding: EdgeInsets.zero,
                                   minimumSize: Size.zero,
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
                                 ),
                                 child: Text(
                                   'See More',
@@ -563,12 +599,14 @@ class ProductDetailsScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         SizedBox(
-                          height: 280, // Adjust based on ProductCardWidget's ideal height
+                          height:
+                              280, // Adjust based on ProductCardWidget's ideal height
                           child: ListView.separated(
                             padding: const EdgeInsets.symmetric(horizontal: 20),
                             scrollDirection: Axis.horizontal,
                             itemCount: controller.similarProducts.length,
-                            separatorBuilder: (context, index) => const SizedBox(width: 16),
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(width: 16),
                             itemBuilder: (context, index) {
                               return SizedBox(
                                 width: 160, // Fixed width for horizontal layout
@@ -908,4 +946,3 @@ class ProductDetailsScreen extends StatelessWidget {
     );
   }
 }
-

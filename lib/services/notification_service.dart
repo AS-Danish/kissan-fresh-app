@@ -19,7 +19,8 @@ class NotificationService {
   static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
     'high_importance_channel', // id
     'High Importance Notifications', // title
-    description: 'This channel is used for important notifications.', // description
+    description:
+        'This channel is used for important notifications.', // description
     importance: Importance.high,
   );
 
@@ -43,10 +44,11 @@ class NotificationService {
         AndroidInitializationSettings('@mipmap/ic_launcher');
     const DarwinInitializationSettings initializationSettingsDarwin =
         DarwinInitializationSettings();
-    const InitializationSettings initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsDarwin,
-    );
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
+          android: initializationSettingsAndroid,
+          iOS: initializationSettingsDarwin,
+        );
 
     await _localNotifications.initialize(
       settings: initializationSettings,
@@ -58,7 +60,8 @@ class NotificationService {
     // Create Notification Channel for Android
     await _localNotifications
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(_channel);
 
     // Handle token refresh
@@ -105,7 +108,7 @@ class NotificationService {
     try {
       final box = Hive.box('user_settings');
       bool isEnabled = box.get('isNotificationsEnabled', defaultValue: true);
-      
+
       if (!isEnabled) {
         debugPrint('Notifications are disabled, skipping token save.');
         return;
@@ -117,14 +120,13 @@ class NotificationService {
       if (token != null && uid != null) {
         final savedToken = box.get('fcm_token_$uid');
         if (savedToken == token) {
-           debugPrint('FCM Token unchanged, skipping Firestore write.');
-           return;
+          debugPrint('FCM Token unchanged, skipping Firestore write.');
+          return;
         }
 
-        await _firestore.collection('users').doc(uid).set(
-          {'fcmToken': token},
-          SetOptions(merge: true),
-        );
+        await _firestore.collection('users').doc(uid).set({
+          'fcmToken': token,
+        }, SetOptions(merge: true));
         await box.put('fcm_token_$uid', token);
         debugPrint('FCM Token saved to Firestore: $token');
       }
@@ -137,10 +139,9 @@ class NotificationService {
     try {
       String? uid = _auth.currentUser?.uid;
       if (uid != null) {
-        await _firestore.collection('users').doc(uid).set(
-          {'fcmToken': FieldValue.delete()},
-          SetOptions(merge: true),
-        );
+        await _firestore.collection('users').doc(uid).set({
+          'fcmToken': FieldValue.delete(),
+        }, SetOptions(merge: true));
         final box = Hive.box('user_settings');
         await box.delete('fcm_token_$uid');
         debugPrint('FCM Token deleted from Firestore');

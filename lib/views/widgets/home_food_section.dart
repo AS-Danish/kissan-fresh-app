@@ -22,7 +22,8 @@ class HomeFoodSection extends StatelessWidget {
 
           final int selectedIdx = controller.selectedHomeFoodIndex.value;
           final bool isValidIndex =
-              selectedIdx >= 0 && selectedIdx < controller.homeFoodCategories.length;
+              selectedIdx >= 0 &&
+              selectedIdx < controller.homeFoodCategories.length;
 
           final isAll =
               isValidIndex &&

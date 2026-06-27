@@ -71,8 +71,7 @@ class BestsellersController extends GetxController {
           'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=400',
       image2:
           'https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=400',
-      image3:
-          'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400',
+      image3: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400',
       image4:
           'https://images.unsplash.com/photo-1519897831810-a9a01aceccd1?w=400',
       moreCount: '+102',
@@ -88,8 +87,7 @@ class BestsellersController extends GetxController {
           'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=400',
       image3:
           'https://images.unsplash.com/photo-1585421514738-ee21552d4739?w=400',
-      image4:
-          'https://images.unsplash.com/photo-1556911220-e15224bbaf40?w=400',
+      image4: 'https://images.unsplash.com/photo-1556911220-e15224bbaf40?w=400',
       moreCount: '+56',
       title: 'Household',
       onTap: () {

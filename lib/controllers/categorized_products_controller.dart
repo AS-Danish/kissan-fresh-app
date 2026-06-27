@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -25,7 +26,7 @@ class CategorizedProductsController extends GetxController {
     ever(homepageController.currentTab, (_) {
       fetchCategorizedProducts();
     });
-    
+
     // Also listen to categories loading for the first time
     ever(homepageController.categories, (_) {
       if (homepageController.currentTab.value == 'Grocery') {
@@ -77,17 +78,14 @@ class CategorizedProductsController extends GetxController {
             products.map((p) {
               return p.copyWith(
                 onTap: () {
-                  Get.toNamed(
-                    AppRoutes.productDetailsRoute,
-                    arguments: p,
-                  );
+                  Get.toNamed(AppRoutes.productDetailsRoute, arguments: p);
                 },
                 onAddToCart: () {
                   try {
                     final cartController = Get.find<CartController>();
                     bool added = cartController.addToCart(p, 1);
                     if (added) {
-                      Get.snackbar(
+                      CustomSnackBar.show(
                         'Added to Cart',
                         '${p.title} added to cart',
                         snackPosition: SnackPosition.BOTTOM,
@@ -138,22 +136,29 @@ class CategorizedProductsController extends GetxController {
   Future<void> _fetchProductsForCategory(String category, String origin) async {
     try {
       _categorySubscriptions[category]?.cancel();
-      
+
       _categorySubscriptions[category] = _firestore
           .collection('products')
           .where('productOrigin', isEqualTo: origin)
           .where('category', isEqualTo: category)
           .limit(6)
           .snapshots()
-          .listen((querySnapshot) {
-        if (querySnapshot.docs.isNotEmpty) {
-          List<ProductCardModel> products = querySnapshot.docs
-              .map((doc) => _mapToProductCardModel(doc))
-              .toList();
-          categorizedProducts[category] = products;
-          _cacheService.saveCategorizedProducts(origin, categorizedProducts);
-        }
-      }, onError: (e) => debugPrint("Error in category stream $category: $e"));
+          .listen(
+            (querySnapshot) {
+              if (querySnapshot.docs.isNotEmpty) {
+                List<ProductCardModel> products = querySnapshot.docs
+                    .map((doc) => _mapToProductCardModel(doc))
+                    .toList();
+                categorizedProducts[category] = products;
+                _cacheService.saveCategorizedProducts(
+                  origin,
+                  categorizedProducts,
+                );
+              }
+            },
+            onError: (e) =>
+                debugPrint("Error in category stream $category: $e"),
+          );
     } catch (e) {
       debugPrint("Error fetching category $category: $e");
     }
@@ -175,17 +180,14 @@ class CategorizedProductsController extends GetxController {
 
     return model.copyWith(
       onTap: () {
-        Get.toNamed(
-          AppRoutes.productDetailsRoute,
-          arguments: model,
-        );
+        Get.toNamed(AppRoutes.productDetailsRoute, arguments: model);
       },
       onAddToCart: () {
         try {
           final cartController = Get.find<CartController>();
           bool added = cartController.addToCart(model, 1);
           if (added) {
-            Get.snackbar(
+            CustomSnackBar.show(
               'Added to Cart',
               '${model.title} added to cart',
               snackPosition: SnackPosition.BOTTOM,

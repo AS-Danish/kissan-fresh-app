@@ -13,17 +13,18 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
-  
+
   int _textIndex = 0;
   final List<String> _loadingPhrases = [
     "Handpicking fresh produce...",
     "Connecting to local farms...",
     "Preparing your store...",
-    "Almost ready..."
+    "Almost ready...",
   ];
 
   Timer? _textTimer;
@@ -31,7 +32,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    
+
     // Setup animations
     _animationController = AnimationController(
       vsync: this,
@@ -41,7 +42,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     _fadeAnimation = Tween<double>(begin: 0.65, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    
+
     _scaleAnimation = Tween<double>(begin: 0.96, end: 1.04).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
@@ -68,7 +69,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       // up to a maximum of 3 seconds. We don't want to block the user for long.
       // The home screen can handle missing data gracefully with its own loaders.
       final futures = <Future>[];
-      
+
       if (updateController.initializationFuture != null) {
         futures.add(updateController.initializationFuture!);
       }
@@ -94,7 +95,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     if (mounted) {
       // Smooth fade transition into the app
-      Get.offAll(() => MainLayout(), transition: Transition.fadeIn, duration: const Duration(milliseconds: 800));
+      Get.offAll(
+        () => MainLayout(),
+        transition: Transition.fadeIn,
+        duration: const Duration(milliseconds: 800),
+      );
     }
   }
 
@@ -108,7 +113,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFefe8d6), // Beautiful cream/off-white background
+      backgroundColor: const Color(
+        0xFFefe8d6,
+      ), // Beautiful cream/off-white background
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -129,15 +136,15 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 'assets/images/KissanFreshCompleteLogo.png',
                 width: 240,
                 errorBuilder: (context, error, stackTrace) => Icon(
-                  Icons.shopping_cart, 
-                  size: 100, 
+                  Icons.shopping_cart,
+                  size: 100,
                   color: Theme.of(context).primaryColor,
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 70),
-            
+
             // Custom modern sleek progress bar
             SizedBox(
               width: 180,
@@ -145,14 +152,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 borderRadius: BorderRadius.circular(10),
                 child: LinearProgressIndicator(
                   backgroundColor: const Color(0x3314B8A6), // Transparent teal
-                  valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).primaryColor,
+                  ),
                   minHeight: 5,
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Psychological Animated Text
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 500),

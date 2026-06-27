@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -32,8 +33,11 @@ class OnboardingController extends GetxController {
     final address = addressController.text.trim();
     final email = emailController.text.trim();
 
-    if (name.isEmpty || address.isEmpty || selectedLat == null || selectedLng == null) {
-      Get.snackbar(
+    if (name.isEmpty ||
+        address.isEmpty ||
+        selectedLat == null ||
+        selectedLng == null) {
+      CustomSnackBar.show(
         'Error',
         'Name and Address (via map) are required',
         snackPosition: SnackPosition.BOTTOM,
@@ -45,7 +49,7 @@ class OnboardingController extends GetxController {
 
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) {
-      Get.snackbar(
+      CustomSnackBar.show(
         'Error',
         'User not authenticated',
         snackPosition: SnackPosition.BOTTOM,
@@ -55,7 +59,6 @@ class OnboardingController extends GetxController {
 
     isLoading.value = true;
     try {
-
       final newAddress = AddressModel(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         type: 'Home',
@@ -85,7 +88,7 @@ class OnboardingController extends GetxController {
       isLoading.value = false;
 
       Get.offAllNamed(AppRoutes.mainLayout);
-      Get.snackbar(
+      CustomSnackBar.show(
         'Welcome!',
         'Your profile has been set up successfully.',
         snackPosition: SnackPosition.BOTTOM,
@@ -94,7 +97,7 @@ class OnboardingController extends GetxController {
       );
     } catch (e) {
       isLoading.value = false;
-      Get.snackbar(
+      CustomSnackBar.show(
         'Error',
         'Could not complete onboarding. Try again.',
         snackPosition: SnackPosition.BOTTOM,

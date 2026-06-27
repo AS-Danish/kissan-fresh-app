@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -31,14 +32,19 @@ class ManageAddressesScreen extends StatelessWidget {
       body: GetBuilder<ProfileController>(
         init: ProfileController(),
         builder: (profileController) {
-          final addresses = profileController.currentUser.value?.savedAddresses ?? [];
-          
+          final addresses =
+              profileController.currentUser.value?.savedAddresses ?? [];
+
           if (addresses.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.location_off_rounded, size: 64, color: Colors.grey.shade400),
+                  Icon(
+                    Icons.location_off_rounded,
+                    size: 64,
+                    color: Colors.grey.shade400,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'No saved addresses',
@@ -81,7 +87,11 @@ class ManageAddressesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAddressCard(BuildContext context, AddressModel address, ProfileController controller) {
+  Widget _buildAddressCard(
+    BuildContext context,
+    AddressModel address,
+    ProfileController controller,
+  ) {
     IconData icon;
     if (address.type.toLowerCase() == 'home') {
       icon = Icons.home_rounded;
@@ -144,7 +154,10 @@ class ManageAddressesScreen extends StatelessWidget {
           ),
           IconButton(
             onPressed: () => _deleteAddress(context, address, controller),
-            icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+            icon: const Icon(
+              Icons.delete_outline_rounded,
+              color: Colors.redAccent,
+            ),
             tooltip: 'Delete Address',
           ),
         ],
@@ -152,20 +165,39 @@ class ManageAddressesScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _deleteAddress(BuildContext context, AddressModel addressToDelete, ProfileController profileController) async {
+  Future<void> _deleteAddress(
+    BuildContext context,
+    AddressModel addressToDelete,
+    ProfileController profileController,
+  ) async {
     final bool? confirm = await Get.dialog<bool>(
       AlertDialog(
-        title: Text('Delete Address', style: GoogleFonts.montserrat(fontWeight: FontWeight.w700)),
-        content: Text('Are you sure you want to delete this address?', style: GoogleFonts.montserrat()),
+        title: Text(
+          'Delete Address',
+          style: GoogleFonts.montserrat(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'Are you sure you want to delete this address?',
+          style: GoogleFonts.montserrat(),
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         actions: [
           TextButton(
             onPressed: () => Get.back(result: false),
-            child: Text('Cancel', style: GoogleFonts.montserrat(color: Colors.grey.shade600)),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.montserrat(color: Colors.grey.shade600),
+            ),
           ),
           TextButton(
             onPressed: () => Get.back(result: true),
-            child: Text('Delete', style: GoogleFonts.montserrat(color: Colors.redAccent, fontWeight: FontWeight.w700)),
+            child: Text(
+              'Delete',
+              style: GoogleFonts.montserrat(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ),
         ],
       ),
@@ -175,8 +207,10 @@ class ManageAddressesScreen extends StatelessWidget {
       final currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null && profileController.currentUser.value != null) {
         final userModel = profileController.currentUser.value!;
-        
-        final updatedAddresses = List<AddressModel>.from(userModel.savedAddresses);
+
+        final updatedAddresses = List<AddressModel>.from(
+          userModel.savedAddresses,
+        );
         updatedAddresses.removeWhere((a) => a.id == addressToDelete.id);
 
         final updatedUser = UserModel(
@@ -194,12 +228,12 @@ class ManageAddressesScreen extends StatelessWidget {
 
         final userService = UserService();
         await userService.updateUser(updatedUser);
-        
+
         // Also update local profile state manually to avoid race conditions
         profileController.currentUser.value = updatedUser;
         profileController.update();
 
-        Get.snackbar(
+        CustomSnackBar.show(
           'Success',
           'Address deleted successfully',
           snackPosition: SnackPosition.BOTTOM,

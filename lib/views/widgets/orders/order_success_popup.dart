@@ -4,7 +4,12 @@ import 'package:get/get.dart';
 import 'package:kissanfresh/routes/app_routes.dart';
 
 class OrderSuccessPopup {
-  static void show(BuildContext context, String orderType, String? paymentId, {String? orderId}) {
+  static void show(
+    BuildContext context,
+    String orderType,
+    String? paymentId, {
+    String? orderId,
+  }) {
     final bool isCod =
         orderType.toUpperCase() == 'COD' ||
         orderType.toUpperCase() == 'CASH ON DELIVERY';
@@ -57,8 +62,6 @@ class OrderSuccessPopup {
                   height: 1.5,
                 ),
               ),
-
-
 
               const SizedBox(height: 14),
 

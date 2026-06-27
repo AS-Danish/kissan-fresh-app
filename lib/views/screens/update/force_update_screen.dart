@@ -16,7 +16,10 @@ class ForceUpdateScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 40.0,
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -25,7 +28,9 @@ class ForceUpdateScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -82,10 +87,7 @@ class ForceUpdateScreen extends StatelessWidget {
                 // Optional message or branding
                 const Text(
                   'Kissan Fresh - Freshness at your door!',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF94A3B8),
-                  ),
+                  style: TextStyle(fontSize: 12, color: Color(0xFF94A3B8)),
                 ),
               ],
             ),

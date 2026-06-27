@@ -50,8 +50,10 @@ class UserModel {
       imageUrl: map['imageUrl'],
       role: map['role'] ?? 'user',
       onboardingCompleted: map['onboardingCompleted'] ?? false,
-      savedAddresses: map['savedAddresses'] != null 
-          ? List<AddressModel>.from(map['savedAddresses'].map((x) => AddressModel.fromMap(x)))
+      savedAddresses: map['savedAddresses'] != null
+          ? List<AddressModel>.from(
+              map['savedAddresses'].map((x) => AddressModel.fromMap(x)),
+            )
           : [],
       createdAt: map['createdAt'] != null
           ? DateTime.tryParse(map['createdAt']) ?? DateTime.now()

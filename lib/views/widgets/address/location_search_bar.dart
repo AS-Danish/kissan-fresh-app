@@ -57,7 +57,8 @@ class LocationSearchBar extends StatelessWidget {
                 ),
               ),
               Obx(
-                () => controller.searchInput.value.isNotEmpty ||
+                () =>
+                    controller.searchInput.value.isNotEmpty ||
                         controller.isSearching.value
                     ? IconButton(
                         icon: const Icon(

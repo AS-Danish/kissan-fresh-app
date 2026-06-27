@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
@@ -7,6 +8,7 @@ import '../model/order_model.dart';
 import '../model/rider_model.dart';
 import '../model/slot_model.dart';
 import 'auth_controller.dart';
+import '../services/network_service.dart';
 
 class OrdersController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -15,7 +17,7 @@ class OrdersController extends GetxController {
 
   RxList<OrderModel> orders = <OrderModel>[].obs;
   RxBool isLoading = false.obs;
-  
+
   // Filtering
   RxString selectedFilter = 'Current Month'.obs;
   final List<String> filterOptions = [
@@ -24,7 +26,7 @@ class OrdersController extends GetxController {
     'Past 6 Months',
     '2024',
     '2023',
-    'All Time'
+    'All Time',
   ];
 
   // Caches to avoid redundant Firestore reads
@@ -57,7 +59,7 @@ class OrdersController extends GetxController {
     _ordersBox = Hive.box('orders_cache');
     _loadOrdersFromCache();
     loadOrders();
-    
+
     // Watch for filter changes
     ever(selectedFilter, (_) => loadOrders());
   }
@@ -96,6 +98,12 @@ class OrdersController extends GetxController {
       return;
     }
 
+    if (!await NetworkService.isConnected()) {
+      NetworkService.showNoInternetSnackbar();
+      isLoading.value = false;
+      return;
+    }
+
     if (orders.isEmpty) {
       isLoading.value = true;
     }
@@ -110,23 +118,46 @@ class OrdersController extends GetxController {
       DateTime now = DateTime.now();
       if (selectedFilter.value == 'Current Month') {
         DateTime startOfMonth = DateTime(now.year, now.month, 1);
-        query = query.where('orderDate', isGreaterThanOrEqualTo: startOfMonth.toIso8601String());
+        query = query.where(
+          'orderDate',
+          isGreaterThanOrEqualTo: startOfMonth.toIso8601String(),
+        );
       } else if (selectedFilter.value == 'Past 3 Months') {
         DateTime threeMonthsAgo = now.subtract(const Duration(days: 90));
-        query = query.where('orderDate', isGreaterThanOrEqualTo: threeMonthsAgo.toIso8601String());
+        query = query.where(
+          'orderDate',
+          isGreaterThanOrEqualTo: threeMonthsAgo.toIso8601String(),
+        );
       } else if (selectedFilter.value == 'Past 6 Months') {
         DateTime sixMonthsAgo = now.subtract(const Duration(days: 180));
-        query = query.where('orderDate', isGreaterThanOrEqualTo: sixMonthsAgo.toIso8601String());
+        query = query.where(
+          'orderDate',
+          isGreaterThanOrEqualTo: sixMonthsAgo.toIso8601String(),
+        );
       } else if (selectedFilter.value == '2024') {
         DateTime startOfYear = DateTime(2024, 1, 1);
         DateTime endOfYear = DateTime(2024, 12, 31, 23, 59, 59);
-        query = query.where('orderDate', isGreaterThanOrEqualTo: startOfYear.toIso8601String())
-                     .where('orderDate', isLessThanOrEqualTo: endOfYear.toIso8601String());
+        query = query
+            .where(
+              'orderDate',
+              isGreaterThanOrEqualTo: startOfYear.toIso8601String(),
+            )
+            .where(
+              'orderDate',
+              isLessThanOrEqualTo: endOfYear.toIso8601String(),
+            );
       } else if (selectedFilter.value == '2023') {
         DateTime startOfYear = DateTime(2023, 1, 1);
         DateTime endOfYear = DateTime(2023, 12, 31, 23, 59, 59);
-        query = query.where('orderDate', isGreaterThanOrEqualTo: startOfYear.toIso8601String())
-                     .where('orderDate', isLessThanOrEqualTo: endOfYear.toIso8601String());
+        query = query
+            .where(
+              'orderDate',
+              isGreaterThanOrEqualTo: startOfYear.toIso8601String(),
+            )
+            .where(
+              'orderDate',
+              isLessThanOrEqualTo: endOfYear.toIso8601String(),
+            );
       }
 
       query
@@ -174,7 +205,7 @@ class OrdersController extends GetxController {
               debugPrint('Firestore Stream Error: $e');
               isLoading.value = false;
               if (e.toString().contains('failed-precondition')) {
-                Get.snackbar(
+                CustomSnackBar.show(
                   'Configuration Required',
                   'Firestore needs an index for orders. Please check debug console for the link.',
                   duration: const Duration(seconds: 10),
@@ -190,7 +221,7 @@ class OrdersController extends GetxController {
 
   void reorderItems(OrderModel order) {
     // Implement reorder functionality
-    Get.snackbar(
+    CustomSnackBar.show(
       'Reorder',
       'Adding items to cart...',
       snackPosition: SnackPosition.BOTTOM,

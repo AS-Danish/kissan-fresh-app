@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -79,7 +80,11 @@ class WishlistScreen extends StatelessWidget {
                   onPressed: () {
                     if (Get.isRegistered<BottomBarController>()) {
                       Get.find<BottomBarController>().changePage(0);
-                      Get.until((route) => route.settings.name == AppRoutes.mainLayout || route.isFirst);
+                      Get.until(
+                        (route) =>
+                            route.settings.name == AppRoutes.mainLayout ||
+                            route.isFirst,
+                      );
                     } else {
                       Get.offAllNamed(AppRoutes.mainLayout);
                     }
@@ -91,7 +96,10 @@ class WishlistScreen extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16,
+                      horizontal: 32,
+                    ),
                   ),
                   child: Text(
                     'Start Shopping',
@@ -123,7 +131,7 @@ class WishlistScreen extends StatelessWidget {
             final realTimeData = controller.realTimeProductData[product.id];
 
             ProductCardModel baseProduct = product;
-            
+
             if (realTimeData != null) {
               final mapData = Map<String, dynamic>.from(realTimeData);
               mapData['id'] ??= product.id;
@@ -143,7 +151,7 @@ class WishlistScreen extends StatelessWidget {
                   final cartController = Get.find<CartController>();
                   bool added = cartController.addToCart(baseProduct, 1);
                   if (added) {
-                    Get.snackbar(
+                    CustomSnackBar.show(
                       'Added to Cart',
                       '${baseProduct.title} added to cart',
                       snackPosition: SnackPosition.BOTTOM,

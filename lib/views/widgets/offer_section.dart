@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -14,7 +15,7 @@ class OffersSection extends StatelessWidget {
         final controller = Get.find<HomepageController>();
         final isGrocery = controller.currentTab.value == 'Grocery';
         final type = isGrocery ? 'kissan-fresh' : 'home-food';
-        
+
         final filteredCoupons = controller.activeCoupons
             .where((c) => c.productType == type)
             .toList();
@@ -37,26 +38,36 @@ class OffersSection extends StatelessWidget {
             final discountText = coupon.discountType == 'percentage'
                 ? 'FLAT ${coupon.discountValue.toStringAsFixed(0)}% OFF'
                 : 'FLAT ₹${coupon.discountValue.toStringAsFixed(0)} OFF';
-            
-            final subtitle = coupon.minOrderValue != null && coupon.minOrderValue! > 0
+
+            final subtitle =
+                coupon.minOrderValue != null && coupon.minOrderValue! > 0
                 ? 'On orders above ₹${coupon.minOrderValue!.toStringAsFixed(0)}'
                 : 'On all orders';
 
             return _buildOfferCard(
               context: context,
-              icon: coupon.discountType == 'percentage' ? Icons.percent : Icons.local_offer,
-              iconBgColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+              icon: coupon.discountType == 'percentage'
+                  ? Icons.percent
+                  : Icons.local_offer,
+              iconBgColor: Theme.of(
+                context,
+              ).primaryColor.withValues(alpha: 0.1),
               iconColor: Theme.of(context).primaryColor,
-              badge: coupon.applyTo == 'all' ? 'EXCLUSIVE DEAL' : 'SPECIAL OFFER',
+              badge: coupon.applyTo == 'all'
+                  ? 'EXCLUSIVE DEAL'
+                  : 'SPECIAL OFFER',
               badgeColor: Theme.of(context).primaryColor,
               title: discountText,
               subtitle: subtitle,
               onTap: () => _showCouponDetails(
                 context,
                 title: discountText,
-                badge: coupon.applyTo == 'all' ? 'EXCLUSIVE DEAL' : 'SPECIAL OFFER',
+                badge: coupon.applyTo == 'all'
+                    ? 'EXCLUSIVE DEAL'
+                    : 'SPECIAL OFFER',
                 code: coupon.code,
-                description: 'Get ${discountText.toLowerCase()} on your ${isGrocery ? 'grocery' : 'food'} order. ${coupon.applyTo != 'all' ? 'Valid on specific products/categories.' : ''}',
+                description:
+                    'Get ${discountText.toLowerCase()} on your ${isGrocery ? 'grocery' : 'food'} order. ${coupon.applyTo != 'all' ? 'Valid on specific products/categories.' : ''}',
                 howToApply: [
                   'Add products to your cart.',
                   'Go to the checkout page.',
@@ -64,11 +75,13 @@ class OffersSection extends StatelessWidget {
                   'Select or enter ${coupon.code}.',
                 ],
                 limits: [
-                  if (coupon.minOrderValue != null) 'Minimum order value: ₹${coupon.minOrderValue!.toStringAsFixed(0)}.',
-                  if (coupon.maxUsesPerUser != null) 'Valid ${coupon.maxUsesPerUser} times per user.',
+                  if (coupon.minOrderValue != null)
+                    'Minimum order value: ₹${coupon.minOrderValue!.toStringAsFixed(0)}.',
+                  if (coupon.maxUsesPerUser != null)
+                    'Valid ${coupon.maxUsesPerUser} times per user.',
                   'Subject to availability.',
                 ],
-                criteria: coupon.applicableCategory != null 
+                criteria: coupon.applicableCategory != null
                     ? 'Applicable on ${coupon.applicableCategory} category.'
                     : 'Applicable on all items.',
               ),
@@ -110,7 +123,9 @@ class OffersSection extends StatelessWidget {
                   width: 48,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
+                    color: Theme.of(
+                      context,
+                    ).dividerColor.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -126,7 +141,9 @@ class OffersSection extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                      color: Theme.of(
+                        context,
+                      ).primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -168,7 +185,9 @@ class OffersSection extends StatelessWidget {
                   color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.2),
                     style: BorderStyle.solid,
                     width: 1,
                   ),
@@ -202,7 +221,7 @@ class OffersSection extends StatelessWidget {
                       onPressed: () {
                         // Copy logic could go here
                         Get.back();
-                        Get.snackbar(
+                        CustomSnackBar.show(
                           "Copied!",
                           "Coupon code $code copied to clipboard",
                           snackPosition: SnackPosition.BOTTOM,
@@ -236,7 +255,7 @@ class OffersSection extends StatelessWidget {
               _buildBulletPoint(context, criteria),
 
               const SizedBox(height: 32),
-              
+
               // Apply Button
               SizedBox(
                 width: double.infinity,

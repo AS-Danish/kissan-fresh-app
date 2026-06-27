@@ -43,7 +43,9 @@ class YourChoiceSection extends StatelessWidget {
                       style: GoogleFonts.montserrat(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                        color: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
                         letterSpacing: 0.1,
                       ),
                     ),
@@ -52,7 +54,9 @@ class YourChoiceSection extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -77,10 +81,10 @@ class YourChoiceSection extends StatelessWidget {
               separatorBuilder: (context, index) => const SizedBox(width: 16),
               itemBuilder: (context, index) {
                 final product = controller.personalizedProducts[index];
-                
+
                 // Get real-time data if available
                 final realTimeData = controller.realTimeProductData[product.id];
-                
+
                 ProductCardModel displayProduct = product;
                 if (realTimeData != null) {
                   final mapData = Map<String, dynamic>.from(realTimeData);

@@ -34,16 +34,23 @@ class CouponModel {
       code: json['code'] ?? '',
       discountType: json['discountType'] ?? 'percentage',
       discountValue: (json['discountValue'] ?? 0).toDouble(),
-      minOrderValue: json['minOrderValue'] != null ? (json['minOrderValue']).toDouble() : null,
+      minOrderValue: json['minOrderValue'] != null
+          ? (json['minOrderValue']).toDouble()
+          : null,
       isActive: json['isActive'] ?? false,
       applicableCategory: json['applicableCategory'],
       applicableProduct: json['applicableProduct'],
-      maxUsesPerUser: json['maxUsesPerUser'] != null ? (json['maxUsesPerUser']).toInt() : null,
-      totalUsageLimit: json['totalUsageLimit'] != null ? (json['totalUsageLimit']).toInt() : null,
+      maxUsesPerUser: json['maxUsesPerUser'] != null
+          ? (json['maxUsesPerUser']).toInt()
+          : null,
+      totalUsageLimit: json['totalUsageLimit'] != null
+          ? (json['totalUsageLimit']).toInt()
+          : null,
       currentUsageCount: (json['currentUsageCount'] ?? 0).toInt(),
       applyTo: json['applyTo'] ?? 'all',
       productType: json['productType'] ?? 'kissan-fresh',
-      description: json['description'] ?? 
+      description:
+          json['description'] ??
           "Get ${(json['discountValue'] ?? 0).toInt()}${json['discountType'] == 'percentage' ? '%' : '₹'} off on your order",
     );
   }

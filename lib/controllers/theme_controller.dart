@@ -13,7 +13,7 @@ class ThemeController extends GetxController {
 
   // Observable for UI switches depending on the theme state
   RxBool isDarkMode = false.obs;
-  
+
   // Backend driven feature flags
   RxBool isChristmas = false.obs;
   RxBool isEid = false.obs;
@@ -22,15 +22,20 @@ class ThemeController extends GetxController {
   void onInit() {
     super.onInit();
     isDarkMode.value = _loadThemeFromBox();
-    
+
     // Simulate fetching theme config from backend
     _checkBackendForThemeConfig();
   }
 
   void _checkBackendForThemeConfig() async {
     try {
-      final doc = await FirebaseFirestore.instance.collection('app_config').doc('versioning').get();
-      if (doc.exists && doc.data() != null && doc.data()!.containsKey('themes')) {
+      final doc = await FirebaseFirestore.instance
+          .collection('app_config')
+          .doc('versioning')
+          .get();
+      if (doc.exists &&
+          doc.data() != null &&
+          doc.data()!.containsKey('themes')) {
         final themes = doc.data()!['themes'] as List<dynamic>;
         bool christmasActive = false;
         bool eidActive = false;
@@ -69,7 +74,7 @@ class ThemeController extends GetxController {
     isDarkMode.value = isDark;
     if (isDark && isChristmas.value) {
       // If user forces dark mode, maybe we disable christmas visually or keep it?
-      // Since christmas is a light theme, we'll keep the logic to turn off christmas 
+      // Since christmas is a light theme, we'll keep the logic to turn off christmas
       // if they explicitly want dark mode, or just let them switch.
       // For backend driven, maybe dark mode takes precedence or they can't use dark mode.
     }

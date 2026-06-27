@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -23,12 +24,21 @@ class WishlistController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    
+
     // Start listening to product changes whenever wishlistItems changes
     _wishlistWorker = ever(wishlistItems, (_) {
       _updateProductsSubscription();
     });
-    
+
+    ever(_authController.firebaseUser, (user) {
+      if (user != null) {
+        _fetchWishlist();
+      } else {
+        wishlistItems.clear();
+        realTimeProductData.clear();
+      }
+    });
+
     // Initial fetch from cache and network
     _fetchWishlist();
   }
@@ -43,12 +53,11 @@ class WishlistController extends GetxController {
   void _updateProductsSubscription() {
     _productsSubscription?.cancel();
 
-    final productIds =
-        wishlistItems
-            .map((item) => item.id)
-            .where((id) => id != null)
-            .cast<String>()
-            .toList();
+    final productIds = wishlistItems
+        .map((item) => item.id)
+        .where((id) => id != null)
+        .cast<String>()
+        .toList();
 
     if (productIds.isEmpty) {
       realTimeProductData.clear();
@@ -58,42 +67,40 @@ class WishlistController extends GetxController {
     // Split into chunks if needed, but for wishlist we limit to top 30 for real-time
     final limitedIds = productIds.take(30).toList();
 
-    _productsSubscription =
-        _firestore
-            .collection('products')
-            .where(FieldPath.documentId, whereIn: limitedIds)
-            .snapshots()
-            .listen(
-              (snapshot) {
-                final Map<String, Map<String, dynamic>> newData = {};
-                for (var doc in snapshot.docs) {
-                  newData[doc.id] = doc.data();
-                }
-                realTimeProductData.assignAll(newData);
+    _productsSubscription = _firestore
+        .collection('products')
+        .where(FieldPath.documentId, whereIn: limitedIds)
+        .snapshots()
+        .listen((snapshot) {
+          final Map<String, Map<String, dynamic>> newData = {};
+          for (var doc in snapshot.docs) {
+            newData[doc.id] = doc.data();
+          }
+          realTimeProductData.assignAll(newData);
 
-                final fetchedIds = snapshot.docs.map((doc) => doc.id).toList();
-                final deletedIds = limitedIds.where((id) => !fetchedIds.contains(id)).toList();
-                
-                if (deletedIds.isNotEmpty) {
-                  bool changed = false;
-                  wishlistItems.removeWhere((item) {
-                    if (deletedIds.contains(item.id)) {
-                      changed = true;
-                      return true;
-                    }
-                    return false;
-                  });
+          final fetchedIds = snapshot.docs.map((doc) => doc.id).toList();
+          final deletedIds = limitedIds
+              .where((id) => !fetchedIds.contains(id))
+              .toList();
 
-                  if (changed) {
-                    final user = _authController.firebaseUser.value;
-                    if (user != null) {
-                      _updateFirestoreWishlist(user.uid);
-                    }
-                  }
-                }
-              },
-              onError: (e) => debugPrint("Error in wishlist products stream: $e"),
-            );
+          if (deletedIds.isNotEmpty) {
+            bool changed = false;
+            wishlistItems.removeWhere((item) {
+              if (deletedIds.contains(item.id)) {
+                changed = true;
+                return true;
+              }
+              return false;
+            });
+
+            if (changed) {
+              final user = _authController.firebaseUser.value;
+              if (user != null) {
+                _updateFirestoreWishlist(user.uid);
+              }
+            }
+          }
+        }, onError: (e) => debugPrint("Error in wishlist products stream: $e"));
   }
 
   void _fetchWishlist() async {
@@ -136,7 +143,7 @@ class WishlistController extends GetxController {
         }
       }
       wishlistItems.value = loadedItems;
-      
+
       // Update real-time subscription immediately after fetch
       _updateProductsSubscription();
 
@@ -206,7 +213,7 @@ class WishlistController extends GetxController {
     final user = _authController.firebaseUser.value;
     if (user == null) {
       Get.toNamed(AppRoutes.loginScreen);
-      Get.snackbar(
+      CustomSnackBar.show(
         'Login Required',
         'Please login to save favorite items across devices.',
         snackPosition: SnackPosition.BOTTOM,

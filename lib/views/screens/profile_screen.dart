@@ -39,7 +39,9 @@ class ProfileScreen extends StatelessWidget {
       body: Obx(() {
         if (controller.isLoading.value) {
           return Center(
-            child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
+            child: CircularProgressIndicator(
+              color: Theme.of(context).primaryColor,
+            ),
           );
         }
         return SingleChildScrollView(
@@ -86,18 +88,18 @@ class ProfileScreen extends StatelessWidget {
                                 ),
                               )
                             : ClipRRect(
-                                  borderRadius: BorderRadius.circular(60),
-                                  child: CachedNetworkImage(
-                                    imageUrl: controller.profileImage.value,
-                                    fit: BoxFit.cover,
-                                    errorWidget: (context, url, error) =>
-                                        const Icon(
-                                          Icons.error,
-                                          color: Colors.white,
-                                          size: 40,
-                                        ),
-                                  ),
+                                borderRadius: BorderRadius.circular(60),
+                                child: CachedNetworkImage(
+                                  imageUrl: controller.profileImage.value,
+                                  fit: BoxFit.cover,
+                                  errorWidget: (context, url, error) =>
+                                      const Icon(
+                                        Icons.error,
+                                        color: Colors.white,
+                                        size: 40,
+                                      ),
                                 ),
+                              ),
                       ),
                     ),
                     Positioned(
@@ -173,14 +175,17 @@ class ProfileScreen extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 16),
-              
+
               // Manage Addresses Button
               SizedBox(
                 width: double.infinity,
                 height: 56,
                 child: OutlinedButton.icon(
                   onPressed: () => Get.toNamed(AppRoutes.manageAddressesRoute),
-                  icon: Icon(Icons.location_on_rounded, color: Theme.of(context).primaryColor),
+                  icon: Icon(
+                    Icons.location_on_rounded,
+                    color: Theme.of(context).primaryColor,
+                  ),
                   label: Text(
                     'Manage Saved Addresses',
                     style: GoogleFonts.montserrat(
@@ -190,7 +195,10 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Theme.of(context).primaryColor, width: 1.5),
+                    side: BorderSide(
+                      color: Theme.of(context).primaryColor,
+                      width: 1.5,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),

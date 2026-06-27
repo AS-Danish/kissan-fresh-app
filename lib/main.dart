@@ -32,7 +32,7 @@ import 'package:kissanfresh/utils/app_theme.dart';
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  
+
   await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
@@ -45,7 +45,6 @@ void main() async {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     return true;
   };
-  
 
   try {
     await FirebaseAppCheck.instance.activate(
@@ -64,33 +63,41 @@ void main() async {
   await Hive.openBox('wishlist_box');
   await Hive.openBox('orders_cache');
   await Hive.openBox('products_cache');
-  await Hive.openBox('user_activity'); // Add this for personalized recommendations
-  
+  await Hive.openBox(
+    'user_activity',
+  ); // Add this for personalized recommendations
+
   // Initialize Notification Service
   final notificationService = NotificationService();
   await notificationService.initialize();
-  
+
   Get.put(ThemeController()); // Initialize theme early
   Get.put(CacheService(), permanent: true); // Register CacheService
-  final updateController = Get.put(UpdateController(), permanent: true); // Check for updates immediately
-  final locationService = Get.put(LocationService(), permanent: true); // Add LocationService
-  
+  final updateController = Get.put(
+    UpdateController(),
+    permanent: true,
+  ); // Check for updates immediately
+  final locationService = Get.put(
+    LocationService(),
+    permanent: true,
+  ); // Add LocationService
+
   Get.put(AuthController(), permanent: true);
   Get.put(CartController(), permanent: true);
   Get.put(AddressController(), permanent: true);
   Get.put(OrdersController(), permanent: true);
   Get.put(UserActivityController(), permanent: true);
   Get.put(BottomBarController(), permanent: true);
-  
+
   Get.put(NotificationController(), permanent: true);
-  
+
   // Start initializing HomepageController as well
   final homepageController = Get.put(HomepageController(), permanent: true);
 
   // We call runApp immediately so the Get widget tree is mounted (required for navigation in UpdateController etc).
   // The UI is shown immediately with our custom splash screen.
   runApp(const MyApp());
-  
+
   // Once Flutter UI is ready to paint, remove the native splash screen
   FlutterNativeSplash.remove();
 }
@@ -109,13 +116,13 @@ class MyApp extends StatelessWidget {
         theme: themeController.isEid.value
             ? AppTheme.eidLightTheme
             : themeController.isChristmas.value
-                ? AppTheme.christmasLightTheme
-                : AppTheme.lightTheme,
+            ? AppTheme.christmasLightTheme
+            : AppTheme.lightTheme,
         darkTheme: themeController.isEid.value
             ? AppTheme.eidDarkTheme
             : themeController.isChristmas.value
-                ? AppTheme.christmasDarkTheme
-                : AppTheme.darkTheme,
+            ? AppTheme.christmasDarkTheme
+            : AppTheme.darkTheme,
         themeMode: themeController.themeMode,
         getPages: AppRoutes.pages,
         initialBinding: BottomBarBinding(),

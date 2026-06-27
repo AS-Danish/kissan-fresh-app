@@ -74,7 +74,9 @@ class AddressBottomSheet extends StatelessWidget {
                   // Use Current Location Button
                   Obx(() {
                     final locService = Get.find<LocationService>();
-                    final isSelected = locService.currentAddressType.value == 'Current Location';
+                    final isSelected =
+                        locService.currentAddressType.value ==
+                        'Current Location';
                     return _buildActionTile(
                       context,
                       icon: Icons.my_location_rounded,
@@ -89,7 +91,7 @@ class AddressBottomSheet extends StatelessWidget {
                     );
                   }),
                   const SizedBox(height: 16),
-                  
+
                   // Add New Address Button
                   _buildActionTile(
                     context,
@@ -103,12 +105,14 @@ class AddressBottomSheet extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Saved Addresses Section
                   GetBuilder<ProfileController>(
                     init: ProfileController(),
                     builder: (profileController) {
-                      final addresses = profileController.currentUser.value?.savedAddresses ?? [];
+                      final addresses =
+                          profileController.currentUser.value?.savedAddresses ??
+                          [];
                       if (addresses.isEmpty) {
                         return const SizedBox.shrink();
                       }
@@ -125,7 +129,12 @@ class AddressBottomSheet extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          ...addresses.map((address) => _buildSavedAddressTile(context, address)).toList(),
+                          ...addresses
+                              .map(
+                                (address) =>
+                                    _buildSavedAddressTile(context, address),
+                              )
+                              .toList(),
                         ],
                       );
                     },
@@ -155,8 +164,13 @@ class AddressBottomSheet extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.05) : Colors.transparent,
-          border: Border.all(color: isSelected ? color : Colors.grey.shade200, width: isSelected ? 1.5 : 1),
+          color: isSelected
+              ? color.withValues(alpha: 0.05)
+              : Colors.transparent,
+          border: Border.all(
+            color: isSelected ? color : Colors.grey.shade200,
+            width: isSelected ? 1.5 : 1,
+          ),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
@@ -216,8 +230,10 @@ class AddressBottomSheet extends StatelessWidget {
 
     return Obx(() {
       final locService = Get.find<LocationService>();
-      final isSelected = locService.currentAddressType.value == address.type && locService.currentAddress.value == address.fullAddress;
-      
+      final isSelected =
+          locService.currentAddressType.value == address.type &&
+          locService.currentAddress.value == address.fullAddress;
+
       return InkWell(
         onTap: () async {
           Get.back(); // Close sheet
@@ -233,7 +249,10 @@ class AddressBottomSheet extends StatelessWidget {
             locService.currentAddressType.value = address.type;
             locService.currentAddress.value = address.fullAddress;
             if (address.latitude != null && address.longitude != null) {
-              locService.currentLocation.value = LatLng(address.latitude!, address.longitude!);
+              locService.currentLocation.value = LatLng(
+                address.latitude!,
+                address.longitude!,
+              );
             }
           }
         },
@@ -242,55 +261,65 @@ class AddressBottomSheet extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isSelected ? Theme.of(context).primaryColor.withValues(alpha: 0.05) : Theme.of(context).colorScheme.surface,
-            border: Border.all(color: isSelected ? Theme.of(context).primaryColor : Colors.grey.shade200, width: isSelected ? 1.5 : 1),
+            color: isSelected
+                ? Theme.of(context).primaryColor.withValues(alpha: 0.05)
+                : Theme.of(context).colorScheme.surface,
+            border: Border.all(
+              color: isSelected
+                  ? Theme.of(context).primaryColor
+                  : Colors.grey.shade200,
+              width: isSelected ? 1.5 : 1,
+            ),
             borderRadius: BorderRadius.circular(16),
           ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                shape: BoxShape.circle,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: Colors.black87, size: 20),
               ),
-              child: Icon(icon, color: Colors.black87, size: 20),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    address.type,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: Theme.of(context).colorScheme.onSurface,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      address.type,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    address.fullAddress,
-                    style: GoogleFonts.montserrat(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade600,
-                      height: 1.4,
+                    const SizedBox(height: 4),
+                    Text(
+                      address.fullAddress,
+                      style: GoogleFonts.montserrat(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade600,
+                        height: 1.4,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            if (isSelected)
-              Icon(Icons.check_circle_rounded, color: Theme.of(context).primaryColor),
-          ],
+              if (isSelected)
+                Icon(
+                  Icons.check_circle_rounded,
+                  color: Theme.of(context).primaryColor,
+                ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
     });
   }
 }

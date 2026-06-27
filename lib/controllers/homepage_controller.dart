@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -18,7 +19,8 @@ class HomepageController extends GetxController {
   RxInt selectedIndex = 0.obs;
   RxString currentTab = 'Grocery'.obs; // 'Grocery' or 'HomeFood'
 
-  String get currentOrigin => currentTab.value == 'Grocery' ? 'kissan-fresh' : 'home-food';
+  String get currentOrigin =>
+      currentTab.value == 'Grocery' ? 'kissan-fresh' : 'home-food';
 
   // Expose LocationService address
   RxnString get currentAddress => Get.find<LocationService>().currentAddress;
@@ -29,7 +31,8 @@ class HomepageController extends GetxController {
 
   // Sections observables
   RxList<SectionModel> sections = <SectionModel>[].obs;
-  RxMap<String, List<ProductCardModel>> sectionProducts = <String, List<ProductCardModel>>{}.obs;
+  RxMap<String, List<ProductCardModel>> sectionProducts =
+      <String, List<ProductCardModel>>{}.obs;
   final RxBool isLoadingSections = false.obs;
 
   // Active Coupons observables
@@ -41,7 +44,7 @@ class HomepageController extends GetxController {
   StreamSubscription? _sectionsSubscription;
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   Future<void>? categoriesFuture;
 
   // Header Background observable
@@ -59,7 +62,9 @@ class HomepageController extends GetxController {
   }
 
   void _setupHeaderConfigListener() {
-    _firestore.collection('app_config').doc('versioning').snapshots().listen((doc) {
+    _firestore.collection('app_config').doc('versioning').snapshots().listen((
+      doc,
+    ) {
       if (doc.exists && doc.data() != null) {
         final data = doc.data()!;
         final themes = data['themes'] as List<dynamic>?;
@@ -92,13 +97,14 @@ class HomepageController extends GetxController {
             }
           }
         }
-        
+
         if (data['header_status_update_time'] != null) {
           updateTime = data['header_status_update_time'].toString();
         }
 
         if (updateTime.isNotEmpty && activeImageUrl.isNotEmpty) {
-          activeImageUrl = '$activeImageUrl${activeImageUrl.contains('?') ? '&' : '?'}v=$updateTime';
+          activeImageUrl =
+              '$activeImageUrl${activeImageUrl.contains('?') ? '&' : '?'}v=$updateTime';
         }
 
         headerImageUrl.value = activeImageUrl;
@@ -219,18 +225,14 @@ class HomepageController extends GetxController {
         } catch (e) {
           debugPrint("UserActivityController error: $e");
         }
-        Get.to(
-          () => ProductDetailsScreen(
-            product: model,
-          ),
-        );
+        Get.to(() => ProductDetailsScreen(product: model));
       },
       onAddToCart: () {
         try {
           final cartController = Get.find<CartController>();
           bool added = cartController.addToCart(model, 1);
           if (added) {
-            Get.snackbar(
+            CustomSnackBar.show(
               'Added to Cart',
               '${model.title} added to cart',
               snackPosition: SnackPosition.BOTTOM,
@@ -263,19 +265,11 @@ class HomepageController extends GetxController {
   HomepageController() {
     // Initialize with "All" to prevent RangeError in UI before first fetch
     categories = <CategoryItemModel>[
-      CategoryItemModel(
-        label: "All",
-        icon: Icons.grid_view,
-        onTap: () {},
-      ),
+      CategoryItemModel(label: "All", icon: Icons.grid_view, onTap: () {}),
     ].obs;
 
     homeFoodCategories = <CategoryItemModel>[
-      CategoryItemModel(
-        label: "All",
-        icon: Icons.restaurant,
-        onTap: () {},
-      ),
+      CategoryItemModel(label: "All", icon: Icons.restaurant, onTap: () {}),
     ].obs;
   }
 
@@ -308,7 +302,9 @@ class HomepageController extends GetxController {
       }
 
       if (shouldUseCache) {
-        debugPrint("Loading categories for $type from local cache (within 2 min)");
+        debugPrint(
+          "Loading categories for $type from local cache (within 2 min)",
+        );
         _mapJsonToCategories(cachedJson, targetList, tabName);
         return;
       }
@@ -322,7 +318,9 @@ class HomepageController extends GetxController {
           .limit(50)
           .get();
 
-      final dataList = snapshot.docs.map((doc) => _sanitizeFirestoreData(doc.data())).toList();
+      final dataList = snapshot.docs
+          .map((doc) => _sanitizeFirestoreData(doc.data()))
+          .toList();
 
       // 3. Save to Cache
       await _cacheService.saveRaw(cacheKey, dataList);
@@ -369,7 +367,9 @@ class HomepageController extends GetxController {
         items.add(
           CategoryItemModel(
             label: name,
-            icon: IconUtils.getLucideIcon(iconName) ?? IconUtils.getCategoryIcon(name),
+            icon:
+                IconUtils.getLucideIcon(iconName) ??
+                IconUtils.getCategoryIcon(name),
             onTap: () {},
           ),
         );
@@ -409,24 +409,27 @@ class HomepageController extends GetxController {
         .collection('sections')
         .orderBy('rank')
         .snapshots()
-        .listen((snapshot) {
-      final fetchedSections = snapshot.docs
-          .map((doc) => SectionModel.fromJson(doc.data(), doc.id))
-          .toList();
-      
-      sections.assignAll(fetchedSections);
+        .listen(
+          (snapshot) {
+            final fetchedSections = snapshot.docs
+                .map((doc) => SectionModel.fromJson(doc.data(), doc.id))
+                .toList();
 
-      // Fetch products for each section if not already fetching
-      for (var section in fetchedSections) {
-        if (section.categories.isNotEmpty) {
-          _fetchProductsForSection(section);
-        }
-      }
-      isLoadingSections.value = false;
-    }, onError: (e) {
-      debugPrint("Error in sections listener: $e");
-      isLoadingSections.value = false;
-    });
+            sections.assignAll(fetchedSections);
+
+            // Fetch products for each section if not already fetching
+            for (var section in fetchedSections) {
+              if (section.categories.isNotEmpty) {
+                _fetchProductsForSection(section);
+              }
+            }
+            isLoadingSections.value = false;
+          },
+          onError: (e) {
+            debugPrint("Error in sections listener: $e");
+            isLoadingSections.value = false;
+          },
+        );
   }
 
   // Deprecated - kept for compatibility if called elsewhere temporarily
@@ -458,10 +461,15 @@ class HomepageController extends GetxController {
     try {
       final snapshot = await _firestore
           .collection('products')
-          .where('category', whereIn: section.categories.take(10).toList()) // whereIn limit is 10
-          .limit(5) // Fetch 5 to check if "More" exists without loading everything
+          .where(
+            'category',
+            whereIn: section.categories.take(10).toList(),
+          ) // whereIn limit is 10
+          .limit(
+            5,
+          ) // Fetch 5 to check if "More" exists without loading everything
           .get();
-      
+
       final products = snapshot.docs.map(_mapDocToModel).toList();
       sectionProducts[section.id] = products;
     } catch (e) {
@@ -479,11 +487,13 @@ class HomepageController extends GetxController {
           .where('category', whereIn: section.categories.take(10).toList())
           .limit(50) // Fetch a reasonably full list for the section page
           .get();
-      
+
       final products = snapshot.docs.map(_mapDocToModel).toList();
       sectionProducts[section.id] = products;
     } catch (e) {
-      debugPrint("Error fetching full products for section ${section.name}: $e");
+      debugPrint(
+        "Error fetching full products for section ${section.name}: $e",
+      );
     }
   }
 
@@ -545,7 +555,7 @@ class HomepageController extends GetxController {
           1,
         );
         if (added) {
-          Get.snackbar(
+          CustomSnackBar.show(
             "Added to Cart",
             "Spicy Paneer Thali added",
             snackPosition: SnackPosition.BOTTOM,
@@ -605,7 +615,7 @@ class HomepageController extends GetxController {
           1,
         );
         if (added) {
-          Get.snackbar(
+          CustomSnackBar.show(
             "Added to Cart",
             "Chicken Biryani added",
             snackPosition: SnackPosition.BOTTOM,
@@ -664,7 +674,7 @@ class HomepageController extends GetxController {
           1,
         );
         if (added) {
-          Get.snackbar(
+          CustomSnackBar.show(
             "Added to Cart",
             "Methi Thepla added",
             snackPosition: SnackPosition.BOTTOM,
@@ -721,7 +731,7 @@ class HomepageController extends GetxController {
           1,
         );
         if (added) {
-          Get.snackbar(
+          CustomSnackBar.show(
             "Added to Cart",
             "Gajar Ka Halwa added",
             snackPosition: SnackPosition.BOTTOM,

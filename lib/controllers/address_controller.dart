@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -32,9 +33,9 @@ class AddressController extends GetxController {
   final TextEditingController searchController = TextEditingController();
   final TextEditingController landmarkController = TextEditingController();
   final TextEditingController flatNoController = TextEditingController();
-  
+
   final RxString selectedAddressType = 'Home'.obs; // Default to Home
-  
+
   final MapsCacheService _mapsCacheService = MapsCacheService();
 
   Timer? _geocodeDebounce;
@@ -56,12 +57,12 @@ class AddressController extends GetxController {
       currentAddress.value = savedAddress;
       searchController.text = savedAddress;
     }
-    
+
     final flatNo = _settingsBox.get('current_flat_no');
     if (flatNo != null) {
       flatNoController.text = flatNo;
     }
-    
+
     final landmark = _settingsBox.get('current_landmark');
     if (landmark != null) {
       landmarkController.text = landmark;
@@ -92,7 +93,7 @@ class AddressController extends GetxController {
 
   void onMapCreated(GoogleMapController controller) {
     if (_mapController == controller) return; // Already assigned
-    
+
     _mapController = controller;
     if (mapCompleter.isCompleted) {
       mapCompleter = Completer();
@@ -109,7 +110,10 @@ class AddressController extends GetxController {
   Future<void> _checkPermission() async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      Get.snackbar('Location Disabled', 'Please enable location services.');
+      CustomSnackBar.show(
+        'Location Disabled',
+        'Please enable location services.',
+      );
       return;
     }
 
@@ -117,13 +121,16 @@ class AddressController extends GetxController {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        Get.snackbar('Permission Denied', 'Location permission is required.');
+        CustomSnackBar.show(
+          'Permission Denied',
+          'Location permission is required.',
+        );
         return;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      Get.snackbar(
+      CustomSnackBar.show(
         'Permission Denied',
         'Enable location in app settings.',
         mainButton: TextButton(
@@ -160,7 +167,7 @@ class AddressController extends GetxController {
       update(['map-ui']);
     } catch (e) {
       debugPrint('Error getting location: $e');
-      Get.snackbar('Error', 'Failed to get current location');
+      CustomSnackBar.show('Error', 'Failed to get current location');
     } finally {
       isLoading.value = false;
     }
@@ -255,11 +262,11 @@ class AddressController extends GetxController {
         await _moveMap(latLng);
         update(['map-ui']);
       } else {
-        Get.snackbar('Not Found', 'No results for "$trimmed"');
+        CustomSnackBar.show('Not Found', 'No results for "$trimmed"');
       }
     } catch (e) {
       debugPrint('Search Error: $e');
-      Get.snackbar('Error', 'Failed to search address');
+      CustomSnackBar.show('Error', 'Failed to search address');
     } finally {
       isLoading.value = false;
     }
@@ -278,16 +285,16 @@ class AddressController extends GetxController {
     final finalAddress = parts.join(', ');
 
     _saveAddressToHive(finalAddress, flatNo, landmark);
-    
+
     // Update the global location service with the new complete address
     if (Get.isRegistered<LocationService>()) {
       Get.find<LocationService>().currentAddress.value = finalAddress;
-      
+
       // Update last_known_lat/lng so the auto-fetch doesn't immediately overwrite it
       _settingsBox.put('last_known_lat', selectedLocation.value.latitude);
       _settingsBox.put('last_known_lng', selectedLocation.value.longitude);
     }
-    
+
     // Save to user profile if authenticated
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
@@ -304,9 +311,11 @@ class AddressController extends GetxController {
       final userService = UserService();
       userService.getUser(currentUser.uid).then((userModel) {
         if (userModel != null) {
-          final updatedAddresses = List<AddressModel>.from(userModel.savedAddresses);
+          final updatedAddresses = List<AddressModel>.from(
+            userModel.savedAddresses,
+          );
           updatedAddresses.add(newAddress);
-          
+
           final updatedUser = UserModel(
             id: userModel.id,
             name: userModel.name,
@@ -319,7 +328,7 @@ class AddressController extends GetxController {
             savedAddresses: updatedAddresses,
             createdAt: userModel.createdAt,
           );
-          
+
           userService.updateUser(updatedUser);
         }
       });
@@ -342,7 +351,7 @@ class AddressController extends GetxController {
     );
 
     Future.delayed(const Duration(milliseconds: 300), () {
-      Get.snackbar(
+      CustomSnackBar.show(
         'Location Updated',
         finalAddress,
         snackPosition: SnackPosition.BOTTOM,

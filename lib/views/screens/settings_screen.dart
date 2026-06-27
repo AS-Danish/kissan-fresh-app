@@ -72,7 +72,8 @@ class SettingsScreen extends StatelessWidget {
                 subtitle: 'Manage your notifications',
                 onTap: () {},
                 trailing: Obx(() {
-                  final notificationController = Get.find<NotificationController>();
+                  final notificationController =
+                      Get.find<NotificationController>();
                   return Switch(
                     value: notificationController.isNotificationsEnabled.value,
                     onChanged: (value) {
@@ -241,7 +242,9 @@ class SettingsScreen extends StatelessWidget {
             return SizedBox(
               height: 64,
               child: Center(
-                child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).primaryColor,
+                ),
               ),
             );
           }
@@ -258,7 +261,10 @@ class SettingsScreen extends StatelessWidget {
                       : Colors.transparent,
                   gradient: profileController.profileImage.value.isEmpty
                       ? LinearGradient(
-                          colors: [Theme.of(context).primaryColor, Theme.of(context).primaryColor],
+                          colors: [
+                            Theme.of(context).primaryColor,
+                            Theme.of(context).primaryColor,
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         )

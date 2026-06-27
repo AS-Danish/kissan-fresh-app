@@ -58,15 +58,18 @@ class CartScreen extends StatelessWidget {
             // Cart Items List
             Expanded(
               child: ListView.separated(
-                padding: const EdgeInsets.only(left: 20, right: 20, bottom: 24, top: 16),
+                padding: const EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  bottom: 24,
+                  top: 16,
+                ),
                 itemCount: controller.cartItems.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 12),
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 12),
                 itemBuilder: (context, index) {
                   final item = controller.cartItems[index];
-                  return CartItemTile(
-                    item: item,
-                    controller: controller,
-                  );
+                  return CartItemTile(item: item, controller: controller);
                 },
               ),
             ),

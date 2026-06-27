@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -83,11 +84,9 @@ class ProductSearchController extends GetxController {
     }
   }
 
-
-
   void _listenToSearchCatalog() {
     _catalogSubscription?.cancel();
-    
+
     final origin = _currentOrigin;
     final cacheKey = 'search_catalog_$origin';
 
@@ -104,18 +103,23 @@ class ProductSearchController extends GetxController {
         .where('productOrigin', isEqualTo: origin)
         .limit(400)
         .snapshots()
-        .listen((snapshot) {
-      final mapped = snapshot.docs.map((doc) => _mapToProductCardModel(doc)).toList();
-      searchCatalog.assignAll(mapped);
-      _cacheService.saveProducts(cacheKey, mapped);
-      
-      // Re-trigger active search to update UI if user is searching
-      if (searchQuery.isNotEmpty) {
-        _performSearch();
-      }
-    }, onError: (e) {
-      debugPrint("Error listening to search catalog: $e");
-    });
+        .listen(
+          (snapshot) {
+            final mapped = snapshot.docs
+                .map((doc) => _mapToProductCardModel(doc))
+                .toList();
+            searchCatalog.assignAll(mapped);
+            _cacheService.saveProducts(cacheKey, mapped);
+
+            // Re-trigger active search to update UI if user is searching
+            if (searchQuery.isNotEmpty) {
+              _performSearch();
+            }
+          },
+          onError: (e) {
+            debugPrint("Error listening to search catalog: $e");
+          },
+        );
   }
 
   Future<void> _loadRecentSearches() async {
@@ -267,7 +271,9 @@ class ProductSearchController extends GetxController {
   }
 
   Future<void> fetchNextPage() async {
-    if (isFetchingMore.value || !hasMoreProducts.value || _lastDocument == null) {
+    if (isFetchingMore.value ||
+        !hasMoreProducts.value ||
+        _lastDocument == null) {
       return;
     }
 
@@ -283,14 +289,15 @@ class ProductSearchController extends GetxController {
   Future<void> _fetchData(int token) async {
     try {
       final sq = searchQuery.value.trim().toLowerCase();
-      
+
       if (sq.isNotEmpty) {
         // Search mode: Synchronous local filtering against the real-time cache
         if (token != _searchToken) return;
 
         final filtered = searchCatalog.where((p) {
           // If a category is selected, filter by it first
-          if (selectedCategory.value != 'All' && p.category != selectedCategory.value) {
+          if (selectedCategory.value != 'All' &&
+              p.category != selectedCategory.value) {
             return false;
           }
           return _fuzzyMatch(sq, p.title);
@@ -310,7 +317,7 @@ class ProductSearchController extends GetxController {
         if (_lastDocument != null) {
           query = query.startAfterDocument(_lastDocument!);
         }
-        
+
         final snapshot = await query.limit(limit).get();
         if (token != _searchToken) return;
 
@@ -320,7 +327,9 @@ class ProductSearchController extends GetxController {
             hasMoreProducts.value = false;
           }
 
-          final mapped = snapshot.docs.map((doc) => _mapToProductCardModel(doc)).toList();
+          final mapped = snapshot.docs
+              .map((doc) => _mapToProductCardModel(doc))
+              .toList();
           searchResults.addAll(mapped);
         } else {
           hasMoreProducts.value = false;
@@ -340,17 +349,14 @@ class ProductSearchController extends GetxController {
 
     return model.copyWith(
       onTap: () {
-        Get.toNamed(
-          AppRoutes.productDetailsRoute,
-          arguments: model,
-        );
+        Get.toNamed(AppRoutes.productDetailsRoute, arguments: model);
       },
       onAddToCart: () {
         try {
           final cartController = Get.find<CartController>();
           bool added = cartController.addToCart(model, 1);
           if (added) {
-            Get.snackbar(
+            CustomSnackBar.show(
               'Added to Cart',
               '${model.title} added to cart',
               snackPosition: SnackPosition.BOTTOM,
@@ -431,17 +437,17 @@ class ProductSearchController extends GetxController {
   bool _fuzzyMatch(String query, String target) {
     query = query.toLowerCase().trim();
     target = target.toLowerCase().trim();
-    
+
     if (query.isEmpty) return true;
     if (target.contains(query) || query.contains(target)) return true;
-    
+
     List<String> queryWords = query.split(RegExp(r'\s+'));
     List<String> targetWords = target.split(RegExp(r'\s+'));
-    
+
     bool allWordsMatch = true;
     for (String qWord in queryWords) {
       if (qWord.isEmpty) continue;
-      
+
       bool wordMatched = false;
       String qBase = qWord;
       if (qWord.length > 3) {
@@ -453,10 +459,10 @@ class ProductSearchController extends GetxController {
           qBase = qWord.substring(0, qWord.length - 1);
         }
       }
-      
+
       for (String tWord in targetWords) {
         if (tWord.isEmpty) continue;
-        
+
         String tBase = tWord;
         if (tWord.length > 3) {
           if (tWord.endsWith('ies')) {
@@ -467,19 +473,22 @@ class ProductSearchController extends GetxController {
             tBase = tWord.substring(0, tWord.length - 1);
           }
         }
-        
-        if (tWord == qWord || tBase == qBase || tWord.contains(qBase) || qWord.contains(tBase)) {
+
+        if (tWord == qWord ||
+            tBase == qBase ||
+            tWord.contains(qBase) ||
+            qWord.contains(tBase)) {
           wordMatched = true;
           break;
         }
       }
-      
+
       if (!wordMatched) {
         allWordsMatch = false;
         break;
       }
     }
-    
+
     return allWordsMatch;
   }
 

@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
@@ -40,7 +41,7 @@ class ClearCartDialog {
             onPressed: () {
               controller.clearCart();
               Get.back();
-              Get.snackbar(
+              CustomSnackBar.show(
                 'Cart Cleared',
                 'All items removed from cart',
                 snackPosition: SnackPosition.BOTTOM,

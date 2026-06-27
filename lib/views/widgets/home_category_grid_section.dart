@@ -17,12 +17,11 @@ class HomeCategoryGridSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final CategorizedProductsController controller = Get.find<
-      CategorizedProductsController
-    >();
+    final CategorizedProductsController controller =
+        Get.find<CategorizedProductsController>();
     return Obx(() {
       final products = controller.categorizedProducts[categoryName] ?? [];
-      
+
       if (products.isEmpty) {
         return const SizedBox.shrink();
       }
@@ -46,7 +45,7 @@ class HomeCategoryGridSection extends StatelessWidget {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 16),
 
           // Product Grid (3 columns, 2 rows)
@@ -60,7 +59,8 @@ class HomeCategoryGridSection extends StatelessWidget {
                 crossAxisCount: 3,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 16,
-                childAspectRatio: 0.52, // Adjusted for ProductCardWidget to avoid overflow
+                childAspectRatio:
+                    0.52, // Adjusted for ProductCardWidget to avoid overflow
               ),
               itemCount: displayProducts.length,
               itemBuilder: (context, index) {
@@ -90,7 +90,9 @@ class HomeCategoryGridSection extends StatelessWidget {
                 },
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.3),
                     width: 1.5,
                   ),
                   shape: RoundedRectangleBorder(

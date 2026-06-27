@@ -30,10 +30,14 @@ class ProductVariation {
       unitValue: json['unitValue']?.toString() ?? '1',
       price: (json['price'] ?? 0).toDouble(),
       mrp: json['mrp'] != null ? (json['mrp'] as num).toDouble() : null,
-      discountPercentage: json['discountPercentage'] != null ? (json['discountPercentage'] as num).toDouble() : null,
+      discountPercentage: json['discountPercentage'] != null
+          ? (json['discountPercentage'] as num).toDouble()
+          : null,
       image: json['image']?.toString(),
       inStock: json['inStock'] ?? true,
-      stockCount: json['stockCount'] != null ? (json['stockCount'] as num).toInt() : 0,
+      stockCount: json['stockCount'] != null
+          ? (json['stockCount'] as num).toInt()
+          : 0,
     );
   }
 
@@ -120,24 +124,40 @@ class ProductCardModel {
   }) {
     final bool hasVars = json['hasVariations'] ?? false;
     final List<ProductVariation>? vars = json['variations'] != null
-        ? (json['variations'] as List).map((v) => ProductVariation.fromJson(Map<String, dynamic>.from(v))).toList()
+        ? (json['variations'] as List)
+              .map(
+                (v) => ProductVariation.fromJson(Map<String, dynamic>.from(v)),
+              )
+              .toList()
         : null;
 
     double basePrice = (json['price'] ?? 0).toDouble();
-    double? baseMrp = json['mrp'] != null ? (json['mrp'] as num).toDouble() : null;
+    double? baseMrp = json['mrp'] != null
+        ? (json['mrp'] as num).toDouble()
+        : null;
     String baseUnit = json['unit']?.toString() ?? 'unit';
-    String? baseQuantity = json['quantity']?.toString() ?? json['weight']?.toString() ?? json['unitQuantity']?.toString() ?? json['unitValue']?.toString();
+    String? baseQuantity =
+        json['quantity']?.toString() ??
+        json['weight']?.toString() ??
+        json['unitQuantity']?.toString() ??
+        json['unitValue']?.toString();
 
     bool baseInStock = json['inStock'] ?? true;
-    int baseStockCount = json['stockCount'] != null 
-        ? (json['stockCount'] as num).toInt() 
+    int baseStockCount = json['stockCount'] != null
+        ? (json['stockCount'] as num).toInt()
         : 0; // Strict inventory tracking: do not assume 99
 
     if (hasVars && vars != null && vars.isNotEmpty) {
-      if (basePrice == 0 || basePrice != vars.first.price) basePrice = vars.first.price;
-      if (baseMrp == null || baseMrp == 0 || baseMrp != vars.first.mrp) baseMrp = vars.first.mrp;
-      if (baseUnit == 'unit' || baseUnit.isEmpty || baseUnit != vars.first.unit) baseUnit = vars.first.unit;
-      if (baseQuantity == null || baseQuantity.isEmpty || baseQuantity != vars.first.unitValue) baseQuantity = vars.first.unitValue;
+      if (basePrice == 0 || basePrice != vars.first.price)
+        basePrice = vars.first.price;
+      if (baseMrp == null || baseMrp == 0 || baseMrp != vars.first.mrp)
+        baseMrp = vars.first.mrp;
+      if (baseUnit == 'unit' || baseUnit.isEmpty || baseUnit != vars.first.unit)
+        baseUnit = vars.first.unit;
+      if (baseQuantity == null ||
+          baseQuantity.isEmpty ||
+          baseQuantity != vars.first.unitValue)
+        baseQuantity = vars.first.unitValue;
       baseInStock = vars.first.inStock;
       baseStockCount = vars.first.stockCount;
     }
@@ -153,7 +173,10 @@ class ProductCardModel {
     }();
 
     String imageUrl = json['image']?.toString() ?? '';
-    if (imageUrl.isEmpty && json['images'] != null && json['images'] is List && (json['images'] as List).isNotEmpty) {
+    if (imageUrl.isEmpty &&
+        json['images'] != null &&
+        json['images'] is List &&
+        (json['images'] as List).isNotEmpty) {
       imageUrl = json['images'][0].toString();
     }
 

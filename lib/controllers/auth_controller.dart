@@ -1,3 +1,4 @@
+import 'package:kissanfresh/utils/custom_snackbar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -7,6 +8,7 @@ import 'package:kissanfresh/services/auth_service.dart';
 import 'package:kissanfresh/services/user_service.dart';
 import 'package:kissanfresh/services/location_service.dart';
 import 'package:kissanfresh/services/notification_service.dart';
+import 'package:kissanfresh/services/network_service.dart';
 
 class AuthController extends GetxController {
   static AuthController get instance => Get.find();
@@ -75,9 +77,14 @@ class AuthController extends GetxController {
   void sendOtp() async {
     if (isLoading.value) return;
 
+    if (!await NetworkService.isConnected()) {
+      NetworkService.showNoInternetSnackbar();
+      return;
+    }
+
     String phone = phoneController.text.trim();
     if (phone.isEmpty || phone.length != 10) {
-      Get.snackbar(
+      CustomSnackBar.show(
         "Error",
         "Please enter a valid 10-digit phone number",
         snackPosition: SnackPosition.BOTTOM,
@@ -101,7 +108,7 @@ class AuthController extends GetxController {
         onVerificationFailed: (FirebaseAuthException e) {
           isLoading.value = false;
           if (Get.isDialogOpen ?? false) Get.back();
-          Get.snackbar(
+          CustomSnackBar.show(
             "Verification Failed",
             e.message ?? "An error occurred",
             snackPosition: SnackPosition.BOTTOM,
@@ -126,7 +133,7 @@ class AuthController extends GetxController {
     } catch (e) {
       isLoading.value = false;
       if (Get.isDialogOpen ?? false) Get.back();
-      Get.snackbar(
+      CustomSnackBar.show(
         "Error",
         e.toString(),
         snackPosition: SnackPosition.BOTTOM,
@@ -159,8 +166,13 @@ class AuthController extends GetxController {
   void verifyOtp(String smsCode) async {
     if (isLoading.value) return;
 
+    if (!await NetworkService.isConnected()) {
+      NetworkService.showNoInternetSnackbar();
+      return;
+    }
+
     if (smsCode.isEmpty || smsCode.length != 6) {
-      Get.snackbar(
+      CustomSnackBar.show(
         "Error",
         "Please enter a valid 6-digit OTP",
         snackPosition: SnackPosition.BOTTOM,
@@ -182,7 +194,7 @@ class AuthController extends GetxController {
     } catch (e) {
       isLoading.value = false;
       if (Get.isDialogOpen ?? false) Get.back();
-      Get.snackbar(
+      CustomSnackBar.show(
         "Invalid OTP",
         "The entered OTP is incorrect. Please try again.",
         snackPosition: SnackPosition.BOTTOM,
@@ -210,7 +222,7 @@ class AuthController extends GetxController {
         }
 
         Get.offAllNamed(AppRoutes.mainLayout); // Clear stack and go home
-        Get.snackbar(
+        CustomSnackBar.show(
           "Success",
           "Logged in successfully!",
           snackPosition: SnackPosition.BOTTOM,
@@ -219,7 +231,7 @@ class AuthController extends GetxController {
         );
       } else {
         Get.offAllNamed(AppRoutes.onboardingRoute);
-        Get.snackbar(
+        CustomSnackBar.show(
           "Welcome!",
           "Please complete your profile to continue.",
           snackPosition: SnackPosition.BOTTOM,
@@ -232,15 +244,28 @@ class AuthController extends GetxController {
     }
   }
 
-  void logout() async {
-    await _authService.signOut();
-    Get.snackbar(
-      "Success",
-      "Successfully Logged Out",
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
+  void logout() {
+    Get.defaultDialog(
+      title: "Logout",
+      titleStyle: const TextStyle(fontWeight: FontWeight.bold),
+      middleText: "Are you sure you want to log out?",
+      textConfirm: "Logout",
+      textCancel: "Cancel",
+      confirmTextColor: Colors.white,
+      buttonColor: Colors.redAccent,
+      cancelTextColor: Colors.grey.shade700,
+      onConfirm: () async {
+        Get.back(); // Close dialog
+        await _authService.signOut();
+        CustomSnackBar.show(
+          "Success",
+          "Successfully Logged Out",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+        Get.offAllNamed(AppRoutes.mainLayout);
+      },
     );
-    Get.offAllNamed(AppRoutes.mainLayout);
   }
 }
