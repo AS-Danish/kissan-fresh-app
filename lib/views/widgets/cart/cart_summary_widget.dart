@@ -196,7 +196,9 @@ class CartSummaryWidget extends StatelessWidget {
               controller,
               controller.activeCouponModel.value?.applicableCategory != null
                   ? 'Coupon Discount (${controller.activeCouponModel.value!.applicableCategory} only)'
-                  : 'Coupon Discount (${controller.appliedCoupon.value})',
+                  : controller.appliedCoupon.value.isNotEmpty
+                      ? 'Coupon Discount (${controller.appliedCoupon.value})'
+                      : 'Discount',
               '-₹${controller.discount.toStringAsFixed(0)}',
               isDiscount: true,
             ),
@@ -500,6 +502,8 @@ class CartSummaryWidget extends StatelessWidget {
                             child: CachedNetworkImage(
                               imageUrl: item.image,
                               fit: BoxFit.cover,
+                              memCacheWidth: 150,
+                              memCacheHeight: 150,
                             ),
                           ),
                         ),

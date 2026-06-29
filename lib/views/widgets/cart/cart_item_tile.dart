@@ -95,6 +95,8 @@ class CartItemTile extends StatelessWidget {
                     child: CachedNetworkImage(
                       imageUrl: item.image,
                       fit: BoxFit.cover,
+                      memCacheWidth: 250,
+                      memCacheHeight: 250,
                       placeholder: (context, url) => Center(
                         child: CircularProgressIndicator(
                           strokeWidth: 2,

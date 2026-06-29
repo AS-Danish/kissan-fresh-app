@@ -108,7 +108,7 @@ class AddressBottomSheet extends StatelessWidget {
 
                   // Saved Addresses Section
                   GetBuilder<ProfileController>(
-                    init: ProfileController(),
+                    init: Get.isRegistered<ProfileController>() ? null : ProfileController(),
                     builder: (profileController) {
                       final addresses =
                           profileController.currentUser.value?.savedAddresses ??

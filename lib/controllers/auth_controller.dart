@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:get/get.dart';
+import 'package:hive/hive.dart';
 import 'package:kissanfresh/routes/app_routes.dart';
 import 'package:kissanfresh/services/auth_service.dart';
 import 'package:kissanfresh/services/user_service.dart';
@@ -256,6 +257,17 @@ class AuthController extends GetxController {
       cancelTextColor: Colors.grey.shade700,
       onConfirm: () async {
         Get.back(); // Close dialog
+        
+        final box = Hive.box('user_settings');
+        await box.delete('current_address');
+        await box.delete('current_address_type');
+        await box.delete('current_flat_no');
+        await box.delete('current_landmark');
+        if (Get.isRegistered<LocationService>()) {
+          Get.find<LocationService>().currentAddressType.value = 'Current Location';
+          await Get.find<LocationService>().fetchCurrentLocation();
+        }
+
         await _authService.signOut();
         CustomSnackBar.show(
           "Success",
