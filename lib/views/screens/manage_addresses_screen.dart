@@ -29,11 +29,10 @@ class ManageAddressesScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
       ),
-      body: GetBuilder<ProfileController>(
-        init: ProfileController(),
-        builder: (profileController) {
-          final addresses =
-              profileController.currentUser.value?.savedAddresses ?? [];
+      body: Obx(() {
+        final profileController = Get.find<ProfileController>();
+        final addresses =
+            profileController.currentUser.value?.savedAddresses ?? [];
 
           if (addresses.isEmpty) {
             return Center(
@@ -68,8 +67,7 @@ class ManageAddressesScreen extends StatelessWidget {
               return _buildAddressCard(context, address, profileController);
             },
           );
-        },
-      ),
+      }),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Get.toNamed(AppRoutes.addressSelectionRoute);

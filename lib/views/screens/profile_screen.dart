@@ -175,6 +175,72 @@ class ProfileScreen extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 16),
+              
+              // Display Saved Tags (Addresses)
+              Obx(() {
+                final addresses = controller.currentUser.value?.savedAddresses ?? [];
+                if (addresses.isEmpty) return const SizedBox.shrink();
+                
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Saved Addresses',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ...addresses.map((addr) {
+                      IconData icon = Icons.location_on_rounded;
+                      if (addr.type.toLowerCase() == 'home') icon = Icons.home_rounded;
+                      if (addr.type.toLowerCase() == 'office') icon = Icons.work_rounded;
+                      
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(icon, color: Theme.of(context).primaryColor, size: 20),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    addr.type,
+                                    style: GoogleFonts.montserrat(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  Text(
+                                    addr.fullAddress,
+                                    style: GoogleFonts.montserrat(
+                                      fontSize: 11,
+                                      color: Colors.grey.shade600,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                    const SizedBox(height: 16),
+                  ],
+                );
+              }),
 
               // Manage Addresses Button
               SizedBox(

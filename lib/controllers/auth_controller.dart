@@ -10,6 +10,7 @@ import 'package:kissanfresh/services/user_service.dart';
 import 'package:kissanfresh/services/location_service.dart';
 import 'package:kissanfresh/services/notification_service.dart';
 import 'package:kissanfresh/services/network_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthController extends GetxController {
   static AuthController get instance => Get.find();
@@ -45,6 +46,9 @@ class AuthController extends GetxController {
     // However, if the user IS logged in, we MUST verify onboarding status.
     if (user != null) {
       debugPrint("User is logged in: ${user.phoneNumber}");
+
+      // Ensure FCM token is saved now that the user session is restored
+      await NotificationService().saveTokenToFirestore();
 
       // Fetch user data from firestore to check onboarding
       final userModel = await _userService.getUser(user.uid);
@@ -267,6 +271,9 @@ class AuthController extends GetxController {
           Get.find<LocationService>().currentAddressType.value = 'Current Location';
           await Get.find<LocationService>().fetchCurrentLocation();
         }
+        
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.clear();
 
         await _authService.signOut();
         CustomSnackBar.show(

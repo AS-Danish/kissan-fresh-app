@@ -78,6 +78,7 @@ class ProfileController extends GetxController {
         profileImage.value = userModel.imageUrl ?? '';
         currentUser.value = userModel;
         _updateInitials(name.value);
+        update(); // Notify GetBuilder listeners
 
         nameController.text = name.value;
         emailController.text = email.value;
