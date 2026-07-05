@@ -74,15 +74,15 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/KissanFreshLogo.png"
-  adaptive_icon_foreground: "assets/images/KissanFreshLogo.png"
-  adaptive_icon_background: "#f1ecd9"
+  image_path: "assets/images/Kissan Fresh Logo.png"
+  adaptive_icon_foreground: "assets/images/Kissan Fresh Logo.png"
+  adaptive_icon_background: "#ffffff"
 
 flutter_native_splash:
-  color: "#efe8d6"
-  image: "assets/images/KissanFreshCompleteLogo.png"
+  color: "#ffffff"
+  image: "assets/images/Kissan Fresh Logo.png"
   android_12:
-    image: "assets/images/KissanFreshCompleteLogo.png"
+    image: "assets/images/Kissan Fresh Logo.png"
   ios: true
 
 # The following section is specific to Flutter packages.

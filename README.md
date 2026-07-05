@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/images/KissanFreshCompleteLogo.png" alt="Kissan Fresh Logo" width="200"/>
+  <img src="assets/images/Kissan Fresh Logo.png" alt="Kissan Fresh Logo" width="200"/>
 
   # 🛒 Kissan Fresh - Consumer App
   

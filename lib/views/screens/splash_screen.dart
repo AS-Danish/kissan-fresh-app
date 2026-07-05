@@ -114,8 +114,8 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(
-        0xFFefe8d6,
-      ), // Beautiful cream/off-white background
+        0xFFFFFFFF,
+      ), // Beautiful white background
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -133,7 +133,7 @@ class _SplashScreenState extends State<SplashScreen>
                 );
               },
               child: Image.asset(
-                'assets/images/KissanFreshCompleteLogo.png',
+                'assets/images/Kissan Fresh Logo.png',
                 width: 240,
                 errorBuilder: (context, error, stackTrace) => Icon(
                   Icons.shopping_cart,
