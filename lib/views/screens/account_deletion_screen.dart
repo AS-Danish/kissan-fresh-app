@@ -117,28 +117,31 @@ class _AccountDeletionScreenState extends State<AccountDeletionScreen> {
                     data: Theme.of(context).copyWith(
                       unselectedWidgetColor: Theme.of(context).dividerColor,
                     ),
-                    child: RadioListTile<String>(
-                      title: Text(
-                        reason,
-                        style: GoogleFonts.montserrat(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: Theme.of(context).colorScheme.onSurface,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: RadioListTile<String>(
+                        title: Text(
+                          reason,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                         ),
+                        value: reason,
+                        groupValue: selectedReason,
+                        activeColor: Colors.red,
+                        contentPadding: EdgeInsets.zero,
+                        visualDensity: const VisualDensity(
+                          horizontal: -4,
+                          vertical: -4,
+                        ),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedReason = value;
+                          });
+                        },
                       ),
-                      value: reason,
-                      groupValue: selectedReason,
-                      activeColor: Colors.red,
-                      contentPadding: EdgeInsets.zero,
-                      visualDensity: const VisualDensity(
-                        horizontal: -4,
-                        vertical: -4,
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedReason = value;
-                        });
-                      },
                     ),
                   ),
                 );

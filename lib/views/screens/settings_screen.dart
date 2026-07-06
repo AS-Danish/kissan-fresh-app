@@ -389,25 +389,27 @@ class SettingsScreen extends StatelessWidget {
             const Divider(height: 1, indent: 60, endIndent: 16),
         itemBuilder: (context, index) {
           final item = items[index];
-          return ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
-            leading: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
+          return Material(
+            color: Colors.transparent,
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
               ),
-              child: Icon(
-                item.icon,
-                color: Theme.of(context).primaryColor,
-                size: 22,
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  item.icon,
+                  color: Theme.of(context).primaryColor,
+                  size: 22,
+                ),
               ),
-            ),
-            title: Text(
+              title: Text(
               item.title,
               style: TextStyle(
                 fontSize: 16,

@@ -9,7 +9,7 @@ import '../model/product_card_model.dart';
 import '../routes/app_routes.dart';
 import 'homepage_controller.dart';
 import 'cart_controller.dart';
-import 'user_activity_controller.dart';
+
 
 import '../services/cache_service.dart';
 
@@ -371,66 +371,6 @@ class ProductSearchController extends GetxController {
           debugPrint("CartController not found: $e");
         }
       },
-    );
-  }
-
-  static void _navigateToProductDetails({
-    required String? id,
-    required String image,
-    List<String>? images,
-    required String title,
-    required String description,
-    required double price,
-    double? mrp,
-    required String unit,
-    String? quantity,
-    String? category,
-    List<String>? tags,
-    bool inStock = true,
-    int stockCount = 0,
-  }) {
-    try {
-      Get.find<UserActivityController>().trackView(
-        ProductCardModel(
-          id: id,
-          image: image,
-          images: images,
-          title: title,
-          description: description,
-          price: price,
-          mrp: mrp,
-          unit: unit,
-          category: category,
-          tags: tags,
-          inStock: inStock,
-          stockCount: stockCount,
-          onTap: () {},
-          onAddToCart: () {},
-        ),
-      );
-    } catch (e) {
-      debugPrint("UserActivityController tracking error: $e");
-    }
-
-    Get.toNamed(
-      AppRoutes.productDetailsRoute,
-      arguments: ProductCardModel(
-        id: id,
-        image: image,
-        images: images,
-        title: title,
-        description: description,
-        price: price,
-        mrp: mrp,
-        unit: unit,
-        quantity: quantity,
-        category: category,
-        tags: tags,
-        inStock: inStock,
-        stockCount: stockCount,
-        onTap: () {},
-        onAddToCart: () {},
-      ),
     );
   }
 

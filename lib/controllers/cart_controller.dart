@@ -15,7 +15,6 @@ import 'auth_controller.dart';
 import '../services/location_service.dart';
 
 import '../model/order_model.dart';
-import 'address_controller.dart';
 import 'homepage_controller.dart';
 import 'orders_controller.dart';
 import 'slot_selection_controller.dart';
@@ -911,14 +910,6 @@ class CartController extends GetxController {
       validateCartItems();
       return null;
     }
-  }
-
-  /// Resolves the delivery address by checking multiple sources:
-  /// 1. AddressController (user-selected address)
-  /// 2. LocationService (GPS-detected address)
-  /// 3. Hive persisted address
-  String _resolveDeliveryAddress() {
-    return _resolveDeliveryAddressData().address;
   }
 
   /// Helper to check if the resolved address is within the service area (30km)

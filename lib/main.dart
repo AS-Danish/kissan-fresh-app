@@ -73,11 +73,11 @@ void main() async {
 
   Get.put(ThemeController()); // Initialize theme early
   Get.put(CacheService(), permanent: true); // Register CacheService
-  final updateController = Get.put(
+  Get.put(
     UpdateController(),
     permanent: true,
   ); // Check for updates immediately
-  final locationService = Get.put(
+  Get.put(
     LocationService(),
     permanent: true,
   ); // Add LocationService
@@ -92,7 +92,7 @@ void main() async {
   Get.put(NotificationController(), permanent: true);
 
   // Start initializing HomepageController as well
-  final homepageController = Get.put(HomepageController(), permanent: true);
+  Get.put(HomepageController(), permanent: true);
 
   // We call runApp immediately so the Get widget tree is mounted (required for navigation in UpdateController etc).
   // The UI is shown immediately with our custom splash screen.

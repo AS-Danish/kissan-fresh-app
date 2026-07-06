@@ -5,7 +5,6 @@ import 'package:kissanfresh/controllers/address_controller.dart';
 import 'package:kissanfresh/controllers/cart_controller.dart';
 import 'package:kissanfresh/views/widgets/cart/cart_summary_widget.dart';
 import 'package:kissanfresh/views/widgets/cart/empty_cart_state.dart';
-import 'package:kissanfresh/views/widgets/cart/delivery_info_card.dart';
 import 'package:kissanfresh/views/widgets/cart/cart_item_tile.dart';
 import 'package:kissanfresh/views/widgets/cart/clear_cart_dialog.dart';
 

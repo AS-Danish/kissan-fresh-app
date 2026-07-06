@@ -264,42 +264,4 @@ class ProductsController extends GetxController {
       },
     );
   }
-
-  // Helper method for navigation using named routes
-  static void _navigateToProductDetails({
-    required String? id,
-    required String image,
-    List<String>? images,
-    required String title,
-    required String description,
-    required double price,
-    double? mrp,
-    required String unit,
-    String? quantity,
-    String? category,
-    List<String>? tags,
-    bool inStock = true,
-    int stockCount = 0,
-  }) {
-    Get.toNamed(
-      AppRoutes.productDetailsRoute,
-      arguments: ProductCardModel(
-        id: id,
-        image: image,
-        images: images,
-        title: title,
-        description: description,
-        price: price,
-        mrp: mrp,
-        unit: unit,
-        quantity: quantity,
-        category: category,
-        tags: tags,
-        inStock: inStock,
-        stockCount: stockCount,
-        onTap: () {},
-        onAddToCart: () {},
-      ),
-    );
-  }
 }

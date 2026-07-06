@@ -425,33 +425,38 @@ class OrderDetailsSheet {
                       const SizedBox(height: 12),
                       _buildSummaryRow(
                         context,
-                        'Subtotal',
+                        'Item Total',
                         '₹${order.subtotal.toStringAsFixed(0)}',
+                      ),
+                      _buildSummaryRow(
+                        context,
+                        'Handling Fee',
+                        '₹0',
                       ),
                       if (order.deliveryFee > 0)
                         _buildSummaryRow(
                           context,
-                          'Delivery Fee',
+                          'Delivery Partner Fee',
                           '₹${order.deliveryFee.toStringAsFixed(0)}',
                         ),
                       if (order.deliveryFee == 0)
                         _buildSummaryRow(
                           context,
-                          'Delivery Fee',
+                          'Delivery Partner Fee',
                           'FREE',
                           isGreen: true,
                         ),
                       if (order.discount > 0)
                         _buildSummaryRow(
                           context,
-                          'Product Discount',
+                          'Item Discount',
                           '-₹${order.discount.toStringAsFixed(0)}',
                           isGreen: true,
                         ),
                       if (order.couponDiscount > 0)
                         _buildSummaryRow(
                           context,
-                          'Coupon Discount',
+                          'Coupon Savings',
                           '-₹${order.couponDiscount.toStringAsFixed(0)}',
                           isGreen: true,
                         ),
@@ -483,7 +488,87 @@ class OrderDetailsSheet {
                           ),
                         ],
                       ),
+                      
+                      if (order.discount > 0 || order.couponDiscount > 0) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF14B8A6).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: const Color(0xFF14B8A6).withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.check_circle_outline,
+                                color: Color(0xFF14B8A6),
+                                size: 16,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Your total savings: ₹${(order.discount + order.couponDiscount).toStringAsFixed(0)}',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF14B8A6),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
 
+                      const SizedBox(height: 32),
+                      
+                      // Footer details (BlinkIt style)
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'FSSAI Lic. No. 12345678901234',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Divider(height: 1),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Need Help?',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'support@kissanfresh.com\n+91 98765 43210',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: Theme.of(context).primaryColor,
+                                height: 1.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
                       const SizedBox(height: 32),
                     ],
                   ),

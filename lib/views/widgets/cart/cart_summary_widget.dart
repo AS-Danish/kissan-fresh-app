@@ -811,7 +811,9 @@ class CartSummaryWidget extends StatelessWidget {
                       ),
                       child: Column(
                         children: [
-                          ListTile(
+                          Material(
+                            color: Colors.transparent,
+                            child: ListTile(
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16,
                               vertical: 8,
@@ -955,6 +957,7 @@ class CartSummaryWidget extends StatelessWidget {
                                 ],
                               ],
                             ),
+                          ),
                           ),
                           const Divider(height: 1),
                           InkWell(

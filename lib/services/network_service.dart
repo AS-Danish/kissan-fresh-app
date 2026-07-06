@@ -5,8 +5,16 @@ import 'package:flutter/material.dart';
 
 class NetworkService {
   static Future<bool> isConnected() async {
-    bool result = await InternetConnection().hasInternetAccess;
-    return result;
+    try {
+      bool result = await InternetConnection().hasInternetAccess.timeout(
+        const Duration(seconds: 2),
+      );
+      return result;
+    } catch (e) {
+      // If the check times out or fails, default to true 
+      // so we don't block the user. Firebase will throw an error if offline anyway.
+      return true;
+    }
   }
 
   static void showNoInternetSnackbar() {
