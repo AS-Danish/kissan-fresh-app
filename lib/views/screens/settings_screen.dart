@@ -433,6 +433,7 @@ class SettingsScreen extends StatelessWidget {
                   color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
             onTap: item.onTap,
+            ),
           );
         },
       ),
