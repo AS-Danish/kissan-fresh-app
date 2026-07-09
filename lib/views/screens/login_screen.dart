@@ -33,7 +33,7 @@ class LoginScreen extends StatelessWidget {
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
                       decoration: BoxDecoration(
-                        color: Colors.white, // Match scaffold
+                        color: Theme.of(context).colorScheme.surface, // Match scaffold
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -58,7 +58,7 @@ class LoginScreen extends StatelessWidget {
                             style: GoogleFonts.montserrat(
                               fontSize: 26,
                               fontWeight: FontWeight.w900,
-                              color: Colors.black87,
+                              color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87,
                               letterSpacing: -0.5,
                             ),
                           ),
@@ -68,7 +68,7 @@ class LoginScreen extends StatelessWidget {
                             style: GoogleFonts.montserrat(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: Colors.grey.shade600,
+                              color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7) ?? Colors.grey.shade600,
                             ),
                           ),
                         ],
@@ -80,12 +80,12 @@ class LoginScreen extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.grey.shade200, width: 1.5),
+                          border: Border.all(color: Theme.of(context).dividerColor, width: 1.5),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.03),
+                              color: Theme.of(context).shadowColor.withValues(alpha: 0.05),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -104,14 +104,14 @@ class LoginScreen extends StatelessWidget {
                                     style: GoogleFonts.montserrat(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w700,
-                                      color: Colors.black87,
+                                      color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87,
                                     ),
                                   ),
                                   const SizedBox(width: 8),
                                   Container(
                                     height: 24,
                                     width: 1.5,
-                                    color: Colors.grey.shade300,
+                                    color: Theme.of(context).dividerColor,
                                   ),
                                 ],
                               ),
@@ -126,7 +126,7 @@ class LoginScreen extends StatelessWidget {
                                 style: GoogleFonts.montserrat(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
-                                  color: Colors.black87,
+                                  color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87,
                                   letterSpacing: 1.5,
                                 ),
                                 decoration: InputDecoration(
@@ -134,7 +134,7 @@ class LoginScreen extends StatelessWidget {
                                   hintStyle: GoogleFonts.montserrat(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
-                                    color: Colors.grey.shade400,
+                                    color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5) ?? Colors.grey.shade400,
                                     letterSpacing: 0,
                                   ),
                                   border: InputBorder.none,
@@ -166,7 +166,7 @@ class LoginScreen extends StatelessWidget {
                                         child: Container(
                                           padding: const EdgeInsets.all(24),
                                           decoration: BoxDecoration(
-                                            color: Colors.white,
+                                            color: Theme.of(context).cardColor,
                                             borderRadius: BorderRadius.circular(16),
                                           ),
                                           child: Column(
@@ -183,7 +183,7 @@ class LoginScreen extends StatelessWidget {
                                                 style: GoogleFonts.montserrat(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.w600,
-                                                  color: Colors.black87,
+                                                  color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87,
                                                   decoration: TextDecoration.none,
                                                 ),
                                               ),
@@ -230,14 +230,14 @@ class LoginScreen extends StatelessWidget {
                   text: 'By continuing, you agree to our ',
                   style: GoogleFonts.montserrat(
                     fontSize: 12,
-                    color: Colors.grey.shade500,
+                    color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.6) ?? Colors.grey.shade500,
                     fontWeight: FontWeight.w500,
                   ),
                   children: [
                     TextSpan(
                       text: 'Terms of service',
                       style: GoogleFonts.montserrat(
-                        color: Colors.black87,
+                        color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87,
                         decoration: TextDecoration.underline,
                       ),
                     ),
@@ -245,7 +245,7 @@ class LoginScreen extends StatelessWidget {
                     TextSpan(
                       text: 'Privacy policy',
                       style: GoogleFonts.montserrat(
-                        color: Colors.black87,
+                        color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black87,
                         decoration: TextDecoration.underline,
                       ),
                     ),

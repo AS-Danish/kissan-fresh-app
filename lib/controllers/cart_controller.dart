@@ -54,8 +54,8 @@ class CartController extends GetxController {
   }
 
   double get deliveryFee {
-    // Free delivery above ₹299
-    return subtotal >= 299 ? 0 : 20;
+    // Free delivery above ₹300
+    return subtotal > 300 ? 0 : 30;
   }
 
   double get discount {

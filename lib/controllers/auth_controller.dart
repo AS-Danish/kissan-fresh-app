@@ -250,41 +250,116 @@ class AuthController extends GetxController {
   }
 
   void logout() {
-    Get.defaultDialog(
-      title: "Logout",
-      titleStyle: const TextStyle(fontWeight: FontWeight.bold),
-      middleText: "Are you sure you want to log out?",
-      textConfirm: "Logout",
-      textCancel: "Cancel",
-      confirmTextColor: Colors.white,
-      buttonColor: Colors.redAccent,
-      cancelTextColor: Colors.grey.shade700,
-      onConfirm: () async {
-        Get.back(); // Close dialog
-        
-        final box = Hive.box('user_settings');
-        await box.delete('current_address');
-        await box.delete('current_address_type');
-        await box.delete('current_flat_no');
-        await box.delete('current_landmark');
-        if (Get.isRegistered<LocationService>()) {
-          Get.find<LocationService>().currentAddressType.value = 'Current Location';
-          await Get.find<LocationService>().fetchCurrentLocation();
-        }
-        
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.clear();
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.logout_rounded,
+                  color: Colors.redAccent,
+                  size: 40,
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Log Out',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Are you sure you want to log out of your account?',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: Colors.grey, height: 1.5),
+              ),
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () => Get.back(),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Get.back(); // Close dialog immediately
+                        
+                        // Execute slow operations asynchronously so the UI isn't blocked
+                        Future.microtask(() async {
+                          final box = Hive.box('user_settings');
+                          await box.delete('current_address');
+                          await box.delete('current_address_type');
+                          await box.delete('current_flat_no');
+                          await box.delete('current_landmark');
+                          if (Get.isRegistered<LocationService>()) {
+                            Get.find<LocationService>().currentAddressType.value = 'Current Location';
+                            Get.find<LocationService>().fetchCurrentLocation();
+                          }
+                          
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.clear();
 
-        await _authService.signOut();
-        CustomSnackBar.show(
-          "Success",
-          "Successfully Logged Out",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
-        Get.offAllNamed(AppRoutes.mainLayout);
-      },
+                          await _authService.signOut();
+                        });
+
+                        CustomSnackBar.show(
+                          "Success",
+                          "Successfully Logged Out",
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: Colors.green,
+                          colorText: Colors.white,
+                        );
+                        Get.offAllNamed(AppRoutes.mainLayout);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Log Out',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

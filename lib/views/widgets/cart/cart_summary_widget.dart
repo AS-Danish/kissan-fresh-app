@@ -187,7 +187,7 @@ class CartSummaryWidget extends StatelessWidget {
                 ? 'FREE'
                 : '₹${controller.deliveryFee.toStringAsFixed(0)}',
             isDelivery: controller.deliveryFee == 0,
-            originalPrice: controller.deliveryFee == 0 ? '₹49' : null,
+            originalPrice: controller.deliveryFee == 0 ? '₹30' : null,
           ),
           if (controller.discount > 0) const SizedBox(height: 12),
           if (controller.discount > 0)
@@ -599,7 +599,7 @@ class CartSummaryWidget extends StatelessWidget {
                         ? 'FREE'
                         : '₹${controller.deliveryFee.toStringAsFixed(0)}',
                     isDelivery: controller.deliveryFee == 0,
-                    originalPrice: controller.deliveryFee == 0 ? '₹49' : null,
+                    originalPrice: controller.deliveryFee == 0 ? '₹30' : null,
                   ),
                   if (controller.discount > 0) ...[
                     const SizedBox(height: 12),

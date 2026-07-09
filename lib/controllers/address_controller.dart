@@ -110,9 +110,22 @@ class AddressController extends GetxController {
   Future<void> _checkPermission() async {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      CustomSnackBar.show(
-        'Location Disabled',
-        'Please enable location services.',
+      Get.defaultDialog(
+        title: 'Location Disabled',
+        middleText: 'Please turn on your GPS to fetch your delivery address.',
+        textConfirm: 'Turn On',
+        textCancel: 'Cancel',
+        confirmTextColor: Colors.white,
+        titleStyle: const TextStyle(fontWeight: FontWeight.bold),
+        buttonColor: Get.theme.primaryColor,
+        onConfirm: () async {
+          Get.back();
+          await Geolocator.openLocationSettings();
+          // After returning from settings, wait a bit and check again
+          Future.delayed(const Duration(seconds: 2), () {
+            _checkPermission();
+          });
+        },
       );
       return;
     }

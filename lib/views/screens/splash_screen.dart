@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:kissanfresh/controllers/homepage_controller.dart';
 import 'package:kissanfresh/controllers/update_controller.dart';
 import 'package:kissanfresh/services/location_service.dart';
+import 'package:kissanfresh/services/network_service.dart';
 import 'package:kissanfresh/views/layout/main_layout.dart';
 import 'dart:async';
 
@@ -65,6 +66,32 @@ class _SplashScreenState extends State<SplashScreen>
     final homepageController = Get.find<HomepageController>();
 
     try {
+      // First check internet. If no internet, we wait until it's restored.
+      bool hasInternet = await NetworkService.isConnected();
+      if (!hasInternet) {
+        if (mounted) {
+          setState(() {
+            _loadingPhrases.add("Waiting for internet connection...");
+            _textIndex = _loadingPhrases.length - 1;
+          });
+        }
+
+        while (!await NetworkService.isConnected()) {
+          await Future.delayed(const Duration(seconds: 2));
+        }
+
+        if (mounted) {
+          setState(() {
+            _loadingPhrases.add("Resuming startup checks...");
+            _textIndex = _loadingPhrases.length - 1;
+          });
+        }
+
+        // Retry the network-dependent checks now that internet is back
+        updateController.initializationFuture = updateController.checkUpdates();
+        homepageController.categoriesFuture = homepageController.fetchCategories();
+      }
+
       // Run all background initializations concurrently, but we only WAIT for them
       // up to a maximum of 3 seconds. We don't want to block the user for long.
       // The home screen can handle missing data gracefully with its own loaders.

@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 import '../../model/product_card_model.dart';
 import '../../controllers/theme_controller.dart';
+import '../../controllers/cart_controller.dart';
+import 'dart:async';
 
 class ProductCardWidget extends StatefulWidget {
   final ProductCardModel product;
@@ -21,6 +23,26 @@ class ProductCardWidget extends StatefulWidget {
 
 class _ProductCardWidgetState extends State<ProductCardWidget> {
   bool _isPressed = false;
+  bool _isExpanded = false;
+  Timer? _collapseTimer;
+
+  @override
+  void dispose() {
+    _collapseTimer?.cancel();
+    super.dispose();
+  }
+
+  void _startCollapseTimer() {
+    _collapseTimer?.cancel();
+    if (!_isExpanded) {
+      setState(() => _isExpanded = true);
+    }
+    _collapseTimer = Timer(const Duration(seconds: 5), () {
+      if (mounted) {
+        setState(() => _isExpanded = false);
+      }
+    });
+  }
 
   bool _isNetworkImage(String path) {
     return path.startsWith('http://') || path.startsWith('https://');
@@ -387,47 +409,143 @@ class _ProductCardWidgetState extends State<ProductCardWidget> {
 
                                 const SizedBox(width: 4),
 
-                                // Modern Add Button
+                                // Modern Add Button / Quantity Selector
                                 if (widget.showAddButton)
-                                  GestureDetector(
-                                    onTap:
-                                        (widget.product.inStock &&
-                                            widget.product.stockCount > 0)
-                                        ? widget.product.onAddToCart
-                                        : null,
-
-                                    child: Container(
-                                      width: 28,
-                                      height: 28,
-                                      decoration: BoxDecoration(
-                                        color:
-                                            (widget.product.inStock &&
-                                                widget.product.stockCount > 0)
-                                            ? primaryColor
-                                            : Colors.grey.shade300,
-                                        borderRadius: BorderRadius.circular(8),
-                                        boxShadow: widget.product.inStock
-                                            ? [
+                                  Obx(() {
+                                    final cartController = Get.find<CartController>();
+                                    String productId = widget.product.id ?? widget.product.title;
+                                    
+                                    if (widget.product.hasVariations &&
+                                        widget.product.variations != null &&
+                                        widget.product.variations!.isNotEmpty) {
+                                      if (!productId.contains('_')) {
+                                        final v = widget.product.variations!.first;
+                                        final vId = v.id ?? "${v.unitValue}${v.unit}";
+                                        productId = '${productId}_$vId';
+                                      }
+                                    }
+                                    
+                                    int quantity = cartController.getProductQuantity(productId);
+                                    
+                                    if (quantity > 0) {
+                                      if (_isExpanded) {
+                                        return Container(
+                                          height: 28,
+                                          decoration: BoxDecoration(
+                                            color: primaryColor,
+                                            borderRadius: BorderRadius.circular(8),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: primaryColor.withValues(alpha: 0.25),
+                                                blurRadius: 10,
+                                                offset: const Offset(0, 4),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              InkWell(
+                                                onTap: () {
+                                                  cartController.decrementItem(productId);
+                                                  _startCollapseTimer();
+                                                },
+                                                child: const Padding(
+                                                  padding: EdgeInsets.symmetric(horizontal: 6.0),
+                                                  child: Icon(Icons.remove, color: Colors.white, size: 14),
+                                                ),
+                                              ),
+                                              Text(
+                                                '$quantity',
+                                                style: GoogleFonts.outfit(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              InkWell(
+                                                onTap: () {
+                                                  cartController.incrementItem(productId);
+                                                  _startCollapseTimer();
+                                                },
+                                                child: const Padding(
+                                                  padding: EdgeInsets.symmetric(horizontal: 6.0),
+                                                  child: Icon(Icons.add, color: Colors.white, size: 14),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                      } else {
+                                        return GestureDetector(
+                                          onTap: _startCollapseTimer,
+                                          child: Container(
+                                            width: 28,
+                                            height: 28,
+                                            decoration: BoxDecoration(
+                                              color: primaryColor,
+                                              borderRadius: BorderRadius.circular(8),
+                                              boxShadow: [
                                                 BoxShadow(
-                                                  color: primaryColor
-                                                      .withValues(alpha: 0.25),
+                                                  color: primaryColor.withValues(alpha: 0.25),
                                                   blurRadius: 10,
                                                   offset: const Offset(0, 4),
                                                 ),
-                                              ]
-                                            : [],
+                                              ],
+                                            ),
+                                            child: const Icon(
+                                              Icons.add_rounded,
+                                              color: Colors.white,
+                                              size: 16,
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    }
+
+                                    return GestureDetector(
+                                      onTap: (widget.product.inStock && widget.product.stockCount > 0)
+                                          ? () {
+                                              if (widget.product.onAddToCart != null) {
+                                                widget.product.onAddToCart!();
+                                              }
+                                              _startCollapseTimer();
+                                            }
+                                          : null,
+
+                                      child: Container(
+                                        width: 28,
+                                        height: 28,
+                                        decoration: BoxDecoration(
+                                          color:
+                                              (widget.product.inStock &&
+                                                  widget.product.stockCount > 0)
+                                              ? primaryColor
+                                              : Colors.grey.shade300,
+                                          borderRadius: BorderRadius.circular(8),
+                                          boxShadow: widget.product.inStock
+                                              ? [
+                                                  BoxShadow(
+                                                    color: primaryColor
+                                                        .withValues(alpha: 0.25),
+                                                    blurRadius: 10,
+                                                    offset: const Offset(0, 4),
+                                                  ),
+                                                ]
+                                              : [],
+                                        ),
+                                        child: Icon(
+                                          widget.product.stockCount > 0
+                                              ? Icons.add_rounded
+                                              : Icons.block_rounded,
+                                          color: widget.product.stockCount > 0
+                                              ? Colors.white
+                                              : Colors.grey.shade500,
+                                          size: 16,
+                                        ),
                                       ),
-                                      child: Icon(
-                                        widget.product.stockCount > 0
-                                            ? Icons.add_rounded
-                                            : Icons.block_rounded,
-                                        color: widget.product.stockCount > 0
-                                            ? Colors.white
-                                            : Colors.grey.shade500,
-                                        size: 16,
-                                      ),
-                                    ),
-                                  ),
+                                    );
+                                  }),
                               ],
                             ),
                           ],

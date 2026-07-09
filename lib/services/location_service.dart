@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -30,6 +30,7 @@ class LocationService extends GetxService {
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       debugPrint('Location services are disabled.');
+      _showGPSPrompt();
       return;
     }
 
@@ -160,4 +161,29 @@ class LocationService extends GetxService {
     );
     return distance <= maxServiceRadiusMeters;
   }
+
+  void _showGPSPrompt() {
+    // Ensure the widget tree is ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (Get.isDialogOpen == true) return;
+      Get.defaultDialog(
+        title: 'GPS is Disabled',
+        middleText: 'Please turn on your GPS to fetch your delivery address.',
+        textConfirm: 'Turn On',
+        textCancel: 'Skip',
+        confirmTextColor: Colors.white,
+        titleStyle: const TextStyle(fontWeight: FontWeight.bold),
+        buttonColor: Get.theme.primaryColor,
+        onConfirm: () async {
+          Get.back();
+          await Geolocator.openLocationSettings();
+          // Wait a bit for user to interact with settings, then re-check
+          Future.delayed(const Duration(seconds: 2), () {
+            _checkPermissionAndFetchLocation();
+          });
+        },
+      );
+    });
+  }
 }
+
