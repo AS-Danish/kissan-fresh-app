@@ -46,12 +46,7 @@ class SettingsScreen extends StatelessWidget {
                 icon: Icons.shopping_bag_outlined,
                 title: 'My Orders',
                 subtitle: 'View your order history',
-                onTap: () {
-                  Get.find<BottomBarController>().changePage(3);
-                  if (Get.currentRoute != AppRoutes.mainLayout) {
-                    Get.offAllNamed(AppRoutes.mainLayout);
-                  }
-                },
+                onTap: () => Get.toNamed(AppRoutes.myOrdersRoute),
               ),
               _SettingsItem(
                 icon: Icons.favorite_outline,

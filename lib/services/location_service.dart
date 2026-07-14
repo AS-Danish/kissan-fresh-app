@@ -123,6 +123,9 @@ class LocationService extends GetxService {
           // Clear old manual entries
           await box.delete('current_flat_no');
           await box.delete('current_landmark');
+        } else if (currentAddress.value == null) {
+          currentAddress.value = 'Location Found (Address unavailable)';
+          currentAddressType.value = 'Current Location';
         }
       } else {
         // User is in the same location. Prefer the detailed address from Hive if it exists.
@@ -138,6 +141,9 @@ class LocationService extends GetxService {
           currentAddressType.value = 'Current Location';
           await box.put('current_address', gpsAddress);
           await box.put('current_address_type', 'Current Location');
+        } else if (currentAddress.value == null) {
+          currentAddress.value = 'Location Found (Address unavailable)';
+          currentAddressType.value = 'Current Location';
         }
       }
     } catch (e) {

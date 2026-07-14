@@ -11,6 +11,7 @@ import '../services/cache_service.dart';
 import 'homepage_controller.dart';
 import 'categorized_products_controller.dart';
 
+import 'dart:io';
 import 'dart:math' as math;
 
 class UpdateController extends GetxController {
@@ -189,7 +190,7 @@ class UpdateController extends GetxController {
                     child: ElevatedButton(
                       onPressed: () {
                         if (GetPlatform.isAndroid) {
-                          SystemNavigator.pop();
+                          exit(0);
                         } else {
                           Get.back();
                         }
