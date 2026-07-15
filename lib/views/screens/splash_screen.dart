@@ -4,7 +4,9 @@ import 'package:kissanfresh/controllers/homepage_controller.dart';
 import 'package:kissanfresh/controllers/update_controller.dart';
 import 'package:kissanfresh/services/location_service.dart';
 import 'package:kissanfresh/services/network_service.dart';
+import 'package:kissanfresh/services/cache_service.dart';
 import 'package:kissanfresh/views/layout/main_layout.dart';
+import 'package:kissanfresh/views/screens/update/service_not_available_screen.dart';
 import 'dart:async';
 
 class SplashScreen extends StatefulWidget {
@@ -64,8 +66,22 @@ class _SplashScreenState extends State<SplashScreen>
     final updateController = Get.find<UpdateController>();
     final locationService = Get.find<LocationService>();
     final homepageController = Get.find<HomepageController>();
+    final cacheService = Get.find<CacheService>();
 
     try {
+      // --- Added Date of Service Offline/Online Check ---
+      final cachedDateStr = cacheService.getRaw('date_of_service');
+      if (cachedDateStr != null && cachedDateStr is String && cachedDateStr.isNotEmpty) {
+        final DateTime? serviceDate = DateTime.tryParse(cachedDateStr);
+        if (serviceDate != null && DateTime.now().isBefore(serviceDate)) {
+          if (mounted) {
+            Get.offAll(() => ServiceNotAvailableScreen(dateString: cachedDateStr));
+          }
+          return; // Abort startup
+        }
+      }
+      // --------------------------------------------------
+
       // First check internet. If no internet, we wait until it's restored.
       bool hasInternet = await NetworkService.isConnected();
       if (!hasInternet) {
@@ -121,6 +137,17 @@ class _SplashScreenState extends State<SplashScreen>
     }
 
     if (mounted) {
+      // --- Check if update controller intercepted ---
+      if (updateController.isServiceUnavailable) {
+        Get.offAll(() => ServiceNotAvailableScreen(
+            dateString: updateController.serviceAvailableDateStr));
+        return;
+      }
+      if (updateController.isForceUpdateRequired) {
+        return; // ForceUpdateScreen already handled by UpdateController
+      }
+      // ---------------------------------------------
+
       // Smooth fade transition into the app
       Get.offAll(
         () => MainLayout(),

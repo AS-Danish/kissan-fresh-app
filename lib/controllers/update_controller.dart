@@ -22,6 +22,10 @@ class UpdateController extends GetxController {
   RxBool isUpdateAvailable = false.obs;
   RxBool isDownloading = false.obs;
 
+  bool isForceUpdateRequired = false;
+  bool isServiceUnavailable = false;
+  String serviceAvailableDateStr = '';
+
   Future<void>? initializationFuture;
 
   @override
@@ -49,6 +53,29 @@ class UpdateController extends GetxController {
 
       if (doc.exists) {
         final data = doc.data()!;
+
+        // --- Added date of service check ---
+        if (data.containsKey('date_of_service')) {
+          final dynamic dateOfServiceRaw = data['date_of_service'];
+          String dateStr = '';
+          if (dateOfServiceRaw is Timestamp) {
+            dateStr = dateOfServiceRaw.toDate().toIso8601String();
+          } else if (dateOfServiceRaw != null) {
+            dateStr = dateOfServiceRaw.toString();
+          }
+
+          if (dateStr.isNotEmpty) {
+            final cacheService = Get.find<CacheService>();
+            await cacheService.saveRaw('date_of_service', dateStr);
+
+            final DateTime? serviceDate = DateTime.tryParse(dateStr);
+            if (serviceDate != null && DateTime.now().isBefore(serviceDate)) {
+              isServiceUnavailable = true;
+              serviceAvailableDateStr = dateStr;
+            }
+          }
+        }
+        // ---------------------------------------------
 
         // --- Added check for remote catalog updates ---
         if (data.containsKey('catalog_status_last_updated_time')) {
@@ -94,6 +121,7 @@ class UpdateController extends GetxController {
         final bool forceUpdateEnabled = data['force_update'] ?? false;
 
         if (forceUpdateEnabled && _isVersionLower(currentVersion, minVersion)) {
+          isForceUpdateRequired = true;
           Get.offAll(() => ForceUpdateScreen(storeUrl: storeUrl));
         }
       }
