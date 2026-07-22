@@ -104,34 +104,38 @@ class _SplashScreenState extends State<SplashScreen>
         }
 
         // Retry the network-dependent checks now that internet is back
-        updateController.initializationFuture = updateController.checkUpdates();
+        updateController.initializationFuture = updateController.checkUpdates(showDialog: false);
         homepageController.categoriesFuture = homepageController.fetchCategories();
       }
 
-      // Run all background initializations concurrently, but we only WAIT for them
-      // up to a maximum of 3 seconds. We don't want to block the user for long.
+      // Run non-critical background initializations concurrently and wait up to 3.5 seconds.
       // The home screen can handle missing data gracefully with its own loaders.
-      final futures = <Future>[];
+      final nonCriticalFutures = <Future>[];
 
-      if (updateController.initializationFuture != null) {
-        futures.add(updateController.initializationFuture!);
-      }
       if (locationService.initializationFuture != null) {
-        futures.add(locationService.initializationFuture!);
+        nonCriticalFutures.add(locationService.initializationFuture!);
       }
       if (homepageController.categoriesFuture != null) {
-        futures.add(homepageController.categoriesFuture!);
+        nonCriticalFutures.add(homepageController.categoriesFuture!);
       }
 
       // Minimum splash duration to show off the beautiful animation (1.5 seconds)
-      futures.add(Future.delayed(const Duration(milliseconds: 1500)));
+      nonCriticalFutures.add(Future.delayed(const Duration(milliseconds: 1500)));
 
-      // Wait for everything concurrently, but timeout after 3.5 seconds total to force app entry!
-      // This massively speeds up startup on small devices by not waiting for slow operations.
-      await Future.wait(futures).timeout(
+      final nonCriticalWait = Future.wait(nonCriticalFutures).timeout(
         const Duration(milliseconds: 3500),
-        onTimeout: () => [], // Ignore timeout and proceed to main layout
+        onTimeout: () => [], // Ignore timeout and proceed
       );
+
+      final futuresToWait = <Future>[nonCriticalWait];
+
+      if (updateController.initializationFuture != null) {
+        // Critical: Update checks MUST finish before entering the app to avoid bypassing 
+        // mandatory updates or service offline screens.
+        futuresToWait.add(updateController.initializationFuture!);
+      }
+
+      await Future.wait(futuresToWait);
     } catch (e) {
       debugPrint("Splash initialization handled error: $e");
     }
@@ -153,7 +157,14 @@ class _SplashScreenState extends State<SplashScreen>
         () => MainLayout(),
         transition: Transition.fadeIn,
         duration: const Duration(milliseconds: 800),
-      );
+      )?.then((_) {
+        // Wait a brief moment to ensure transition completes and UI settles
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (updateController.isUpdateAvailable.value) {
+            updateController.showRestartDialog();
+          }
+        });
+      });
     }
   }
 

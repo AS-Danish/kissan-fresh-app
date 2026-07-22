@@ -32,12 +32,12 @@ class UpdateController extends GetxController {
   void onInit() {
     super.onInit();
     // Start update checks immediately
-    initializationFuture = checkUpdates();
+    initializationFuture = checkUpdates(showDialog: false);
   }
 
-  Future<void> checkUpdates() async {
+  Future<void> checkUpdates({bool showDialog = true}) async {
     await checkForceUpdate();
-    await checkShorebirdUpdate();
+    await checkShorebirdUpdate(showDialog: showDialog);
   }
 
   /// Checks if a mandatory update is required via Play Store
@@ -131,7 +131,7 @@ class UpdateController extends GetxController {
   }
 
   /// Checks for Shorebird OTA patches
-  Future<void> checkShorebirdUpdate() async {
+  Future<void> checkShorebirdUpdate({bool showDialog = true}) async {
     if (kDebugMode) {
       debugPrint("UpdateController: Shorebird check skipped in debug mode.");
       return;
@@ -152,7 +152,9 @@ class UpdateController extends GetxController {
         debugPrint("UpdateController: Patch downloaded successfully.");
 
         // Notify user to restart
-        _showRestartDialog();
+        if (showDialog) {
+          showRestartDialog();
+        }
       } else {
         debugPrint("UpdateController: App is up to date.");
       }
@@ -162,7 +164,7 @@ class UpdateController extends GetxController {
     }
   }
 
-  void _showRestartDialog() {
+  void showRestartDialog() {
     Get.dialog(
       Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
