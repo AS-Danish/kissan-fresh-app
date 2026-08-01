@@ -58,8 +58,24 @@ class LocationService extends GetxService {
   }
 
   Future<void> fetchCurrentLocation() async {
+    final box = Hive.box('user_settings');
     try {
-      // Re-check if service is still enabled
+      // 1. Immediately load the saved address from Hive to populate UI instantly
+      final savedAddress = box.get('current_address');
+      final savedType = box.get('current_address_type') ?? 'Current Location';
+      final double? lastLat = box.get('last_known_lat');
+      final double? lastLng = box.get('last_known_lng');
+
+      if (savedAddress != null && savedAddress.toString().isNotEmpty) {
+        currentAddress.value = savedAddress;
+        currentAddressType.value = savedType;
+        if (lastLat != null && lastLng != null) {
+          currentLocation.value = LatLng(lastLat, lastLng);
+        }
+        debugPrint('Instantly loaded saved address from Hive: $savedAddress');
+      }
+
+      // 2. Fetch the fresh GPS location asynchronously
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         debugPrint('Location services are disabled before fetching.');
@@ -87,10 +103,6 @@ class LocationService extends GetxService {
       final latLng = LatLng(position.latitude, position.longitude);
       currentLocation.value = latLng;
 
-      final box = Hive.box('user_settings');
-      final double? lastLat = box.get('last_known_lat');
-      final double? lastLng = box.get('last_known_lng');
-
       bool hasMovedSignificantly = true;
       if (lastLat != null && lastLng != null) {
         final distance = Geolocator.distanceBetween(
@@ -99,26 +111,23 @@ class LocationService extends GetxService {
           lastLat,
           lastLng,
         );
-        // If distance is less than 150 meters, we consider it the same location
         if (distance <= 150) {
           hasMovedSignificantly = false;
         }
       }
 
-      // Reverse geocode to get the GPS address
-      final gpsAddress = await _mapsCacheService.reverseGeocode(latLng);
-
       if (hasMovedSignificantly) {
-        // User physically moved. Discard manually saved address/flat details and use new GPS location.
         debugPrint('User moved significantly. Using new GPS location.');
+        final gpsAddress = await _mapsCacheService.reverseGeocode(latLng);
+        
         if (gpsAddress != null) {
           currentAddress.value = gpsAddress;
+          currentAddressType.value = 'Current Location';
 
           await box.put('last_known_lat', position.latitude);
           await box.put('last_known_lng', position.longitude);
           await box.put('current_address', gpsAddress);
           await box.put('current_address_type', 'Current Location');
-          currentAddressType.value = 'Current Location';
 
           // Clear old manual entries
           await box.delete('current_flat_no');
@@ -128,26 +137,28 @@ class LocationService extends GetxService {
           currentAddressType.value = 'Current Location';
         }
       } else {
-        // User is in the same location. Prefer the detailed address from Hive if it exists.
-        final savedAddress = box.get('current_address');
-        final savedType = box.get('current_address_type') ?? 'Current Location';
-
-        if (savedAddress != null && savedAddress.toString().isNotEmpty) {
-          currentAddress.value = savedAddress;
-          currentAddressType.value = savedType;
-          debugPrint('Using detailed saved address from Hive: $savedAddress');
-        } else if (gpsAddress != null) {
-          currentAddress.value = gpsAddress;
-          currentAddressType.value = 'Current Location';
-          await box.put('current_address', gpsAddress);
-          await box.put('current_address_type', 'Current Location');
-        } else if (currentAddress.value == null) {
-          currentAddress.value = 'Location Found (Address unavailable)';
-          currentAddressType.value = 'Current Location';
+        // User hasn't moved significantly.
+        if (currentAddress.value == null) {
+          final gpsAddress = await _mapsCacheService.reverseGeocode(latLng);
+          if (gpsAddress != null) {
+            currentAddress.value = gpsAddress;
+            currentAddressType.value = 'Current Location';
+            await box.put('current_address', gpsAddress);
+            await box.put('current_address_type', 'Current Location');
+            await box.put('last_known_lat', position.latitude);
+            await box.put('last_known_lng', position.longitude);
+          } else {
+            currentAddress.value = 'Location Found (Address unavailable)';
+            currentAddressType.value = 'Current Location';
+          }
         }
       }
     } catch (e) {
       debugPrint('Error getting location: $e');
+      if (currentAddress.value == null) {
+        currentAddress.value = 'Location unavailable';
+        currentAddressType.value = 'Unknown';
+      }
     }
   }
 
