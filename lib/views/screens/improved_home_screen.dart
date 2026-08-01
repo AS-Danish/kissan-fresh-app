@@ -55,7 +55,6 @@ class ImprovedHomeScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     if (isAll) ...[
                       WelcomeSection(),
-                      const SizedBox(height: 24),
                       OffersSection(),
                       const SizedBox(height: 32),
                       DynamicSectionsWidget(),

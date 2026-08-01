@@ -9,87 +9,96 @@ class OffersSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 105,
-      child: Obx(() {
-        final controller = Get.find<HomepageController>();
-        final isGrocery = controller.currentTab.value == 'Grocery';
-        final type = isGrocery ? 'kissan-fresh' : 'home-food';
+    return Obx(() {
+      final controller = Get.find<HomepageController>();
+      final isGrocery = controller.currentTab.value == 'Grocery';
+      final type = isGrocery ? 'kissan-fresh' : 'home-food';
 
-        final filteredCoupons = controller.activeCoupons
-            .where((c) => c.productType == type)
-            .toList();
+      final filteredCoupons = controller.activeCoupons
+          .where((c) => c.productType == type)
+          .toList();
 
-        if (controller.isLoadingCoupons.value && filteredCoupons.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
-        }
+      if (controller.isLoadingCoupons.value && filteredCoupons.isEmpty) {
+        return const Padding(
+          padding: EdgeInsets.only(top: 24),
+          child: SizedBox(
+            height: 105,
+            child: Center(child: CircularProgressIndicator()),
+          ),
+        );
+      }
 
-        if (filteredCoupons.isEmpty) {
-          return const SizedBox.shrink();
-        }
+      if (filteredCoupons.isEmpty) {
+        return const SizedBox.shrink();
+      }
 
-        return ListView.separated(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          itemCount: filteredCoupons.length,
-          separatorBuilder: (_, _) => const SizedBox(width: 16),
-          itemBuilder: (context, index) {
-            final coupon = filteredCoupons[index];
-            final discountText = coupon.discountType == 'percentage'
-                ? 'FLAT ${coupon.discountValue.toStringAsFixed(0)}% OFF'
-                : 'FLAT ₹${coupon.discountValue.toStringAsFixed(0)} OFF';
+      return Padding(
+        padding: const EdgeInsets.only(top: 24),
+        child: SizedBox(
+          height: 105,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: filteredCoupons.length,
+            separatorBuilder: (_, _) => const SizedBox(width: 16),
+            itemBuilder: (context, index) {
+              final coupon = filteredCoupons[index];
+              final discountText = coupon.discountType == 'percentage'
+                  ? 'FLAT ${coupon.discountValue.toStringAsFixed(0)}% OFF'
+                  : 'FLAT ₹${coupon.discountValue.toStringAsFixed(0)} OFF';
 
-            final subtitle =
-                coupon.minOrderValue != null && coupon.minOrderValue! > 0
-                ? 'On orders above ₹${coupon.minOrderValue!.toStringAsFixed(0)}'
-                : 'On all orders';
+              final subtitle =
+                  coupon.minOrderValue != null && coupon.minOrderValue! > 0
+                  ? 'On orders above ₹${coupon.minOrderValue!.toStringAsFixed(0)}'
+                  : 'On all orders';
 
-            return _buildOfferCard(
-              context: context,
-              icon: coupon.discountType == 'percentage'
-                  ? Icons.percent
-                  : Icons.local_offer,
-              iconBgColor: Theme.of(
-                context,
-              ).primaryColor.withValues(alpha: 0.1),
-              iconColor: Theme.of(context).primaryColor,
-              badge: coupon.applyTo == 'all'
-                  ? 'EXCLUSIVE DEAL'
-                  : 'SPECIAL OFFER',
-              badgeColor: Theme.of(context).primaryColor,
-              title: discountText,
-              subtitle: subtitle,
-              onTap: () => _showCouponDetails(
-                context,
-                title: discountText,
+              return _buildOfferCard(
+                context: context,
+                icon: coupon.discountType == 'percentage'
+                    ? Icons.percent
+                    : Icons.local_offer,
+                iconBgColor: Theme.of(
+                  context,
+                ).primaryColor.withValues(alpha: 0.1),
+                iconColor: Theme.of(context).primaryColor,
                 badge: coupon.applyTo == 'all'
                     ? 'EXCLUSIVE DEAL'
                     : 'SPECIAL OFFER',
-                code: coupon.code,
-                description:
-                    'Get ${discountText.toLowerCase()} on your ${isGrocery ? 'grocery' : 'food'} order. ${coupon.applyTo != 'all' ? 'Valid on specific products/categories.' : ''}',
-                howToApply: [
-                  'Add products to your cart.',
-                  'Go to the checkout page.',
-                  'Tap on "Apply Coupon".',
-                  'Select or enter ${coupon.code}.',
-                ],
-                limits: [
-                  if (coupon.minOrderValue != null)
-                    'Minimum order value: ₹${coupon.minOrderValue!.toStringAsFixed(0)}.',
-                  if (coupon.maxUsesPerUser != null)
-                    'Valid ${coupon.maxUsesPerUser} times per user.',
-                  'Subject to availability.',
-                ],
-                criteria: coupon.applicableCategory != null
-                    ? 'Applicable on ${coupon.applicableCategory} category.'
-                    : 'Applicable on all items.',
-              ),
-            );
-          },
-        );
-      }),
-    );
+                badgeColor: Theme.of(context).primaryColor,
+                title: discountText,
+                subtitle: subtitle,
+                onTap: () => _showCouponDetails(
+                  context,
+                  title: discountText,
+                  badge: coupon.applyTo == 'all'
+                      ? 'EXCLUSIVE DEAL'
+                      : 'SPECIAL OFFER',
+                  code: coupon.code,
+                  description:
+                      'Get ${discountText.toLowerCase()} on your ${isGrocery ? 'grocery' : 'food'} order. ${coupon.applyTo != 'all' ? 'Valid on specific products/categories.' : ''}',
+                  howToApply: [
+                    'Add products to your cart.',
+                    'Go to the checkout page.',
+                    'Tap on "Apply Coupon".',
+                    'Select or enter ${coupon.code}.',
+                  ],
+                  limits: [
+                    if (coupon.minOrderValue != null)
+                      'Minimum order value: ₹${coupon.minOrderValue!.toStringAsFixed(0)}.',
+                    if (coupon.maxUsesPerUser != null)
+                      'Valid ${coupon.maxUsesPerUser} times per user.',
+                    'Subject to availability.',
+                  ],
+                  criteria: coupon.applicableCategory != null
+                      ? 'Applicable on ${coupon.applicableCategory} category.'
+                      : 'Applicable on all items.',
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    });
   }
 
   void _showCouponDetails(
