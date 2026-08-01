@@ -164,10 +164,19 @@ class ProductCardModel {
 
     String finalUnit = () {
       if (baseQuantity != null && baseQuantity.isNotEmpty) {
-        if (baseQuantity.toLowerCase().endsWith(baseUnit.toLowerCase())) {
+        String lowerQuantity = baseQuantity.toLowerCase();
+        
+        // Clean up the unit by removing repeated prefixes of the quantity
+        // This fixes the bug where "1" + "kg" becomes "111111kg" when cached repeatedly
+        String cleanedUnit = baseUnit;
+        while (cleanedUnit.toLowerCase().startsWith(lowerQuantity) && lowerQuantity.isNotEmpty) {
+          cleanedUnit = cleanedUnit.substring(lowerQuantity.length).trim();
+        }
+
+        if (lowerQuantity.endsWith(cleanedUnit.toLowerCase())) {
           return baseQuantity;
         }
-        return '$baseQuantity$baseUnit';
+        return '$baseQuantity$cleanedUnit';
       }
       return baseUnit;
     }();
