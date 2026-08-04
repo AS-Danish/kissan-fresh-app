@@ -47,7 +47,7 @@ class PdfReceiptService {
                       ),
                       pw.SizedBox(height: 2),
                       pw.Text(
-                        'FSSAI Lic. No. 12345678901234',
+                        'FSSAI Lic. No. 21525044001001',
                         style: pw.TextStyle(
                           fontSize: 10,
                           color: PdfColors.grey600,

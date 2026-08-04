@@ -82,13 +82,27 @@ class AuthController extends GetxController {
   void sendOtp() async {
     if (isLoading.value) return;
 
+    if (resendTimer.value > 0) {
+      if (Get.isDialogOpen ?? false) Get.back();
+      CustomSnackBar.show(
+        "Please Wait",
+        "You can request another OTP in ${resendTimer.value} seconds.",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
     if (!await NetworkService.isConnected()) {
+      if (Get.isDialogOpen ?? false) Get.back();
       NetworkService.showNoInternetSnackbar();
       return;
     }
 
     String phone = phoneController.text.trim();
     if (phone.isEmpty || phone.length != 10) {
+      if (Get.isDialogOpen ?? false) Get.back();
       CustomSnackBar.show(
         "Error",
         "Please enter a valid 10-digit phone number",
