@@ -44,6 +44,9 @@ class CartController extends GetxController {
   RxString appliedCoupon = ''.obs;
   Rxn<CouponModel> activeCouponModel = Rxn<CouponModel>();
   RxBool isApplyingCoupon = false.obs;
+  
+  // Delivery Instruction
+  RxString deliveryInstruction = ''.obs;
 
   // Computed values
   double get subtotal {
@@ -453,6 +456,7 @@ class CartController extends GetxController {
 
   void clearCart() {
     cartItems.clear();
+    deliveryInstruction.value = '';
     _saveToHive();
   }
 
@@ -819,6 +823,7 @@ class CartController extends GetxController {
       orderType: orderType,
       slotId: Get.find<SlotSelectionController>().selectedSlotId.value,
       couponCode: appliedCoupon.value.isEmpty ? null : appliedCoupon.value,
+      deliveryInstruction: deliveryInstruction.value.isEmpty ? null : deliveryInstruction.value,
     );
     // 4. Call Cloud Function to process order creation and assignment transactionally
     try {

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/cart_controller.dart';
 import '../../services/location_service.dart';
 import '../../views/widgets/address_bottom_sheet.dart';
+import '../../views/widgets/delivery_instruction_widget.dart';
 
 class PaymentMethodScreen extends StatelessWidget {
   PaymentMethodScreen({super.key});
@@ -49,6 +50,10 @@ class PaymentMethodScreen extends StatelessWidget {
 
             // Order Summary Card
             _buildOrderSummaryCard(context),
+            const SizedBox(height: 24),
+
+            // Delivery Instructions
+            const DeliveryInstructionWidget(),
             const SizedBox(height: 28),
 
             // Payment Options Title

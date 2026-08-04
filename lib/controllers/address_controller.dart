@@ -69,10 +69,11 @@ class AddressController extends GetxController {
     }
   }
 
-  void _saveAddressToHive(String address, String flatNo, String landmark) {
+  void _saveAddressToHive(String address, String flatNo, String landmark, String type) {
     _settingsBox.put('current_address', address);
     _settingsBox.put('current_flat_no', flatNo);
     _settingsBox.put('current_landmark', landmark);
+    _settingsBox.put('current_address_type', type);
   }
 
   void _refreshSessionToken() {
@@ -297,11 +298,12 @@ class AddressController extends GetxController {
 
     final finalAddress = parts.join(', ');
 
-    _saveAddressToHive(finalAddress, flatNo, landmark);
+    _saveAddressToHive(finalAddress, flatNo, landmark, selectedAddressType.value);
 
     // Update the global location service with the new complete address
     if (Get.isRegistered<LocationService>()) {
       Get.find<LocationService>().currentAddress.value = finalAddress;
+      Get.find<LocationService>().currentAddressType.value = selectedAddressType.value;
 
       // Update last_known_lat/lng so the auto-fetch doesn't immediately overwrite it
       _settingsBox.put('last_known_lat', selectedLocation.value.latitude);

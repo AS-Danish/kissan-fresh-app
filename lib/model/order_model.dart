@@ -25,6 +25,7 @@ class OrderModel {
   final RiderModel? rider;
   final SlotModel? slot;
   final String? couponCode;
+  final String? deliveryInstruction;
 
   OrderModel({
     required this.id,
@@ -50,6 +51,7 @@ class OrderModel {
     this.rider,
     this.slot,
     this.couponCode,
+    this.deliveryInstruction,
   });
 
   bool get isDelivered => status == OrderStatus.delivered;
@@ -127,6 +129,7 @@ class OrderModel {
     String? slotId,
     RiderModel? rider,
     SlotModel? slot,
+    String? deliveryInstruction,
   }) {
     return OrderModel(
       id: id ?? this.id,
@@ -151,6 +154,7 @@ class OrderModel {
       slotId: slotId ?? this.slotId,
       rider: rider ?? this.rider,
       slot: slot ?? this.slot,
+      deliveryInstruction: deliveryInstruction ?? this.deliveryInstruction,
     );
   }
 
@@ -179,6 +183,7 @@ class OrderModel {
       'rider': rider?.toJson(),
       'slot': slot?.toJson(),
       'couponCode': couponCode,
+      'deliveryInstruction': deliveryInstruction,
     };
   }
 
@@ -214,6 +219,7 @@ class OrderModel {
       riderId: json['riderId'],
       slotId: json['slotId'],
       couponCode: json['couponCode'],
+      deliveryInstruction: json['deliveryInstruction'],
       rider: json['rider'] != null ? RiderModel.fromJson(json['rider']) : null,
       slot: json['slot'] != null ? SlotModel.fromJson(json['slot']) : null,
     );
