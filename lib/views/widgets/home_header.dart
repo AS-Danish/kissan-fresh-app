@@ -56,7 +56,7 @@ class HomeHeader extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "DELIVERING IN",
+                          "QUICK",
                           style: GoogleFonts.montserrat(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w700,
@@ -66,7 +66,7 @@ class HomeHeader extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          "12 mins",
+                          "Delivery",
                           style: GoogleFonts.montserrat(
                             fontSize: 38,
                             fontWeight: FontWeight.w900,
