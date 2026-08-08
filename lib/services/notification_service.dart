@@ -39,6 +39,14 @@ class NotificationService {
       debugPrint('User declined or has not accepted notification permission');
     }
 
+    // Subscribe to all_users topic for offer notifications
+    try {
+      await _fcm.subscribeToTopic('all_users');
+      debugPrint('Subscribed to all_users topic');
+    } catch (e) {
+      debugPrint('Failed to subscribe to topic: $e');
+    }
+
     // Initialize Local Notifications
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');

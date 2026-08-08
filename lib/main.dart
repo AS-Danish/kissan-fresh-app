@@ -14,7 +14,10 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:kissanfresh/controllers/homepage_controller.dart';
 import 'package:kissanfresh/views/screens/splash_screen.dart';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
+
 import 'firebase_options.dart';
+
 
 import 'package:kissanfresh/controllers/auth_controller.dart';
 import 'package:kissanfresh/controllers/address_controller.dart';
@@ -29,12 +32,19 @@ import 'package:kissanfresh/services/cache_service.dart';
 import 'package:kissanfresh/services/notification_service.dart';
 import 'package:kissanfresh/utils/app_theme.dart';
 
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  debugPrint("Handling a background message: ${message.messageId}");
+}
+
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   // Pass all uncaught "fatal" errors from the framework to Crashlytics
   FlutterError.onError = (errorDetails) {
