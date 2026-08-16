@@ -12,7 +12,7 @@ class CartScreen extends StatelessWidget {
   CartScreen({super.key});
 
   final CartController controller = Get.find<CartController>();
-  final AddressController addressController = Get.put(AddressController());
+  final AddressController addressController = Get.find<AddressController>();
 
   @override
   Widget build(BuildContext context) {

@@ -10,7 +10,7 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AuthController controller = Get.put(AuthController());
+    final AuthController controller = Get.find<AuthController>();
     final ThemeController themeController = Get.find<ThemeController>();
     final RxBool isButtonEnabled = false.obs;
 

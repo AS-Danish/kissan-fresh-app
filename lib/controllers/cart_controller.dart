@@ -650,6 +650,7 @@ class CartController extends GetxController {
       }
     } catch (e) {
       debugPrint("Error in _handlePaymentSuccess: $e");
+      if (Get.isDialogOpen ?? false) Get.back();
       CustomSnackBar.show(
         'Order Processing Failed',
         'Your payment (ID: ${response.paymentId}) was successful but we encountered an error. Please contact support.',
@@ -657,9 +658,24 @@ class CartController extends GetxController {
         colorText: Colors.white,
         duration: const Duration(seconds: 10),
       );
+      
+      try {
+        await _firestore.collection('failed_orders').add({
+          'error': e.toString(),
+          'timestamp': FieldValue.serverTimestamp(),
+          'status': 'paid_but_failed_before_creation',
+          'refundStatus': 'pending',
+          'paymentId': response.paymentId,
+          'totalAmount': total,
+          'currency': 'INR',
+          'userId': _authController.firebaseUser.value?.uid,
+        });
+      } catch (innerE) {
+        debugPrint("Failed to record early failure: $innerE");
+      }
+
     } finally {
       isProcessingOrder.value = false;
-      // Ensure loading is ALWAYS dismissed if it's still there
       if (Get.isDialogOpen ?? false) {
         Get.back();
       }
@@ -704,6 +720,17 @@ class CartController extends GetxController {
     final resolved = _resolveDeliveryAddressData();
     if (!_validateServiceArea(resolved)) {
       isProcessingOrder.value = false;
+      return;
+    }
+
+    if (!Get.isRegistered<SlotSelectionController>() || Get.find<SlotSelectionController>().selectedSlotId.value.isEmpty) {
+      isProcessingOrder.value = false;
+      CustomSnackBar.show(
+        'Missing Information',
+        'Please select a delivery slot before making a payment.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
       return;
     }
 
@@ -778,55 +805,63 @@ class CartController extends GetxController {
     String paymentStatus = 'paid',
     String orderType = 'Online',
   }) async {
-    final user = _authController.firebaseUser.value;
-    if (user == null) throw Exception('User not logged in');
-
-    final String orderNumber = 'ORD${DateTime.now().millisecondsSinceEpoch}';
-
-    // Resolve delivery address from multiple sources
-    final resolved = _resolveDeliveryAddressData();
-
-    final order = OrderModel(
-      id: '',
-      userId: user.uid,
-      orderNumber: orderNumber,
-      paymentId: paymentId, // Added paymentId to track post-payment
-      items: cartItems
-          .map(
-            (item) => OrderItem(
-              productId: item.id
-                  .split('_')
-                  .first, // Ensure backend gets the base productId
-              variationId: item.id.contains('_')
-                  ? item.id.substring(item.id.indexOf('_') + 1)
-                  : null,
-              title: item.name,
-              unit: item.quantity,
-              image: item.image,
-              quantity: item.count,
-              price: item.price,
-              mrp: item.mrp,
-            ),
-          )
-          .toList(),
-      totalAmount: total,
-      subtotal: subtotal,
-      discount: autoDiscountValue,
-      couponDiscount: couponDiscountValue,
-      deliveryFee: deliveryFee,
-      orderDate: DateTime.now(),
-      status: OrderStatus.processing,
-      deliveryAddress: resolved.address,
-      latitude: resolved.latitude,
-      longitude: resolved.longitude,
-      paymentStatus: paymentStatus,
-      orderType: orderType,
-      slotId: Get.find<SlotSelectionController>().selectedSlotId.value,
-      couponCode: appliedCoupon.value.isEmpty ? null : appliedCoupon.value,
-      deliveryInstruction: deliveryInstruction.value.isEmpty ? null : deliveryInstruction.value,
-    );
-    // 4. Call Cloud Function to process order creation and assignment transactionally
     try {
+      final user = _authController.firebaseUser.value;
+      if (user == null) throw Exception('User not logged in');
+
+      final String orderNumber = 'ORD${DateTime.now().millisecondsSinceEpoch}';
+
+      // Resolve delivery address from multiple sources
+      final resolved = _resolveDeliveryAddressData();
+      
+      String slotId = '';
+      if (Get.isRegistered<SlotSelectionController>()) {
+        slotId = Get.find<SlotSelectionController>().selectedSlotId.value;
+      }
+      if (slotId.isEmpty) {
+        throw Exception('Delivery slot not selected.');
+      }
+
+      final order = OrderModel(
+        id: '',
+        userId: user.uid,
+        orderNumber: orderNumber,
+        paymentId: paymentId, // Added paymentId to track post-payment
+        items: cartItems
+            .map(
+              (item) => OrderItem(
+                productId: item.id
+                    .split('_')
+                    .first, // Ensure backend gets the base productId
+                variationId: item.id.contains('_')
+                    ? item.id.substring(item.id.indexOf('_') + 1)
+                    : null,
+                title: item.name,
+                unit: item.quantity,
+                image: item.image,
+                quantity: item.count,
+                price: item.price,
+                mrp: item.mrp,
+              ),
+            )
+            .toList(),
+        totalAmount: total,
+        subtotal: subtotal,
+        discount: autoDiscountValue,
+        couponDiscount: couponDiscountValue,
+        deliveryFee: deliveryFee,
+        orderDate: DateTime.now(),
+        status: OrderStatus.processing,
+        deliveryAddress: resolved.address,
+        latitude: resolved.latitude,
+        longitude: resolved.longitude,
+        paymentStatus: paymentStatus,
+        orderType: orderType,
+        slotId: slotId,
+        couponCode: appliedCoupon.value.isEmpty ? null : appliedCoupon.value,
+        deliveryInstruction: deliveryInstruction.value.isEmpty ? null : deliveryInstruction.value,
+      );
+      // 4. Call Cloud Function to process order creation and assignment transactionally
       final httpsCallable = FirebaseFunctions.instance.httpsCallable(
         'createOrder',
       );
@@ -868,7 +903,20 @@ class CartController extends GetxController {
 
       // If payment was already done (paymentId != null), we must record this failure
       if (paymentId != null) {
-        await _recordFailedOrder(order, e.toString());
+        try {
+          await _firestore.collection('failed_orders').add({
+            'error': e.toString(),
+            'timestamp': FieldValue.serverTimestamp(),
+            'status': 'paid_but_stock_failed',
+            'refundStatus': 'pending',
+            'totalAmount': total,
+            'currency': 'INR',
+            'paymentId': paymentId,
+            'userId': _authController.firebaseUser.value?.uid,
+          });
+        } catch (innerE) {
+          debugPrint("Failed to record failed order: $innerE");
+        }
       }
 
       // Close the loading dialog BEFORE pushing a snackbar.
@@ -1033,6 +1081,17 @@ class CartController extends GetxController {
     final resolved = _resolveDeliveryAddressData();
     if (!_validateServiceArea(resolved)) {
       isProcessingOrder.value = false;
+      return;
+    }
+
+    if (!Get.isRegistered<SlotSelectionController>() || Get.find<SlotSelectionController>().selectedSlotId.value.isEmpty) {
+      isProcessingOrder.value = false;
+      CustomSnackBar.show(
+        'Missing Information',
+        'Please select a delivery slot before making an order.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
       return;
     }
 

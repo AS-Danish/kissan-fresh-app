@@ -75,6 +75,8 @@ class AuthController extends GetxController {
   @override
   void onClose() {
     _countdownTimer?.cancel();
+    phoneController.dispose();
+    otpController.dispose();
     super.onClose();
   }
 
