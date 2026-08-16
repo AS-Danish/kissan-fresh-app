@@ -274,10 +274,10 @@ class HomepageController extends GetxController {
   }
 
   Future<void> fetchCategories() async {
-    // 1. Fetch Grocery (kissan-fresh)
-    await _fetchAndMapCategories('kissan-fresh', categories, 'Grocery');
-    // 2. Fetch Home Food (home-food)
-    await _fetchAndMapCategories('home-food', homeFoodCategories, 'HomeFood');
+    await Future.wait([
+      _fetchAndMapCategories('kissan-fresh', categories, 'Grocery'),
+      _fetchAndMapCategories('home-food', homeFoodCategories, 'HomeFood'),
+    ]);
   }
 
   Future<void> _fetchAndMapCategories(
@@ -296,14 +296,14 @@ class HomepageController extends GetxController {
       bool shouldUseCache = false;
       if (cachedJson != null && cachedTimeStr != null) {
         final cachedTime = DateTime.parse(cachedTimeStr.toString());
-        if (DateTime.now().difference(cachedTime).inMinutes < 2) {
+        if (DateTime.now().difference(cachedTime).inHours < 6) {
           shouldUseCache = true;
         }
       }
 
       if (shouldUseCache) {
         debugPrint(
-          "Loading categories for $type from local cache (within 2 min)",
+          "Loading categories for $type from local cache (within 6 hours)",
         );
         _mapJsonToCategories(cachedJson, targetList, tabName);
         return;
@@ -417,12 +417,15 @@ class HomepageController extends GetxController {
 
             sections.assignAll(fetchedSections);
 
-            // Fetch products for each section if not already fetching
-            for (var section in fetchedSections) {
-              if (section.categories.isNotEmpty) {
-                _fetchProductsForSection(section);
+            // Fetch products for each section with a staggered delay to prevent network spikes
+            Future.microtask(() async {
+              for (var section in fetchedSections) {
+                if (section.categories.isNotEmpty) {
+                  await _fetchProductsForSection(section);
+                  await Future.delayed(const Duration(milliseconds: 150));
+                }
               }
-            }
+            });
             isLoadingSections.value = false;
           },
           onError: (e) {

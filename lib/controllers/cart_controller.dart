@@ -81,10 +81,6 @@ class CartController extends GetxController {
           : calculatedDiscount;
     }
 
-    // Legacy auto-applied discount (15% off above ₹499)
-    if (subtotal >= 499) {
-      return subtotal * 0.15;
-    }
     return 0;
   }
 
@@ -110,9 +106,6 @@ class CartController extends GetxController {
   }
 
   double get autoDiscountValue {
-    if (activeCouponModel.value == null && subtotal >= 499) {
-      return subtotal * 0.15;
-    }
     return 0;
   }
 
