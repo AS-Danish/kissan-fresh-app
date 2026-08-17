@@ -481,10 +481,30 @@ class CartController extends GetxController {
     // Listen to changes in cartItems to restart stock synchronization if IDs change
     _cartWorker = ever(cartItems, (List<CartItem> items) {
       _updateStockSubscription(items);
+      _validateActiveCoupon();
     });
 
     // Initial setup
     _updateStockSubscription(cartItems);
+    _validateActiveCoupon();
+  }
+
+  void _validateActiveCoupon() {
+    if (activeCouponModel.value != null) {
+      final validationError = getCouponValidation(activeCouponModel.value!);
+      if (validationError != null) {
+        appliedCoupon.value = '';
+        activeCouponModel.value = null;
+        
+        CustomSnackBar.show(
+          'Coupon Removed',
+          'Cart no longer meets requirements: $validationError',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          duration: const Duration(seconds: 4),
+        );
+      }
+    }
   }
 
   void _updateStockSubscription(List<CartItem> items) {

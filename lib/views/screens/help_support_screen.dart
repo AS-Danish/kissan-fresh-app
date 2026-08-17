@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class HelpSupportScreen extends StatelessWidget {
   const HelpSupportScreen({super.key});
@@ -45,14 +46,14 @@ class HelpSupportScreen extends StatelessWidget {
               context,
               Icons.email_outlined,
               'Send an Email',
-              'support@kissanfresh.com',
+              'kissanfreshofficial@gmail.com',
               () {},
             ),
             _buildSupportOption(
               context,
               Icons.phone_outlined,
               'Call Us',
-              '+91 1800-KISSAN-FRESH',
+              '+91 9209307058',
               () {},
             ),
             _buildSupportOption(
@@ -60,7 +61,9 @@ class HelpSupportScreen extends StatelessWidget {
               Icons.question_answer_outlined,
               'FAQs',
               'Frequently Asked Questions',
-              () {},
+              () {
+                Get.toNamed('/faq');
+              },
             ),
           ],
         ),

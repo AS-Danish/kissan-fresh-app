@@ -130,46 +130,28 @@ class CategorizedProductsController extends GetxController {
     }
   }
 
-  // Store subscriptions to avoid duplicates
-  final Map<String, StreamSubscription> _categorySubscriptions = {};
-
   Future<void> _fetchProductsForCategory(String category, String origin) async {
     try {
-      _categorySubscriptions[category]?.cancel();
-
-      _categorySubscriptions[category] = _firestore
+      final querySnapshot = await _firestore
           .collection('products')
           .where('productOrigin', isEqualTo: origin)
           .where('category', isEqualTo: category)
           .limit(6)
-          .snapshots()
-          .listen(
-            (querySnapshot) {
-              if (querySnapshot.docs.isNotEmpty) {
-                List<ProductCardModel> products = querySnapshot.docs
-                    .map((doc) => _mapToProductCardModel(doc))
-                    .toList();
-                categorizedProducts[category] = products;
-                _cacheService.saveCategorizedProducts(
-                  origin,
-                  categorizedProducts,
-                );
-              }
-            },
-            onError: (e) =>
-                debugPrint("Error in category stream $category: $e"),
-          );
+          .get(const GetOptions(source: Source.serverAndCache));
+
+      if (querySnapshot.docs.isNotEmpty) {
+        List<ProductCardModel> products = querySnapshot.docs
+            .map((doc) => _mapToProductCardModel(doc))
+            .toList();
+        categorizedProducts[category] = products;
+        _cacheService.saveCategorizedProducts(
+          origin,
+          categorizedProducts,
+        );
+      }
     } catch (e) {
       debugPrint("Error fetching category $category: $e");
     }
-  }
-
-  @override
-  void onClose() {
-    for (var sub in _categorySubscriptions.values) {
-      sub.cancel();
-    }
-    super.onClose();
   }
 
   ProductCardModel _mapToProductCardModel(DocumentSnapshot doc) {

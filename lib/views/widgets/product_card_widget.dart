@@ -53,8 +53,8 @@ class _ProductCardWidgetState extends State<ProductCardWidget> {
         ? CachedNetworkImage(
             imageUrl: widget.product.image,
             fit: BoxFit.cover,
-            memCacheWidth: 400,
-            memCacheHeight: 400,
+            memCacheWidth: 250,
+            memCacheHeight: 250,
             placeholder: (context, url) => _buildPlaceholder(),
             errorWidget: (context, url, error) => _buildErrorPlaceholder(),
           )
@@ -73,11 +73,12 @@ class _ProductCardWidgetState extends State<ProductCardWidget> {
     final isChristmas = Get.find<ThemeController>().isChristmas.value;
     final isEid = Get.find<ThemeController>().isEid.value;
 
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
-      onTapCancel: () => setState(() => _isPressed = false),
-      onTap: widget.product.onTap,
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) => setState(() => _isPressed = false),
+        onTapCancel: () => setState(() => _isPressed = false),
+        onTap: widget.product.onTap,
       child: AnimatedScale(
         scale: _isPressed ? 0.95 : 1.0,
         duration: const Duration(milliseconds: 100),
@@ -96,14 +97,9 @@ class _ProductCardWidgetState extends State<ProductCardWidget> {
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                    BoxShadow(
-                      color: primaryColor.withValues(alpha: 0.1),
-                      blurRadius: 30,
-                      offset: const Offset(0, 5),
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                   border: Border.all(
@@ -436,9 +432,9 @@ class _ProductCardWidgetState extends State<ProductCardWidget> {
                                             borderRadius: BorderRadius.circular(8),
                                             boxShadow: [
                                               BoxShadow(
-                                                color: primaryColor.withValues(alpha: 0.25),
-                                                blurRadius: 10,
-                                                offset: const Offset(0, 4),
+                                                color: primaryColor.withValues(alpha: 0.15),
+                                                blurRadius: 4,
+                                                offset: const Offset(0, 2),
                                               ),
                                             ],
                                           ),
@@ -569,9 +565,9 @@ class _ProductCardWidgetState extends State<ProductCardWidget> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.15),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
@@ -608,7 +604,7 @@ class _ProductCardWidgetState extends State<ProductCardWidget> {
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildPlaceholder() {

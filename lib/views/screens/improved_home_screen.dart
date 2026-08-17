@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../controllers/categorized_products_controller.dart';
 import '../../controllers/homepage_controller.dart';
+import '../../controllers/products_controller.dart';
 import '../../controllers/theme_controller.dart';
 import '../widgets/all_products_section.dart';
 import '../widgets/dynamic_sections_widget.dart';
@@ -19,97 +21,107 @@ class ImprovedHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<HomepageController>();
+    final themeController = Get.find<ThemeController>();
+    
+    // Instantiate lazy controllers OUTSIDE Obx to ensure onInit runs before the reactive build loop
+    Get.find<CategorizedProductsController>();
+    Get.find<ProductsController>();
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            HomeHeader(),
-            const SizedBox(height: 24),
-            Obx(() {
-              // Ensure real-time theme updates
-              Get.find<ThemeController>().isDarkMode.value;
-              if (controller.currentTab.value == 'Grocery') {
-                if (controller.categories.isEmpty) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+      body: Obx(() {
+        // Ensure real-time theme updates
+        themeController.isDarkMode.value;
+        
+        List<Widget> slivers = [
+          SliverToBoxAdapter(child: HomeHeader()),
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
+        ];
 
-                final int selectedIdx = controller.selectedIndex.value;
-                final bool isValidIndex =
-                    selectedIdx >= 0 &&
-                    selectedIdx < controller.categories.length;
-                final isAll =
-                    isValidIndex &&
-                    controller.categories[selectedIdx].label == 'All';
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CategoriesSection(
-                      categories: controller.categories,
-                      selectedIndex: controller.selectedIndex.value,
-                      onCategorySelected: controller.selectCategory,
-                    ),
-                    const SizedBox(height: 32),
-                    YourChoiceSection(), // Personalized Section
-                    const SizedBox(height: 8),
-                    if (isAll) ...[
-                      WelcomeSection(),
-                      OffersSection(),
-                      const SizedBox(height: 32),
-                      DynamicSectionsWidget(),
-                      const SizedBox(height: 32),
-                      HomeCategoryGridSection(
-                        categoryName: 'Vegetables',
-                        title: 'Daily Vegetables',
-                      ),
-                      HomeCategoryGridSection(
-                        categoryName: 'Chicken',
-                        title: 'Fresh Chicken',
-                      ),
-                      HomeCategoryGridSection(
-                        categoryName: 'Meat',
-                        title: 'Fresh Meat',
-                      ),
-                      HomeCategoryGridSection(
-                        categoryName: 'Groceries',
-                        title: 'Daily Groceries',
-                      ),
-                    ],
-                    if (isAll) ...[
-                      CategorizedProductsSection(),
-                      const SizedBox(height: 32),
-                    ],
-                    AllProductsSection(),
-                    const SizedBox(height: 32),
-                  ],
-                );
-              } else {
-                return Column(
-                  children: [
-                    CategoriesSection(
-                      categories: controller.homeFoodCategories,
-                      selectedIndex: controller.selectedHomeFoodIndex.value,
-                      onCategorySelected: controller.selectHomeFoodCategory,
-                    ),
-                    const SizedBox(height: 32),
-                    YourChoiceSection(), // Personalized Section
-                    const SizedBox(height: 8),
-                    const HomeFoodSection(),
-                    const SizedBox(height: 32),
-                    DynamicSectionsWidget(),
-                    const SizedBox(height: 32),
-                    CategorizedProductsSection(),
-                    const SizedBox(height: 32),
-                    AllProductsSection(),
-                    const SizedBox(height: 32),
-                  ],
-                );
+        if (controller.currentTab.value == 'Grocery') {
+          if (controller.categories.isEmpty) {
+            slivers.add(const SliverToBoxAdapter(
+              child: Center(child: CircularProgressIndicator()),
+            ));
+          } else {
+            final int selectedIdx = controller.selectedIndex.value;
+            final bool isValidIndex =
+                selectedIdx >= 0 && selectedIdx < controller.categories.length;
+            final isAll =
+                isValidIndex && controller.categories[selectedIdx].label == 'All';
+
+            slivers.addAll([
+              SliverToBoxAdapter(
+                child: CategoriesSection(
+                  categories: controller.categories,
+                  selectedIndex: controller.selectedIndex.value,
+                  onCategorySelected: controller.selectCategory,
+                ),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 32)),
+              SliverToBoxAdapter(child: YourChoiceSection()),
+              const SliverToBoxAdapter(child: SizedBox(height: 8)),
+            ]);
+
+            if (isAll) {
+              slivers.addAll([
+                SliverToBoxAdapter(child: WelcomeSection()),
+                SliverToBoxAdapter(child: OffersSection()),
+                const SliverToBoxAdapter(child: SizedBox(height: 32)),
+                SliverToBoxAdapter(child: DynamicSectionsWidget()),
+                const SliverToBoxAdapter(child: SizedBox(height: 32)),
+              ]);
+              
+              slivers.addAll(buildHomeCategoryGridSection(context, 'Vegetables', 'Daily Vegetables'));
+              slivers.addAll(buildHomeCategoryGridSection(context, 'Chicken', 'Fresh Chicken'));
+              slivers.addAll(buildHomeCategoryGridSection(context, 'Meat', 'Fresh Meat'));
+              slivers.addAll(buildHomeCategoryGridSection(context, 'Groceries', 'Daily Groceries'));
+              
+              slivers.addAll(buildCategorizedProductsSection(context));
+              slivers.add(const SliverToBoxAdapter(child: SizedBox(height: 32)));
+            }
+
+            slivers.addAll(buildAllProductsSection(context));
+            slivers.add(const SliverToBoxAdapter(child: SizedBox(height: 32)));
+          }
+        } else {
+          slivers.addAll([
+            SliverToBoxAdapter(
+              child: CategoriesSection(
+                categories: controller.homeFoodCategories,
+                selectedIndex: controller.selectedHomeFoodIndex.value,
+                onCategorySelected: controller.selectHomeFoodCategory,
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 32)),
+            SliverToBoxAdapter(child: YourChoiceSection()),
+            const SliverToBoxAdapter(child: SizedBox(height: 8)),
+            const SliverToBoxAdapter(child: HomeFoodSection()),
+            const SliverToBoxAdapter(child: SizedBox(height: 32)),
+            SliverToBoxAdapter(child: DynamicSectionsWidget()),
+            const SliverToBoxAdapter(child: SizedBox(height: 32)),
+          ]);
+          
+          slivers.addAll(buildCategorizedProductsSection(context));
+          slivers.add(const SliverToBoxAdapter(child: SizedBox(height: 32)));
+          
+          slivers.addAll(buildAllProductsSection(context));
+          slivers.add(const SliverToBoxAdapter(child: SizedBox(height: 32)));
+        }
+
+        return NotificationListener<ScrollNotification>(
+          onNotification: (ScrollNotification scrollInfo) {
+            if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 500) {
+              final productsController = Get.find<ProductsController>();
+              if (!productsController.isFetchingMore.value && productsController.hasMoreProducts.value) {
+                productsController.fetchNextPage();
               }
-            }),
-          ],
-        ),
-      ),
+            }
+            return false;
+          },
+          child: CustomScrollView(slivers: slivers),
+        );
+      }),
     );
   }
 }

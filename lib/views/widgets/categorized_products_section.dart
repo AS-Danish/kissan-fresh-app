@@ -5,32 +5,31 @@ import '../../controllers/categorized_products_controller.dart';
 import '../../routes/app_routes.dart';
 import 'product_card_widget.dart';
 
-class CategorizedProductsSection extends StatelessWidget {
-  CategorizedProductsSection({super.key});
+List<Widget> buildCategorizedProductsSection(BuildContext context) {
+  final CategorizedProductsController controller = Get.find<CategorizedProductsController>();
 
-  final CategorizedProductsController controller =
-      Get.find<CategorizedProductsController>();
-
-  @override
-  Widget build(BuildContext context) {
-    return Obx(() {
-      if (controller.isLoading.value &&
-          controller.categorizedProducts.isEmpty) {
-        return Padding(
+  if (controller.isLoading.value && controller.categorizedProducts.isEmpty) {
+    return [
+      SliverToBoxAdapter(
+        child: Padding(
           padding: const EdgeInsets.all(32.0),
           child: Center(
             child: CircularProgressIndicator(
               color: Theme.of(context).primaryColor,
             ),
           ),
-        );
-      }
+        ),
+      )
+    ];
+  }
 
-      if (controller.categorizedProducts.isEmpty) {
-        return const SizedBox.shrink();
-      }
+  if (controller.categorizedProducts.isEmpty) {
+    return [const SliverToBoxAdapter(child: SizedBox.shrink())];
+  }
 
-      return Column(
+  return [
+    SliverToBoxAdapter(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: controller.categorizedProducts.entries.map((entry) {
           final categoryName = entry.key;
@@ -41,12 +40,8 @@ class CategorizedProductsSection extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Category Header
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 8,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -71,11 +66,7 @@ class CategorizedProductsSection extends StatelessWidget {
                             style: GoogleFonts.montserrat(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.color
-                                  ?.withValues(alpha: 0.7),
+                              color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
                               letterSpacing: 0.1,
                             ),
                             maxLines: 2,
@@ -93,16 +84,9 @@ class CategorizedProductsSection extends StatelessWidget {
                         );
                       },
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        backgroundColor: Theme.of(
-                          context,
-                        ).primaryColor.withValues(alpha: 0.1),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
@@ -130,15 +114,13 @@ class CategorizedProductsSection extends StatelessWidget {
                   ],
                 ),
               ),
-              // Horizontal Scroll
               SizedBox(
-                height: 230, // Height for ProductCardWidget in 3-column layout
+                height: 230,
                 child: ListView.separated(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   scrollDirection: Axis.horizontal,
                   itemCount: products.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(width: 16),
+                  separatorBuilder: (context, index) => const SizedBox(width: 16),
                   itemBuilder: (context, index) {
                     return SizedBox(
                       width: 115,
@@ -154,7 +136,7 @@ class CategorizedProductsSection extends StatelessWidget {
             ],
           );
         }).toList(),
-      );
-    });
-  }
+      ),
+    )
+  ];
 }
