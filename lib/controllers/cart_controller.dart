@@ -189,7 +189,6 @@ class CartController extends GetxController {
 
     activeCouponModel.value = coupon;
     appliedCoupon.value = coupon.code;
-    cartItems.refresh();
 
     CustomSnackBar.show(
       'Coupon Applied',
@@ -261,7 +260,6 @@ class CartController extends GetxController {
   void removeCoupon() {
     appliedCoupon.value = '';
     activeCouponModel.value = null;
-    cartItems.refresh();
     CustomSnackBar.show(
       'Coupon Removed',
       'Coupon has been removed from your cart.',
@@ -507,14 +505,28 @@ class CartController extends GetxController {
     }
   }
 
+  List<String> _currentListeningIds = [];
+
   void _updateStockSubscription(List<CartItem> items) {
-    _stockSubscription?.cancel();
-    if (items.isEmpty) return;
+    if (items.isEmpty) {
+      _stockSubscription?.cancel();
+      _currentListeningIds = [];
+      return;
+    }
 
     final productIds = items
         .map((item) => item.id.split('_').first)
         .toSet()
         .toList();
+
+    // Prevent rebuilding the stream if the required product IDs haven't changed.
+    if (productIds.length == _currentListeningIds.length && 
+        productIds.every((id) => _currentListeningIds.contains(id))) {
+      return;
+    }
+
+    _stockSubscription?.cancel();
+    _currentListeningIds = productIds;
 
     // Firestore whereIn limit is 30. If cart > 30, we'd need chunks.
     // For this app, 30 is likely sufficient.

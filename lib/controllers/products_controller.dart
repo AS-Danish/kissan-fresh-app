@@ -219,8 +219,6 @@ class ProductsController extends GetxController {
           .toList();
 
       products.addAll(newProducts);
-      // Update persistent cache with combined products
-      _cacheService.saveProducts(cacheKey, products.toList());
 
       if (querySnapshot.docs.length < limit) {
         hasMoreProducts.value = false;
