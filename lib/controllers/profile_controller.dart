@@ -246,11 +246,15 @@ class ProfileController extends GetxController {
         await prefs.clear();
 
         try {
-          if (Hive.isBoxOpen('cart_box')) await Hive.box('cart_box').clear();
-          if (Hive.isBoxOpen('wishlist_box'))
+          if (Hive.isBoxOpen('cart_box')) {
+            await Hive.box('cart_box').clear();
+          }
+          if (Hive.isBoxOpen('wishlist_box')) {
             await Hive.box('wishlist_box').clear();
-          if (Hive.isBoxOpen('user_activity'))
+          }
+          if (Hive.isBoxOpen('user_activity')) {
             await Hive.box('user_activity').clear();
+          }
         } catch (e) {
           debugPrint("Error clearing hive boxes: $e");
         }

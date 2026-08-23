@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../controllers/cart_controller.dart';
 import '../../../controllers/auth_controller.dart';
-import '../../../services/location_service.dart';
 import '../../../routes/app_routes.dart';
 import '../../../controllers/homepage_controller.dart';
 import '../../../model/coupon_model.dart';
@@ -197,8 +196,8 @@ class CartSummaryWidget extends StatelessWidget {
               controller.activeCouponModel.value?.applicableCategory != null
                   ? 'Coupon Discount (${controller.activeCouponModel.value!.applicableCategory} only)'
                   : controller.appliedCoupon.value.isNotEmpty
-                      ? 'Coupon Discount (${controller.appliedCoupon.value})'
-                      : 'Discount',
+                  ? 'Coupon Discount (${controller.appliedCoupon.value})'
+                  : 'Discount',
               '-₹${controller.discount.toStringAsFixed(0)}',
               isDiscount: true,
             ),
@@ -814,150 +813,150 @@ class CartSummaryWidget extends StatelessWidget {
                           Material(
                             color: Colors.transparent,
                             child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            onTap: isApplicable
-                                ? () {
-                                    Get.back();
-                                    controller.applyCouponModel(coupon);
-                                  }
-                                : null,
-                            leading: Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: isApplicable
-                                    ? Theme.of(
-                                        context,
-                                      ).primaryColor.withValues(alpha: 0.1)
-                                    : Theme.of(
-                                        context,
-                                      ).disabledColor.withValues(alpha: 0.1),
-                                shape: BoxShape.circle,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
                               ),
-                              child: Icon(
-                                Icons.local_offer_outlined,
-                                color: isApplicable
-                                    ? Theme.of(context).primaryColor
-                                    : Colors.grey,
-                                size: 20,
-                              ),
-                            ),
-                            title: Row(
-                              children: [
-                                Text(
-                                  coupon.code,
-                                  style: GoogleFonts.montserrat(
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 16,
-                                    color: isApplicable
-                                        ? Theme.of(
-                                            context,
-                                          ).colorScheme.onSurface
-                                        : Theme.of(context)
-                                              .colorScheme
-                                              .onSurface
-                                              .withValues(alpha: 0.3),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                if (coupon.applicableCategory != null)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 6,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.orange.withValues(
-                                        alpha: 0.1,
-                                      ),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      '${coupon.applicableCategory} Only',
-                                      style: GoogleFonts.montserrat(
-                                        fontSize: 8,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.orange,
-                                      ),
-                                    ),
-                                  ),
-                                const Spacer(),
-                                if (controller.appliedCoupon.value ==
-                                    coupon.code)
-                                  TextButton(
-                                    onPressed: () {
+                              onTap: isApplicable
+                                  ? () {
                                       Get.back();
-                                      controller.removeCoupon();
-                                    },
-                                    child: Text(
-                                      'REMOVE',
+                                      controller.applyCouponModel(coupon);
+                                    }
+                                  : null,
+                              leading: Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: isApplicable
+                                      ? Theme.of(
+                                          context,
+                                        ).primaryColor.withValues(alpha: 0.1)
+                                      : Theme.of(
+                                          context,
+                                        ).disabledColor.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.local_offer_outlined,
+                                  color: isApplicable
+                                      ? Theme.of(context).primaryColor
+                                      : Colors.grey,
+                                  size: 20,
+                                ),
+                              ),
+                              title: Row(
+                                children: [
+                                  Text(
+                                    coupon.code,
+                                    style: GoogleFonts.montserrat(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 16,
+                                      color: isApplicable
+                                          ? Theme.of(
+                                              context,
+                                            ).colorScheme.onSurface
+                                          : Theme.of(context)
+                                                .colorScheme
+                                                .onSurface
+                                                .withValues(alpha: 0.3),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  if (coupon.applicableCategory != null)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        '${coupon.applicableCategory} Only',
+                                        style: GoogleFonts.montserrat(
+                                          fontSize: 8,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.orange,
+                                        ),
+                                      ),
+                                    ),
+                                  const Spacer(),
+                                  if (controller.appliedCoupon.value ==
+                                      coupon.code)
+                                    TextButton(
+                                      onPressed: () {
+                                        Get.back();
+                                        controller.removeCoupon();
+                                      },
+                                      child: Text(
+                                        'REMOVE',
+                                        style: GoogleFonts.montserrat(
+                                          color: const Color(0xFFEF4444),
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    )
+                                  else if (isApplicable)
+                                    Text(
+                                      'APPLY',
                                       style: GoogleFonts.montserrat(
-                                        color: const Color(0xFFEF4444),
+                                        color: Theme.of(context).primaryColor,
                                         fontWeight: FontWeight.w800,
                                         fontSize: 12,
                                       ),
                                     ),
-                                  )
-                                else if (isApplicable)
+                                ],
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 4),
                                   Text(
-                                    'APPLY',
+                                    coupon.description,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: GoogleFonts.montserrat(
-                                      color: Theme.of(context).primaryColor,
-                                      fontWeight: FontWeight.w800,
                                       fontSize: 12,
+                                      color: isApplicable
+                                          ? Theme.of(context)
+                                                .colorScheme
+                                                .onSurface
+                                                .withValues(alpha: 0.7)
+                                          : Theme.of(context)
+                                                .colorScheme
+                                                .onSurface
+                                                .withValues(alpha: 0.3),
                                     ),
                                   ),
-                              ],
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 4),
-                                Text(
-                                  coupon.description,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.montserrat(
-                                    fontSize: 12,
-                                    color: isApplicable
-                                        ? Theme.of(context)
-                                              .colorScheme
-                                              .onSurface
-                                              .withValues(alpha: 0.7)
-                                        : Theme.of(context)
-                                              .colorScheme
-                                              .onSurface
-                                              .withValues(alpha: 0.3),
-                                  ),
-                                ),
-                                if (!isApplicable) ...[
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.info_outline,
-                                        size: 12,
-                                        color: Colors.orange,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Expanded(
-                                        child: Text(
-                                          validationError,
-                                          style: GoogleFonts.montserrat(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.orange.shade700,
+                                  if (!isApplicable) ...[
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.info_outline,
+                                          size: 12,
+                                          color: Colors.orange,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Expanded(
+                                          child: Text(
+                                            validationError,
+                                            style: GoogleFonts.montserrat(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.orange.shade700,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
+                                      ],
+                                    ),
+                                  ],
                                 ],
-                              ],
+                              ),
                             ),
-                          ),
                           ),
                           const Divider(height: 1),
                           InkWell(

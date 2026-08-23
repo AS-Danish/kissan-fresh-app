@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shorebird_code_push/shorebird_code_push.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import '../views/screens/update/force_update_screen.dart';
 import '../services/cache_service.dart';

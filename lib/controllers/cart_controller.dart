@@ -44,7 +44,7 @@ class CartController extends GetxController {
   RxString appliedCoupon = ''.obs;
   Rxn<CouponModel> activeCouponModel = Rxn<CouponModel>();
   RxBool isApplyingCoupon = false.obs;
-  
+
   // Delivery Instruction
   RxString deliveryInstruction = ''.obs;
 
@@ -493,7 +493,7 @@ class CartController extends GetxController {
       if (validationError != null) {
         appliedCoupon.value = '';
         activeCouponModel.value = null;
-        
+
         CustomSnackBar.show(
           'Coupon Removed',
           'Cart no longer meets requirements: $validationError',
@@ -520,7 +520,7 @@ class CartController extends GetxController {
         .toList();
 
     // Prevent rebuilding the stream if the required product IDs haven't changed.
-    if (productIds.length == _currentListeningIds.length && 
+    if (productIds.length == _currentListeningIds.length &&
         productIds.every((id) => _currentListeningIds.contains(id))) {
       return;
     }
@@ -683,7 +683,7 @@ class CartController extends GetxController {
         colorText: Colors.white,
         duration: const Duration(seconds: 10),
       );
-      
+
       try {
         await _firestore.collection('failed_orders').add({
           'error': e.toString(),
@@ -698,7 +698,6 @@ class CartController extends GetxController {
       } catch (innerE) {
         debugPrint("Failed to record early failure: $innerE");
       }
-
     } finally {
       isProcessingOrder.value = false;
       if (Get.isDialogOpen ?? false) {
@@ -748,7 +747,8 @@ class CartController extends GetxController {
       return;
     }
 
-    if (!Get.isRegistered<SlotSelectionController>() || Get.find<SlotSelectionController>().selectedSlotId.value.isEmpty) {
+    if (!Get.isRegistered<SlotSelectionController>() ||
+        Get.find<SlotSelectionController>().selectedSlotId.value.isEmpty) {
       isProcessingOrder.value = false;
       CustomSnackBar.show(
         'Missing Information',
@@ -838,7 +838,7 @@ class CartController extends GetxController {
 
       // Resolve delivery address from multiple sources
       final resolved = _resolveDeliveryAddressData();
-      
+
       String slotId = '';
       if (Get.isRegistered<SlotSelectionController>()) {
         slotId = Get.find<SlotSelectionController>().selectedSlotId.value;
@@ -884,7 +884,9 @@ class CartController extends GetxController {
         orderType: orderType,
         slotId: slotId,
         couponCode: appliedCoupon.value.isEmpty ? null : appliedCoupon.value,
-        deliveryInstruction: deliveryInstruction.value.isEmpty ? null : deliveryInstruction.value,
+        deliveryInstruction: deliveryInstruction.value.isEmpty
+            ? null
+            : deliveryInstruction.value,
       );
       // 4. Call Cloud Function to process order creation and assignment transactionally
       final httpsCallable = FirebaseFunctions.instance.httpsCallable(
@@ -1073,6 +1075,9 @@ class CartController extends GetxController {
     return ResolvedAddress(address: 'Address not available');
   }
 
+  // Retained as a recovery hook for payment providers that cannot atomically
+  // roll back inventory and payment state.
+  // ignore: unused_element
   Future<void> _recordFailedOrder(OrderModel order, String error) async {
     try {
       await _firestore.collection('failed_orders').add({
@@ -1109,7 +1114,8 @@ class CartController extends GetxController {
       return;
     }
 
-    if (!Get.isRegistered<SlotSelectionController>() || Get.find<SlotSelectionController>().selectedSlotId.value.isEmpty) {
+    if (!Get.isRegistered<SlotSelectionController>() ||
+        Get.find<SlotSelectionController>().selectedSlotId.value.isEmpty) {
       isProcessingOrder.value = false;
       CustomSnackBar.show(
         'Missing Information',

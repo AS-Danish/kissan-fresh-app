@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../model/product_card_model.dart';
 import '../routes/app_routes.dart';
 import 'cart_controller.dart';
@@ -26,6 +27,7 @@ class UserActivityController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   StreamSubscription? _productsSubscription;
   Worker? _personalizedWorker;
+  String _subscribedProductIds = '';
 
   @override
   void onInit() {
@@ -54,14 +56,21 @@ class UserActivityController extends GetxController {
   }
 
   void _updateProductsSubscription() {
-    _productsSubscription?.cancel();
-
     final productIds = personalizedProducts
         .map((item) => item.id)
         .where((id) => id != null)
         .cast<String>()
         .take(10) // Firestore whereIn limit
         .toList();
+    final productIdSignature = [...productIds]..sort();
+    final signature = productIdSignature.join('|');
+
+    if (_productsSubscription != null && signature == _subscribedProductIds) {
+      return;
+    }
+    _productsSubscription?.cancel();
+    _productsSubscription = null;
+    _subscribedProductIds = signature;
 
     if (productIds.isEmpty) {
       realTimeProductData.clear();
@@ -86,26 +95,28 @@ class UserActivityController extends GetxController {
                 .toList();
 
             bool changed = false;
+            final refreshedProducts = personalizedProducts.toList();
 
-            // Update existing items with fresh data
-            for (int i = 0; i < personalizedProducts.length; i++) {
-              final id = personalizedProducts[i].id;
+            // Update all models in memory, then publish once. This avoids a
+            // rebuild and subscription restart for every personalized card.
+            for (int i = 0; i < refreshedProducts.length; i++) {
+              final currentProduct = refreshedProducts[i];
+              final id = currentProduct.id;
               if (id != null && newData.containsKey(id)) {
-                final freshData = newData[id]!;
+                final freshData = Map<String, dynamic>.from(newData[id]!);
                 freshData['id'] = id; // ensure ID is present for parsing
                 final freshProduct = ProductCardModel.fromJson(freshData);
 
-                // Maintain the callbacks but update the data
-                personalizedProducts[i] = freshProduct.copyWith(
-                  onTap: personalizedProducts[i].onTap,
-                  onAddToCart: personalizedProducts[i].onAddToCart,
+                refreshedProducts[i] = freshProduct.copyWith(
+                  onTap: currentProduct.onTap,
+                  onAddToCart: currentProduct.onAddToCart,
                 );
                 changed = true;
               }
             }
 
             if (deletedIds.isNotEmpty) {
-              personalizedProducts.removeWhere((item) {
+              refreshedProducts.removeWhere((item) {
                 if (deletedIds.contains(item.id)) {
                   changed = true;
                   return true;
@@ -117,7 +128,8 @@ class UserActivityController extends GetxController {
             }
 
             if (changed) {
-              personalizedProducts.refresh();
+              personalizedProducts.assignAll(refreshedProducts);
+              _warmFirstImages(refreshedProducts);
             }
           },
           onError: (e) =>
@@ -266,6 +278,26 @@ class UserActivityController extends GetxController {
 
     // Limit and update
     personalizedProducts.value = combined.take(_maxItems).toList();
+    _warmFirstImages(personalizedProducts);
+  }
+
+  void _warmFirstImages(Iterable<ProductCardModel> products) {
+    for (final product in products.take(2)) {
+      final url = product.image.trim();
+      if (!url.startsWith('https://') && !url.startsWith('http://')) continue;
+      final provider = CachedNetworkImageProvider(
+        url,
+        maxWidth: 300,
+        maxHeight: 300,
+      );
+      final stream = provider.resolve(ImageConfiguration.empty);
+      late final ImageStreamListener listener;
+      listener = ImageStreamListener(
+        (_, _) => stream.removeListener(listener),
+        onError: (_, _) => stream.removeListener(listener),
+      );
+      stream.addListener(listener);
+    }
   }
 
   void trackView(ProductCardModel product) {

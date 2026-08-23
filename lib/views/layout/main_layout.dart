@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:kissanfresh/controllers/bottom_bar_controller.dart';
 import 'package:kissanfresh/controllers/cart_controller.dart';
-import 'package:kissanfresh/controllers/theme_controller.dart';
 import '../../routes/app_routes.dart';
 
 class MainLayout extends StatelessWidget {
@@ -97,7 +96,6 @@ class MainLayout extends StatelessWidget {
       ),
       // Use custom LazyTabBuilder to preserve state and lazy load with GetX routes
       body: Obx(() {
-        Get.find<ThemeController>().isDarkMode.value;
         return _LazyTabBuilder(
           currentIndex: barController.currentIndex.value,
           routes: routes,

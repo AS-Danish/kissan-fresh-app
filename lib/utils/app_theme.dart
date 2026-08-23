@@ -143,6 +143,79 @@ class AppTheme {
     ),
   );
 
+  /// Applies the remotely configured semantic palette without allowing a bad
+  /// configuration to remove the app's production-safe contrast defaults.
+  static ThemeData lightThemeFor(Map<String, Color> colors) {
+    final primary = colors['primary'] ?? lightPrimary;
+    final accent = colors['accent'] ?? lightSecondary;
+    final background = colors['background'] ?? lightBackground;
+    final surface = colors['surface'] ?? lightSurface;
+    final success = colors['success'] ?? const Color(0xFF16A34A);
+    final error = colors['error'] ?? lightBadge;
+    final onPrimary = _foregroundFor(primary);
+
+    return lightTheme.copyWith(
+      primaryColor: primary,
+      cardColor: surface,
+      scaffoldBackgroundColor: background,
+      colorScheme: lightTheme.colorScheme.copyWith(
+        primary: primary,
+        secondary: accent,
+        tertiary: success,
+        surface: surface,
+        error: error,
+        onPrimary: onPrimary,
+        onSecondary: _foregroundFor(accent),
+        onTertiary: _foregroundFor(success),
+        onError: _foregroundFor(error),
+      ),
+      appBarTheme: lightTheme.appBarTheme.copyWith(backgroundColor: background),
+      iconTheme: lightTheme.iconTheme.copyWith(color: primary),
+      progressIndicatorTheme: ProgressIndicatorThemeData(color: primary),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: surface,
+        contentTextStyle: const TextStyle(color: lightPrimaryText),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+    );
+  }
+
+  static ThemeData darkThemeFor(Map<String, Color> colors) {
+    final primary = colors['primary'] ?? darkPrimary;
+    final accent = colors['accent'] ?? darkSecondary;
+    final success = colors['success'] ?? const Color(0xFF22C55E);
+    final error = colors['error'] ?? darkBadge;
+
+    return darkTheme.copyWith(
+      primaryColor: primary,
+      colorScheme: darkTheme.colorScheme.copyWith(
+        primary: primary,
+        secondary: accent,
+        tertiary: success,
+        error: error,
+        onPrimary: _foregroundFor(primary),
+        onSecondary: _foregroundFor(accent),
+        onTertiary: _foregroundFor(success),
+        onError: _foregroundFor(error),
+      ),
+      iconTheme: darkTheme.iconTheme.copyWith(color: primary),
+      progressIndicatorTheme: ProgressIndicatorThemeData(color: primary),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: darkSurface,
+        contentTextStyle: const TextStyle(color: darkPrimaryText),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+    );
+  }
+
+  static Color _foregroundFor(Color background) {
+    return ThemeData.estimateBrightnessForColor(background) == Brightness.dark
+        ? Colors.white
+        : const Color(0xFF111827);
+  }
+
   // --- Professional Christmas Theme Palette (Frozen Icy Blue) ---
   static const Color christmasPrimary = Color(
     0xFF4BA3E3,

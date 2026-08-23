@@ -1,9 +1,12 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hive/hive.dart';
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:kissanfresh/routes/app_routes.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -15,37 +18,43 @@ class NotificationService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
+  bool _isConfigured = false;
 
   static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
-    'high_importance_channel', // id
-    'High Importance Notifications', // title
-    description:
-        'This channel is used for important notifications.', // description
+    'high_importance_channel',
+    'Orders and offers',
+    description: 'Order updates, delivery alerts, and Kissan Fresh offers.',
     importance: Importance.high,
   );
 
-  Future<void> initialize() async {
-    // Request permission (Required for iOS/Web, recommended for Android 13+)
-    NotificationSettings settings = await _fcm.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+  Future<void> initialize({bool requestPermission = true}) async {
+    final NotificationSettings settings = requestPermission
+        ? await _fcm.requestPermission(alert: true, badge: true, sound: true)
+        : await _fcm.getNotificationSettings();
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    final notificationsEnabled =
+        Hive.box(
+              'user_settings',
+            ).get('isNotificationsEnabled', defaultValue: true)
+            as bool;
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized &&
+        notificationsEnabled) {
       debugPrint('User granted notification permission');
       await saveTokenToFirestore();
-    } else {
+      try {
+        await _fcm.subscribeToTopic('all_users');
+        debugPrint('Subscribed to all_users topic');
+      } catch (e) {
+        debugPrint('Failed to subscribe to topic: $e');
+      }
+    } else if (requestPermission &&
+        settings.authorizationStatus != AuthorizationStatus.authorized) {
       debugPrint('User declined or has not accepted notification permission');
     }
 
-    // Subscribe to all_users topic for offer notifications
-    try {
-      await _fcm.subscribeToTopic('all_users');
-      debugPrint('Subscribed to all_users topic');
-    } catch (e) {
-      debugPrint('Failed to subscribe to topic: $e');
-    }
+    if (_isConfigured) return;
+    _isConfigured = true;
 
     // Initialize Local Notifications
     const AndroidInitializationSettings initializationSettingsAndroid =
@@ -61,7 +70,15 @@ class NotificationService {
     await _localNotifications.initialize(
       settings: initializationSettings,
       onDidReceiveNotificationResponse: (details) {
-        debugPrint('Notification tapped: ${details.payload}');
+        final payload = details.payload;
+        if (payload == null || payload.isEmpty) return;
+        try {
+          _handleNotificationData(
+            Map<String, dynamic>.from(jsonDecode(payload) as Map),
+          );
+        } catch (error) {
+          debugPrint('Unable to open notification payload: $error');
+        }
       },
     );
 
@@ -79,13 +96,19 @@ class NotificationService {
 
     // Handle messages when app is in foreground
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      final enabled =
+          Hive.box(
+                'user_settings',
+              ).get('isNotificationsEnabled', defaultValue: true)
+              as bool;
+      if (!enabled) return;
       debugPrint('Got a message while in the foreground!');
       debugPrint('Message data: ${message.data}');
 
       RemoteNotification? notification = message.notification;
-      AndroidNotification? android = message.notification?.android;
+      final AndroidNotification? android = notification?.android;
 
-      if (notification != null && android != null) {
+      if (notification != null) {
         _localNotifications.show(
           id: notification.hashCode,
           title: notification.title,
@@ -95,20 +118,48 @@ class NotificationService {
               _channel.id,
               _channel.name,
               channelDescription: _channel.description,
-              icon: android.smallIcon ?? '@mipmap/ic_launcher',
+              icon: android?.smallIcon ?? '@mipmap/ic_launcher',
               importance: Importance.max,
               priority: Priority.high,
               showWhen: true,
+              styleInformation: BigTextStyleInformation(
+                notification.body ?? '',
+                contentTitle: notification.title,
+              ),
+            ),
+            iOS: const DarwinNotificationDetails(
+              presentAlert: true,
+              presentBadge: true,
+              presentSound: true,
             ),
           ),
-          payload: message.data.toString(),
+          payload: jsonEncode(message.data),
         );
       }
     });
 
     // Handle app opening from a notification when in background
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      debugPrint('A new onMessageOpenedApp event was published!');
+      _handleNotificationData(message.data);
+    });
+
+    final initialMessage = await _fcm.getInitialMessage();
+    if (initialMessage != null) {
+      _handleNotificationData(initialMessage.data);
+    }
+  }
+
+  void _handleNotificationData(Map<String, dynamic> data) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final type = data['type']?.toString() ?? '';
+      if (type.startsWith('ORDER_')) {
+        Get.toNamed(
+          AppRoutes.myOrdersRoute,
+          arguments: {'highlightOrderId': data['orderId']?.toString()},
+        );
+      } else if (type == 'OFFER_NOTIFICATION') {
+        Get.offAllNamed(AppRoutes.mainLayout);
+      }
     });
   }
 
@@ -145,6 +196,8 @@ class NotificationService {
 
   Future<void> deleteTokenFromFirestore() async {
     try {
+      await _fcm.unsubscribeFromTopic('all_users');
+      await _fcm.deleteToken();
       String? uid = _auth.currentUser?.uid;
       if (uid != null) {
         await _firestore.collection('users').doc(uid).set({

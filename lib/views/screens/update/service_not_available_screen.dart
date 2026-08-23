@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class ServiceNotAvailableScreen extends StatelessWidget {
@@ -21,10 +20,12 @@ class ServiceNotAvailableScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // We set the status bar to match our theme
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-    ));
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+      ),
+    );
 
     final formattedDate = _formatDate(dateString);
 
@@ -41,13 +42,15 @@ class ServiceNotAvailableScreen extends StatelessWidget {
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.white,
-                    const Color(0xFFF0FDF4), // Very light greenish tint at bottom
+                    const Color(
+                      0xFFF0FDF4,
+                    ), // Very light greenish tint at bottom
                   ],
                 ),
               ),
             ),
           ),
-          
+
           // Main content
           SafeArea(
             child: Center(
@@ -85,7 +88,7 @@ class ServiceNotAvailableScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 48),
-                    
+
                     // Welcome Title
                     const Text(
                       'Welcome to Kissan Fresh',
@@ -98,7 +101,7 @@ class ServiceNotAvailableScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Message Body
                     Text(
                       'We are preparing the best fresh produce for you. Our service will be available starting from:',
@@ -111,21 +114,28 @@ class ServiceNotAvailableScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 32),
-                    
+
                     // Date Display Box
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 24,
+                        horizontal: 16,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                          color: Theme.of(
+                            context,
+                          ).primaryColor.withValues(alpha: 0.2),
                           width: 1.5,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
+                            color: Theme.of(
+                              context,
+                            ).primaryColor.withValues(alpha: 0.05),
                             blurRadius: 15,
                             offset: const Offset(0, 8),
                           ),
@@ -151,9 +161,9 @@ class ServiceNotAvailableScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    
+
                     const SizedBox(height: 48),
-                    
+
                     // Subtext / Quote
                     const Text(
                       '"Freshness from farms to your doorstep"',

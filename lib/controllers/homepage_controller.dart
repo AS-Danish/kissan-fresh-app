@@ -42,6 +42,8 @@ class HomepageController extends GetxController {
   final CacheService _cacheService = Get.find<CacheService>();
   StreamSubscription? _specialsSubscription;
   StreamSubscription? _sectionsSubscription;
+  StreamSubscription? _headerConfigSubscription;
+  int _sectionLoadGeneration = 0;
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -62,54 +64,56 @@ class HomepageController extends GetxController {
   }
 
   void _setupHeaderConfigListener() {
-    _firestore.collection('app_config').doc('versioning').snapshots().listen((
-      doc,
-    ) {
-      if (doc.exists && doc.data() != null) {
-        final data = doc.data()!;
-        final themes = data['themes'] as List<dynamic>?;
+    _headerConfigSubscription = _firestore
+        .collection('app_config')
+        .doc('versioning')
+        .snapshots()
+        .listen((doc) {
+          if (doc.exists && doc.data() != null) {
+            final data = doc.data()!;
+            final themes = data['themes'] as List<dynamic>?;
 
-        String activeImageUrl = '';
-        String updateTime = '';
+            String activeImageUrl = '';
+            String updateTime = '';
 
-        if (themes != null) {
-          for (var item in themes) {
-            if (item is Map<String, dynamic>) {
-              String themeName = '';
-              bool isActive = false;
-              String imageUrl = '';
+            if (themes != null) {
+              for (var item in themes) {
+                if (item is Map<String, dynamic>) {
+                  String themeName = '';
+                  bool isActive = false;
+                  String imageUrl = '';
 
-              for (var key in item.keys) {
-                if (key == 'imageURL') {
-                  imageUrl = item[key]?.toString() ?? '';
-                } else {
-                  themeName = key;
-                  isActive = item[key] == true;
+                  for (var key in item.keys) {
+                    if (key == 'imageURL') {
+                      imageUrl = item[key]?.toString() ?? '';
+                    } else if (key != 'colors') {
+                      themeName = key;
+                      isActive = item[key] == true;
+                    }
+                  }
+
+                  if (isActive) {
+                    if (themeName.toLowerCase() != 'normal') {
+                      activeImageUrl = imageUrl;
+                    }
+                    break; // Found the active theme
+                  }
                 }
-              }
-
-              if (isActive) {
-                if (themeName.toLowerCase() != 'normal') {
-                  activeImageUrl = imageUrl;
-                }
-                break; // Found the active theme
               }
             }
+
+            if (data['header_status_update_time'] != null) {
+              updateTime = data['header_status_update_time'].toString();
+            }
+
+            if (updateTime.isNotEmpty && activeImageUrl.isNotEmpty) {
+              activeImageUrl =
+                  '$activeImageUrl${activeImageUrl.contains('?') ? '&' : '?'}v=$updateTime';
+            }
+
+            headerImageUrl.value = activeImageUrl;
           }
-        }
-
-        if (data['header_status_update_time'] != null) {
-          updateTime = data['header_status_update_time'].toString();
-        }
-
-        if (updateTime.isNotEmpty && activeImageUrl.isNotEmpty) {
-          activeImageUrl =
-              '$activeImageUrl${activeImageUrl.contains('?') ? '&' : '?'}v=$updateTime';
-        }
-
-        headerImageUrl.value = activeImageUrl;
-      }
-    });
+        });
   }
 
   void _loadCachedSpecials() {
@@ -218,6 +222,10 @@ class HomepageController extends GetxController {
 
     final model = ProductCardModel.fromJson(productData);
 
+    return _attachProductActions(model);
+  }
+
+  ProductCardModel _attachProductActions(ProductCardModel model) {
     return model.copyWith(
       onTap: () {
         try {
@@ -411,19 +419,68 @@ class HomepageController extends GetxController {
         .snapshots()
         .listen(
           (snapshot) {
+            final loadGeneration = ++_sectionLoadGeneration;
             final fetchedSections = snapshot.docs
                 .map((doc) => SectionModel.fromJson(doc.data(), doc.id))
                 .toList();
 
             sections.assignAll(fetchedSections);
 
-            // Fetch products for each section with a staggered delay to prevent network spikes
-            Future.microtask(() async {
-              for (var section in fetchedSections) {
-                if (section.categories.isNotEmpty) {
-                  await _fetchProductsForSection(section);
-                  await Future.delayed(const Duration(milliseconds: 150));
+            final restoredSectionProducts =
+                Map<String, List<ProductCardModel>>.from(sectionProducts);
+            for (final section in fetchedSections) {
+              final cached = _cacheService.getRaw(
+                'section_preview_${section.id}',
+              );
+              if (cached is List) {
+                try {
+                  restoredSectionProducts[section.id] = cached
+                      .map(
+                        (item) => _attachProductActions(
+                          ProductCardModel.fromJson(
+                            Map<String, dynamic>.from(item as Map),
+                          ),
+                        ),
+                      )
+                      .toList();
+                } catch (error) {
+                  debugPrint(
+                    'Unable to restore section ${section.id} cache: $error',
+                  );
                 }
+              }
+            }
+            sectionProducts.assignAll(restoredSectionProducts);
+
+            // Refresh previews with bounded concurrency: fast enough for the
+            // visible area without opening a connection for every section.
+            Future.microtask(() async {
+              final loadable = fetchedSections
+                  .where((section) => section.categories.isNotEmpty)
+                  .toList();
+              for (var index = 0; index < loadable.length; index += 3) {
+                if (loadGeneration != _sectionLoadGeneration) return;
+                final refreshedEntries = await Future.wait(
+                  loadable
+                      .skip(index)
+                      .take(3)
+                      .map(
+                        (section) =>
+                            _fetchProductsForSection(section, loadGeneration),
+                      ),
+                );
+                if (loadGeneration != _sectionLoadGeneration) return;
+                final refreshed = Map<String, List<ProductCardModel>>.from(
+                  sectionProducts,
+                );
+                for (final entry
+                    in refreshedEntries
+                        .whereType<
+                          MapEntry<String, List<ProductCardModel>>
+                        >()) {
+                  refreshed[entry.key] = entry.value;
+                }
+                sectionProducts.assignAll(refreshed);
               }
             });
             isLoadingSections.value = false;
@@ -460,7 +517,10 @@ class HomepageController extends GetxController {
     }
   }
 
-  Future<void> _fetchProductsForSection(SectionModel section) async {
+  Future<MapEntry<String, List<ProductCardModel>>?> _fetchProductsForSection(
+    SectionModel section,
+    int loadGeneration,
+  ) async {
     try {
       final snapshot = await _firestore
           .collection('products')
@@ -474,10 +534,16 @@ class HomepageController extends GetxController {
           .get();
 
       final products = snapshot.docs.map(_mapDocToModel).toList();
-      sectionProducts[section.id] = products;
+      if (loadGeneration != _sectionLoadGeneration) return null;
+      await _cacheService.saveRaw(
+        'section_preview_${section.id}',
+        products.map((product) => product.toJson()).toList(),
+      );
+      return MapEntry(section.id, products);
     } catch (e) {
       debugPrint("Error fetching products for section ${section.name}: $e");
     }
+    return null;
   }
 
   Future<void> fetchFullProductsForSection(SectionModel section) async {
@@ -750,7 +816,10 @@ class HomepageController extends GetxController {
   ];
   @override
   void onClose() {
+    _sectionLoadGeneration++;
     _specialsSubscription?.cancel();
+    _sectionsSubscription?.cancel();
+    _headerConfigSubscription?.cancel();
     super.onClose();
   }
 }

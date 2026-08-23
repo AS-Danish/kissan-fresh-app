@@ -18,6 +18,7 @@ class CategorizedProductsController extends GetxController {
   final RxMap<String, List<ProductCardModel>> categorizedProducts =
       <String, List<ProductCardModel>>{}.obs;
   final RxBool isLoading = false.obs;
+  int _requestGeneration = 0;
 
   @override
   void onInit() {
@@ -52,8 +53,8 @@ class CategorizedProductsController extends GetxController {
   List<String> get currentCategories {
     if (currentOrigin == 'kissan-fresh') {
       return homepageController.categories
-          .where((c) => c.label != "All")
-          .map((c) => c.label)
+          .where((category) => category.label != 'All')
+          .map((category) => category.label)
           .toList();
     } else {
       return homepageController.homeFoodCategories
@@ -64,6 +65,7 @@ class CategorizedProductsController extends GetxController {
   }
 
   Future<void> fetchCategorizedProducts() async {
+    final requestGeneration = ++_requestGeneration;
     try {
       final categoriesList = currentCategories;
       final origin = currentOrigin;
@@ -112,25 +114,45 @@ class CategorizedProductsController extends GetxController {
         categorizedProducts.clear();
       }
 
-      // For performance and limits, we process categories in chunks of 3
+      final refreshedData = Map<String, List<ProductCardModel>>.from(
+        categorizedProducts,
+      );
+
+      // Keep network concurrency bounded, then publish results in batches so
+      // a large catalog does not rebuild the home feed for every response.
       for (int i = 0; i < categoriesList.length; i += 3) {
-        final chunk = categoriesList.skip(i).take(3);
-        List<Future<void>> chunkTasks = [];
-        for (String category in chunk) {
-          chunkTasks.add(_fetchProductsForCategory(category, origin));
+        final chunk = categoriesList.skip(i).take(3).toList();
+        final results = await Future.wait(
+          chunk.map(
+            (category) =>
+                _fetchProductsForCategory(category, origin, requestGeneration),
+          ),
+        );
+        if (requestGeneration != _requestGeneration) return;
+        for (var index = 0; index < chunk.length; index++) {
+          final products = results[index];
+          if (products != null) refreshedData[chunk[index]] = products;
         }
-        await Future.wait(chunkTasks);
-        // Small delay between chunks to keep main thread free
-        await Future.delayed(const Duration(milliseconds: 100));
+
+        if (i == 0 || i + 3 >= categoriesList.length) {
+          categorizedProducts.assignAll(refreshedData);
+        }
       }
+      await _cacheService.saveCategorizedProducts(origin, categorizedProducts);
     } catch (e) {
       debugPrint("Error fetching categorized products: $e");
     } finally {
-      isLoading.value = false;
+      if (requestGeneration == _requestGeneration) {
+        isLoading.value = false;
+      }
     }
   }
 
-  Future<void> _fetchProductsForCategory(String category, String origin) async {
+  Future<List<ProductCardModel>?> _fetchProductsForCategory(
+    String category,
+    String origin,
+    int requestGeneration,
+  ) async {
     try {
       final querySnapshot = await _firestore
           .collection('products')
@@ -139,19 +161,16 @@ class CategorizedProductsController extends GetxController {
           .limit(6)
           .get(const GetOptions(source: Source.serverAndCache));
 
-      if (querySnapshot.docs.isNotEmpty) {
-        List<ProductCardModel> products = querySnapshot.docs
-            .map((doc) => _mapToProductCardModel(doc))
-            .toList();
-        categorizedProducts[category] = products;
-        _cacheService.saveCategorizedProducts(
-          origin,
-          categorizedProducts,
-        );
+      if (requestGeneration != _requestGeneration || origin != currentOrigin) {
+        return null;
       }
+      return querySnapshot.docs
+          .map((doc) => _mapToProductCardModel(doc))
+          .toList();
     } catch (e) {
       debugPrint("Error fetching category $category: $e");
     }
+    return null;
   }
 
   ProductCardModel _mapToProductCardModel(DocumentSnapshot doc) {

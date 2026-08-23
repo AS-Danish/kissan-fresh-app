@@ -10,7 +10,6 @@ import '../routes/app_routes.dart';
 import 'homepage_controller.dart';
 import 'cart_controller.dart';
 
-
 import '../services/cache_service.dart';
 
 class ProductSearchController extends GetxController {
@@ -392,7 +391,7 @@ class ProductSearchController extends GetxController {
       String qBase = qWord;
       if (qWord.length > 3) {
         if (qWord.endsWith('ies')) {
-          qBase = qWord.substring(0, qWord.length - 3) + 'y';
+          qBase = '${qWord.substring(0, qWord.length - 3)}y';
         } else if (qWord.endsWith('es')) {
           qBase = qWord.substring(0, qWord.length - 2);
         } else if (qWord.endsWith('s')) {
@@ -406,7 +405,7 @@ class ProductSearchController extends GetxController {
         String tBase = tWord;
         if (tWord.length > 3) {
           if (tWord.endsWith('ies')) {
-            tBase = tWord.substring(0, tWord.length - 3) + 'y';
+            tBase = '${tWord.substring(0, tWord.length - 3)}y';
           } else if (tWord.endsWith('es')) {
             tBase = tWord.substring(0, tWord.length - 2);
           } else if (tWord.endsWith('s')) {

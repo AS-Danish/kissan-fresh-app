@@ -110,42 +110,42 @@ class _AccountDeletionScreenState extends State<AccountDeletionScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              ...reasons.map((reason) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Theme(
-                    data: Theme.of(context).copyWith(
-                      unselectedWidgetColor: Theme.of(context).dividerColor,
-                    ),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: RadioListTile<String>(
-                        title: Text(
-                          reason,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: Theme.of(context).colorScheme.onSurface,
+              RadioGroup<String>(
+                groupValue: selectedReason,
+                onChanged: (value) => setState(() => selectedReason = value),
+                child: Column(
+                  children: reasons.map((reason) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Theme(
+                        data: Theme.of(context).copyWith(
+                          unselectedWidgetColor: Theme.of(context).dividerColor,
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: RadioListTile<String>(
+                            title: Text(
+                              reason,
+                              style: GoogleFonts.montserrat(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                            value: reason,
+                            activeColor: Colors.red,
+                            contentPadding: EdgeInsets.zero,
+                            visualDensity: const VisualDensity(
+                              horizontal: -4,
+                              vertical: -4,
+                            ),
                           ),
                         ),
-                        value: reason,
-                        groupValue: selectedReason,
-                        activeColor: Colors.red,
-                        contentPadding: EdgeInsets.zero,
-                        visualDensity: const VisualDensity(
-                          horizontal: -4,
-                          vertical: -4,
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedReason = value;
-                          });
-                        },
                       ),
-                    ),
-                  ),
-                );
-              }),
+                    );
+                  }).toList(),
+                ),
+              ),
               if (selectedReason == "Other") ...[
                 const SizedBox(height: 8),
                 TextField(

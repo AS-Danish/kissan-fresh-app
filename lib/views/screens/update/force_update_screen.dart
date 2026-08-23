@@ -10,8 +10,8 @@ class ForceUpdateScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final UpdateController controller = Get.find<UpdateController>();
 
-    return WillPopScope(
-      onWillPop: () async => false, // Prevent back button
+    return PopScope(
+      canPop: false,
       child: Scaffold(
         backgroundColor: Colors.white,
         body: SafeArea(

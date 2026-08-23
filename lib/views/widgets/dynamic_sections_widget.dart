@@ -257,11 +257,10 @@ class DynamicSectionsWidget extends StatelessWidget {
         child: CachedNetworkImage(
           imageUrl: imageUrl,
           fit: BoxFit.cover,
-          placeholder: (context, url) => Center(
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: Theme.of(context).primaryColor,
-            ),
+          memCacheWidth: 220,
+          memCacheHeight: 220,
+          placeholder: (context, url) => Container(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
           ),
           errorWidget: (context, url, error) => Container(
             color: Theme.of(context).colorScheme.surface,
@@ -305,11 +304,10 @@ class DynamicSectionsWidget extends StatelessWidget {
               fit: BoxFit.cover,
               width: double.infinity,
               height: double.infinity,
-              placeholder: (context, url) => Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Theme.of(context).primaryColor,
-                ),
+              memCacheWidth: 220,
+              memCacheHeight: 220,
+              placeholder: (context, url) => Container(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
               ),
               errorWidget: (context, url, error) => Container(
                 color: Colors.grey.shade200,

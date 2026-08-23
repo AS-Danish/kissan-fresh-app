@@ -27,7 +27,10 @@ class ProductsController extends GetxController {
   // Variables to hold the last document for each tab/category for pagination
   final Map<String, DocumentSnapshot?> _lastDocuments = {};
 
-  final int limit = 10;
+  // Three complete rows per page on the home grid. This avoids tiny, frequent
+  // network fetches while keeping the first payload bounded on slower devices.
+  final int limit = 18;
+  int _requestGeneration = 0;
 
   @override
   void onInit() {
@@ -79,9 +82,11 @@ class ProductsController extends GetxController {
   }
 
   Future<void> fetchInitialProducts() async {
+    final requestGeneration = ++_requestGeneration;
     final origin = currentOrigin;
     final category = currentCategory;
     final cacheKey = currentCacheKey;
+    isFetchingMore.value = false;
 
     // Load from cache instantly if available to prevent loading spinners
     final cached = _cacheService.getProducts(cacheKey);
@@ -137,11 +142,13 @@ class ProductsController extends GetxController {
 
       _productsSubscription = query
           .limit(limit)
-          .snapshots(
-            includeMetadataChanges: true,
-          ) // Allows observing cache vs server states
+          .snapshots()
           .listen(
             (QuerySnapshot snapshot) {
+              if (requestGeneration != _requestGeneration ||
+                  cacheKey != currentCacheKey) {
+                return;
+              }
               if (snapshot.docs.isEmpty) {
                 hasMoreProducts.value = false;
                 products.value = [];
@@ -157,9 +164,18 @@ class ProductsController extends GetxController {
                   .map((doc) => _mapToProductCardModel(doc))
                   .toList();
 
-              // Only update if there's actually new or changed data. Stream triggers on initial load as well.
-              products.value = mappedProducts;
-              _cacheService.saveProducts(cacheKey, mappedProducts);
+              // Preserve already paginated rows when the live first page emits.
+              final firstPageIds = mappedProducts
+                  .map((item) => item.id)
+                  .toSet();
+              final existingTail = products.length > limit
+                  ? products
+                        .skip(limit)
+                        .where((item) => !firstPageIds.contains(item.id))
+                  : const Iterable<ProductCardModel>.empty();
+              final mergedProducts = [...mappedProducts, ...existingTail];
+              products.assignAll(mergedProducts);
+              _cacheService.saveProducts(cacheKey, mergedProducts);
 
               if (snapshot.docs.length < limit) {
                 hasMoreProducts.value = false;
@@ -184,6 +200,7 @@ class ProductsController extends GetxController {
     final origin = currentOrigin;
     final category = currentCategory;
     final cacheKey = currentCacheKey;
+    final requestGeneration = _requestGeneration;
     final lastDoc = _lastDocuments[cacheKey];
 
     if (isFetchingMore.value || !hasMoreProducts.value || lastDoc == null) {
@@ -207,6 +224,11 @@ class ProductsController extends GetxController {
           .limit(limit)
           .get();
 
+      if (requestGeneration != _requestGeneration ||
+          cacheKey != currentCacheKey) {
+        return;
+      }
+
       if (querySnapshot.docs.isEmpty) {
         hasMoreProducts.value = false;
         return;
@@ -219,6 +241,7 @@ class ProductsController extends GetxController {
           .toList();
 
       products.addAll(newProducts);
+      _cacheService.saveProducts(cacheKey, products);
 
       if (querySnapshot.docs.length < limit) {
         hasMoreProducts.value = false;

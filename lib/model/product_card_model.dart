@@ -148,16 +148,22 @@ class ProductCardModel {
         : 0; // Strict inventory tracking: do not assume 99
 
     if (hasVars && vars != null && vars.isNotEmpty) {
-      if (basePrice == 0 || basePrice != vars.first.price)
+      if (basePrice == 0 || basePrice != vars.first.price) {
         basePrice = vars.first.price;
-      if (baseMrp == null || baseMrp == 0 || baseMrp != vars.first.mrp)
+      }
+      if (baseMrp == null || baseMrp == 0 || baseMrp != vars.first.mrp) {
         baseMrp = vars.first.mrp;
-      if (baseUnit == 'unit' || baseUnit.isEmpty || baseUnit != vars.first.unit)
+      }
+      if (baseUnit == 'unit' ||
+          baseUnit.isEmpty ||
+          baseUnit != vars.first.unit) {
         baseUnit = vars.first.unit;
+      }
       if (baseQuantity == null ||
           baseQuantity.isEmpty ||
-          baseQuantity != vars.first.unitValue)
+          baseQuantity != vars.first.unitValue) {
         baseQuantity = vars.first.unitValue;
+      }
       baseInStock = vars.first.inStock;
       baseStockCount = vars.first.stockCount;
     }
@@ -165,11 +171,12 @@ class ProductCardModel {
     String finalUnit = () {
       if (baseQuantity != null && baseQuantity.isNotEmpty) {
         String lowerQuantity = baseQuantity.toLowerCase();
-        
+
         // Clean up the unit by removing repeated prefixes of the quantity
         // This fixes the bug where "1" + "kg" becomes "111111kg" when cached repeatedly
         String cleanedUnit = baseUnit;
-        while (cleanedUnit.toLowerCase().startsWith(lowerQuantity) && lowerQuantity.isNotEmpty) {
+        while (cleanedUnit.toLowerCase().startsWith(lowerQuantity) &&
+            lowerQuantity.isNotEmpty) {
           cleanedUnit = cleanedUnit.substring(lowerQuantity.length).trim();
         }
 

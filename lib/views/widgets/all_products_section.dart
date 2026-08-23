@@ -14,12 +14,16 @@ List<Widget> buildAllProductsSection(BuildContext context) {
   String category = 'All';
   if (homepageController.currentTab.value == 'Grocery') {
     if (homepageController.categories.isNotEmpty) {
-      category = homepageController.categories[homepageController.selectedIndex.value].label;
+      category = homepageController
+          .categories[homepageController.selectedIndex.value]
+          .label;
       if (category != 'All') title = category;
     }
   } else {
     if (homepageController.homeFoodCategories.isNotEmpty) {
-      category = homepageController.homeFoodCategories[homepageController.selectedHomeFoodIndex.value].label;
+      category = homepageController
+          .homeFoodCategories[homepageController.selectedHomeFoodIndex.value]
+          .label;
       if (category != 'All') title = category;
     }
   }
@@ -71,7 +75,9 @@ List<Widget> buildAllProductsSection(BuildContext context) {
                   horizontal: 12,
                   vertical: 8,
                 ),
-                backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                backgroundColor: Theme.of(
+                  context,
+                ).primaryColor.withValues(alpha: 0.1),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -120,7 +126,8 @@ List<Widget> buildAllProductsSection(BuildContext context) {
         ),
       ),
     );
-  } else if (!controller.isLoadingProducts.value && controller.products.isEmpty) {
+  } else if (!controller.isLoadingProducts.value &&
+      controller.products.isEmpty) {
     slivers.add(
       SliverToBoxAdapter(
         child: Padding(
@@ -151,6 +158,7 @@ List<Widget> buildAllProductsSection(BuildContext context) {
           itemCount: controller.products.length,
           itemBuilder: (context, index) {
             return ProductCardWidget(
+              key: ValueKey(controller.products[index].id ?? 'product-$index'),
               product: controller.products[index],
               showAddButton: true,
             );

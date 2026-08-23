@@ -15,9 +15,9 @@ import 'package:kissanfresh/controllers/homepage_controller.dart';
 import 'package:kissanfresh/views/screens/splash_screen.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'dart:async';
 
 import 'firebase_options.dart';
-
 
 import 'package:kissanfresh/controllers/auth_controller.dart';
 import 'package:kissanfresh/controllers/address_controller.dart';
@@ -30,7 +30,6 @@ import 'package:kissanfresh/controllers/notification_controller.dart';
 import 'package:kissanfresh/controllers/orders_controller.dart';
 import 'package:kissanfresh/services/cache_service.dart';
 import 'package:kissanfresh/services/notification_service.dart';
-import 'package:kissanfresh/utils/app_theme.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -42,8 +41,10 @@ void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  await dotenv.load(fileName: ".env");
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Future.wait([
+    dotenv.load(fileName: ".env"),
+    Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
+  ]);
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   // Pass all uncaught "fatal" errors from the framework to Crashlytics
@@ -67,30 +68,20 @@ void main() async {
     debugPrint("Firebase App Check activation failed: $e");
   }
   await Hive.initFlutter();
-  await Hive.openBox('maps_cache');
-  await Hive.openBox('cart_box');
-  await Hive.openBox('user_settings'); // Add this for location service
-  await Hive.openBox('wishlist_box');
-  await Hive.openBox('orders_cache');
-  await Hive.openBox('products_cache');
-  await Hive.openBox(
-    'user_activity',
-  ); // Add this for personalized recommendations
-
-  // Initialize Notification Service
-  final notificationService = NotificationService();
-  await notificationService.initialize();
+  await Future.wait([
+    Hive.openBox('maps_cache'),
+    Hive.openBox('cart_box'),
+    Hive.openBox('user_settings'),
+    Hive.openBox('wishlist_box'),
+    Hive.openBox('orders_cache'),
+    Hive.openBox('products_cache'),
+    Hive.openBox('user_activity'),
+  ]);
 
   Get.put(ThemeController()); // Initialize theme early
   Get.put(CacheService(), permanent: true); // Register CacheService
-  Get.put(
-    UpdateController(),
-    permanent: true,
-  ); // Check for updates immediately
-  Get.put(
-    LocationService(),
-    permanent: true,
-  ); // Add LocationService
+  Get.put(UpdateController(), permanent: true); // Check for updates immediately
+  Get.put(LocationService(), permanent: true); // Add LocationService
 
   Get.put(AuthController(), permanent: true);
   Get.put(CartController(), permanent: true);
@@ -110,6 +101,10 @@ void main() async {
 
   // Once Flutter UI is ready to paint, remove the native splash screen
   FlutterNativeSplash.remove();
+
+  // Notifications are useful but not required for the first frame. Configure
+  // them in the background and only show the permission prompt from Settings.
+  unawaited(NotificationService().initialize(requestPermission: false));
 }
 
 class MyApp extends StatelessWidget {
@@ -123,16 +118,8 @@ class MyApp extends StatelessWidget {
       () => GetMaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Kissan Fresh',
-        theme: themeController.isEid.value
-            ? AppTheme.eidLightTheme
-            : themeController.isChristmas.value
-            ? AppTheme.christmasLightTheme
-            : AppTheme.lightTheme,
-        darkTheme: themeController.isEid.value
-            ? AppTheme.eidDarkTheme
-            : themeController.isChristmas.value
-            ? AppTheme.christmasDarkTheme
-            : AppTheme.darkTheme,
+        theme: themeController.lightTheme,
+        darkTheme: themeController.darkTheme,
         themeMode: themeController.themeMode,
         getPages: AppRoutes.pages,
         initialBinding: BottomBarBinding(),

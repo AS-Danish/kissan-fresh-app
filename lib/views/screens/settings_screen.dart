@@ -6,7 +6,6 @@ import 'package:kissanfresh/controllers/profile_controller.dart';
 import 'package:kissanfresh/controllers/theme_controller.dart';
 import 'package:kissanfresh/controllers/notification_controller.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:kissanfresh/controllers/bottom_bar_controller.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -405,29 +404,29 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
               title: Text(
-              item.title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            subtitle: item.subtitle != null
-                ? Text(
-                    item.subtitle!,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Theme.of(context).textTheme.bodyMedium?.color,
-                    ),
-                  )
-                : null,
-            trailing:
-                item.trailing ??
-                Icon(
-                  Icons.chevron_right,
-                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                item.title,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
-            onTap: item.onTap,
+              ),
+              subtitle: item.subtitle != null
+                  ? Text(
+                      item.subtitle!,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
+                      ),
+                    )
+                  : null,
+              trailing:
+                  item.trailing ??
+                  Icon(
+                    Icons.chevron_right,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                  ),
+              onTap: item.onTap,
             ),
           );
         },

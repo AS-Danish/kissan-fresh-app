@@ -108,7 +108,9 @@ class AddressBottomSheet extends StatelessWidget {
 
                   // Saved Addresses Section
                   GetBuilder<ProfileController>(
-                    init: Get.isRegistered<ProfileController>() ? null : ProfileController(),
+                    init: Get.isRegistered<ProfileController>()
+                        ? null
+                        : ProfileController(),
                     builder: (profileController) {
                       final addresses =
                           profileController.currentUser.value?.savedAddresses ??
@@ -129,12 +131,10 @@ class AddressBottomSheet extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          ...addresses
-                              .map(
-                                (address) =>
-                                    _buildSavedAddressTile(context, address),
-                              )
-                              .toList(),
+                          ...addresses.map(
+                            (address) =>
+                                _buildSavedAddressTile(context, address),
+                          ),
                         ],
                       );
                     },
@@ -248,12 +248,10 @@ class AddressBottomSheet extends StatelessWidget {
           if (Get.isRegistered<LocationService>()) {
             locService.currentAddressType.value = address.type;
             locService.currentAddress.value = address.fullAddress;
-            if (address.latitude != null && address.longitude != null) {
-              locService.currentLocation.value = LatLng(
-                address.latitude!,
-                address.longitude!,
-              );
-            }
+            locService.currentLocation.value = LatLng(
+              address.latitude,
+              address.longitude,
+            );
           }
         },
         borderRadius: BorderRadius.circular(16),

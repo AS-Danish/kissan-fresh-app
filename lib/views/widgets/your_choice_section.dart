@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/user_activity_controller.dart';
-import '../../model/product_card_model.dart';
 import 'product_card_widget.dart';
 
 class YourChoiceSection extends StatelessWidget {
@@ -82,24 +81,11 @@ class YourChoiceSection extends StatelessWidget {
               itemBuilder: (context, index) {
                 final product = controller.personalizedProducts[index];
 
-                // Get real-time data if available
-                final realTimeData = controller.realTimeProductData[product.id];
-
-                ProductCardModel displayProduct = product;
-                if (realTimeData != null) {
-                  final mapData = Map<String, dynamic>.from(realTimeData);
-                  mapData['id'] ??= product.id;
-                  displayProduct = ProductCardModel.fromJson(
-                    mapData,
-                    onTap: product.onTap,
-                    onAddToCart: product.onAddToCart,
-                  );
-                }
-
                 return SizedBox(
+                  key: ValueKey(product.id ?? 'personalized-$index'),
                   width: 130, // Optimized width for horizontal scroll
                   child: ProductCardWidget(
-                    product: displayProduct,
+                    product: product,
                     showAddButton: true,
                   ),
                 );

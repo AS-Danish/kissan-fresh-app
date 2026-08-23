@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../controllers/categorized_products_controller.dart';
+import '../../model/product_card_model.dart';
 import '../../routes/app_routes.dart';
 import 'product_card_widget.dart';
 
 List<Widget> buildCategorizedProductsSection(BuildContext context) {
-  final CategorizedProductsController controller = Get.find<CategorizedProductsController>();
+  final CategorizedProductsController controller =
+      Get.find<CategorizedProductsController>();
 
   if (controller.isLoading.value && controller.categorizedProducts.isEmpty) {
     return [
@@ -19,7 +21,7 @@ List<Widget> buildCategorizedProductsSection(BuildContext context) {
             ),
           ),
         ),
-      )
+      ),
     ];
   }
 
@@ -27,116 +29,129 @@ List<Widget> buildCategorizedProductsSection(BuildContext context) {
     return [const SliverToBoxAdapter(child: SizedBox.shrink())];
   }
 
+  final entries = controller.currentCategories
+      .map(
+        (category) => MapEntry(
+          category,
+          controller.categorizedProducts[category] ?? const [],
+        ),
+      )
+      .where((entry) => entry.value.isNotEmpty)
+      .toList(growable: false);
+
   return [
-    SliverToBoxAdapter(
+    SliverList.builder(
+      itemCount: entries.length,
+      itemBuilder: (context, index) {
+        final entry = entries[index];
+        return _CategoryProductRow(
+          key: ValueKey(entry.key),
+          categoryName: entry.key,
+          products: entry.value,
+        );
+      },
+    ),
+  ];
+}
+
+class _CategoryProductRow extends StatelessWidget {
+  const _CategoryProductRow({
+    super.key,
+    required this.categoryName,
+    required this.products,
+  });
+
+  final String categoryName;
+  final List<ProductCardModel> products;
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+    return RepaintBoundary(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: controller.categorizedProducts.entries.map((entry) {
-          final categoryName = entry.key;
-          final products = entry.value;
-
-          if (products.isEmpty) return const SizedBox.shrink();
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            categoryName,
-                            style: GoogleFonts.montserrat(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                              color: Theme.of(context).colorScheme.onSurface,
-                              letterSpacing: 0.3,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            "Explore our $categoryName collection",
-                            style: GoogleFonts.montserrat(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-                              letterSpacing: 0.1,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        categoryName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    TextButton(
-                      onPressed: () {
-                        Get.toNamed(
-                          AppRoutes.searchRoute,
-                          arguments: {'category': categoryName},
-                        );
-                      },
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      Text(
+                        'Explore our $categoryName collection',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.montserrat(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                        ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            "See all",
-                            style: GoogleFonts.montserrat(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: Theme.of(context).primaryColor,
-                              letterSpacing: 0.2,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            size: 10,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              SizedBox(
-                height: 230,
-                child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  scrollDirection: Axis.horizontal,
-                  itemCount: products.length,
-                  separatorBuilder: (context, index) => const SizedBox(width: 16),
-                  itemBuilder: (context, index) {
-                    return SizedBox(
-                      width: 115,
-                      child: ProductCardWidget(
-                        product: products[index],
-                        showAddButton: true,
-                      ),
-                    );
-                  },
+                TextButton(
+                  onPressed: () => Get.toNamed(
+                    AppRoutes.searchRoute,
+                    arguments: {'category': categoryName},
+                  ),
+                  style: TextButton.styleFrom(
+                    backgroundColor: primary.withValues(alpha: 0.1),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text(
+                    'See all',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: primary,
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-            ],
-          );
-        }).toList(),
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 230,
+            child: ListView.separated(
+              key: PageStorageKey('category-$categoryName'),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              scrollDirection: Axis.horizontal,
+              itemCount: products.length,
+              addAutomaticKeepAlives: false,
+              addRepaintBoundaries: true,
+              separatorBuilder: (_, _) => const SizedBox(width: 16),
+              itemBuilder: (context, index) {
+                final product = products[index];
+                return SizedBox(
+                  key: ValueKey(product.id ?? '${categoryName}_$index'),
+                  width: 115,
+                  child: ProductCardWidget(product: product),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
       ),
-    )
-  ];
+    );
+  }
 }

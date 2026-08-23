@@ -277,7 +277,7 @@ class AuthController extends GetxController {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.redAccent.withOpacity(0.1),
+                  color: Colors.redAccent.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -327,7 +327,7 @@ class AuthController extends GetxController {
                     child: ElevatedButton(
                       onPressed: () {
                         Get.back(); // Close dialog immediately
-                        
+
                         // Execute slow operations asynchronously so the UI isn't blocked
                         Future.microtask(() async {
                           final box = Hive.box('user_settings');
@@ -336,10 +336,13 @@ class AuthController extends GetxController {
                           await box.delete('current_flat_no');
                           await box.delete('current_landmark');
                           if (Get.isRegistered<LocationService>()) {
-                            Get.find<LocationService>().currentAddressType.value = 'Current Location';
+                            Get.find<LocationService>()
+                                    .currentAddressType
+                                    .value =
+                                'Current Location';
                             Get.find<LocationService>().fetchCurrentLocation();
                           }
-                          
+
                           final prefs = await SharedPreferences.getInstance();
                           await prefs.clear();
 

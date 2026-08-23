@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:get/get.dart';
 import '../../controllers/categorized_products_controller.dart';
 import '../../controllers/homepage_controller.dart';
 import '../../controllers/products_controller.dart';
-import '../../controllers/theme_controller.dart';
 import '../widgets/all_products_section.dart';
 import '../widgets/dynamic_sections_widget.dart';
 import '../widgets/categories_section.dart';
@@ -13,7 +13,6 @@ import '../widgets/offer_section.dart';
 import '../widgets/welcome_section.dart';
 import '../widgets/home_header.dart';
 import '../widgets/categorized_products_section.dart';
-import '../widgets/home_category_grid_section.dart';
 
 class ImprovedHomeScreen extends StatelessWidget {
   const ImprovedHomeScreen({super.key});
@@ -21,8 +20,7 @@ class ImprovedHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<HomepageController>();
-    final themeController = Get.find<ThemeController>();
-    
+
     // Instantiate lazy controllers OUTSIDE Obx to ensure onInit runs before the reactive build loop
     Get.find<CategorizedProductsController>();
     Get.find<ProductsController>();
@@ -30,9 +28,6 @@ class ImprovedHomeScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Obx(() {
-        // Ensure real-time theme updates
-        themeController.isDarkMode.value;
-        
         List<Widget> slivers = [
           SliverToBoxAdapter(child: HomeHeader()),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
@@ -40,15 +35,18 @@ class ImprovedHomeScreen extends StatelessWidget {
 
         if (controller.currentTab.value == 'Grocery') {
           if (controller.categories.isEmpty) {
-            slivers.add(const SliverToBoxAdapter(
-              child: Center(child: CircularProgressIndicator()),
-            ));
+            slivers.add(
+              const SliverToBoxAdapter(
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            );
           } else {
             final int selectedIdx = controller.selectedIndex.value;
             final bool isValidIndex =
                 selectedIdx >= 0 && selectedIdx < controller.categories.length;
             final isAll =
-                isValidIndex && controller.categories[selectedIdx].label == 'All';
+                isValidIndex &&
+                controller.categories[selectedIdx].label == 'All';
 
             slivers.addAll([
               SliverToBoxAdapter(
@@ -71,17 +69,26 @@ class ImprovedHomeScreen extends StatelessWidget {
                 SliverToBoxAdapter(child: DynamicSectionsWidget()),
                 const SliverToBoxAdapter(child: SizedBox(height: 32)),
               ]);
-              
-              slivers.addAll(buildHomeCategoryGridSection(context, 'Vegetables', 'Daily Vegetables'));
-              slivers.addAll(buildHomeCategoryGridSection(context, 'Chicken', 'Fresh Chicken'));
-              slivers.addAll(buildHomeCategoryGridSection(context, 'Meat', 'Fresh Meat'));
-              slivers.addAll(buildHomeCategoryGridSection(context, 'Groceries', 'Daily Groceries'));
-              
-              slivers.addAll(buildCategorizedProductsSection(context));
-              slivers.add(const SliverToBoxAdapter(child: SizedBox(height: 32)));
+
+              slivers.add(
+                Obx(
+                  () => SliverMainAxisGroup(
+                    slivers: buildCategorizedProductsSection(context),
+                  ),
+                ),
+              );
+              slivers.add(
+                const SliverToBoxAdapter(child: SizedBox(height: 32)),
+              );
             }
 
-            slivers.addAll(buildAllProductsSection(context));
+            slivers.add(
+              Obx(
+                () => SliverMainAxisGroup(
+                  slivers: buildAllProductsSection(context),
+                ),
+              ),
+            );
             slivers.add(const SliverToBoxAdapter(child: SizedBox(height: 32)));
           }
         } else {
@@ -101,25 +108,43 @@ class ImprovedHomeScreen extends StatelessWidget {
             SliverToBoxAdapter(child: DynamicSectionsWidget()),
             const SliverToBoxAdapter(child: SizedBox(height: 32)),
           ]);
-          
-          slivers.addAll(buildCategorizedProductsSection(context));
+
+          slivers.add(
+            Obx(
+              () => SliverMainAxisGroup(
+                slivers: buildCategorizedProductsSection(context),
+              ),
+            ),
+          );
           slivers.add(const SliverToBoxAdapter(child: SizedBox(height: 32)));
-          
-          slivers.addAll(buildAllProductsSection(context));
+
+          slivers.add(
+            Obx(
+              () => SliverMainAxisGroup(
+                slivers: buildAllProductsSection(context),
+              ),
+            ),
+          );
           slivers.add(const SliverToBoxAdapter(child: SizedBox(height: 32)));
         }
 
         return NotificationListener<ScrollNotification>(
           onNotification: (ScrollNotification scrollInfo) {
-            if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 500) {
+            if (scrollInfo.metrics.pixels >=
+                scrollInfo.metrics.maxScrollExtent - 500) {
               final productsController = Get.find<ProductsController>();
-              if (!productsController.isFetchingMore.value && productsController.hasMoreProducts.value) {
+              if (!productsController.isFetchingMore.value &&
+                  productsController.hasMoreProducts.value) {
                 productsController.fetchNextPage();
               }
             }
             return false;
           },
-          child: CustomScrollView(slivers: slivers),
+          child: CustomScrollView(
+            scrollCacheExtent: const ScrollCacheExtent.pixels(300),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            slivers: slivers,
+          ),
         );
       }),
     );
