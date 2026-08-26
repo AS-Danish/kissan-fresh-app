@@ -20,6 +20,10 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
   bool _isConfigured = false;
 
+  bool _isAuthorized(NotificationSettings settings) =>
+      settings.authorizationStatus == AuthorizationStatus.authorized ||
+      settings.authorizationStatus == AuthorizationStatus.provisional;
+
   static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
     'high_importance_channel',
     'Orders and offers',
@@ -38,16 +42,9 @@ class NotificationService {
             ).get('isNotificationsEnabled', defaultValue: true)
             as bool;
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized &&
-        notificationsEnabled) {
+    if (_isAuthorized(settings) && notificationsEnabled) {
       debugPrint('User granted notification permission');
-      await saveTokenToFirestore();
-      try {
-        await _fcm.subscribeToTopic('all_users');
-        debugPrint('Subscribed to all_users topic');
-      } catch (e) {
-        debugPrint('Failed to subscribe to topic: $e');
-      }
+      await enableNotifications();
     } else if (requestPermission &&
         settings.authorizationStatus != AuthorizationStatus.authorized) {
       debugPrint('User declined or has not accepted notification permission');
@@ -149,6 +146,30 @@ class NotificationService {
     }
   }
 
+  Future<bool> hasNotificationPermission() async {
+    final settings = await _fcm.getNotificationSettings();
+    return _isAuthorized(settings);
+  }
+
+  Future<bool> requestNotificationPermission() async {
+    final settings = await _fcm.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    return _isAuthorized(settings);
+  }
+
+  Future<void> enableNotifications() async {
+    await saveTokenToFirestore();
+    try {
+      await _fcm.subscribeToTopic('all_users');
+      debugPrint('Subscribed to all_users topic');
+    } catch (e) {
+      debugPrint('Failed to subscribe to topic: $e');
+    }
+  }
+
   void _handleNotificationData(Map<String, dynamic> data) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final type = data['type']?.toString() ?? '';
@@ -187,7 +208,7 @@ class NotificationService {
           'fcmToken': token,
         }, SetOptions(merge: true));
         await box.put('fcm_token_$uid', token);
-        debugPrint('FCM Token saved to Firestore: $token');
+        debugPrint('FCM token saved to Firestore');
       }
     } catch (e) {
       debugPrint('Error saving FCM token: $e');

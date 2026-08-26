@@ -70,9 +70,9 @@ class SettingsScreen extends StatelessWidget {
                       Get.find<NotificationController>();
                   return Switch(
                     value: notificationController.isNotificationsEnabled.value,
-                    onChanged: (value) {
-                      notificationController.toggleNotifications(value);
-                    },
+                    onChanged: notificationController.isUpdating.value
+                        ? null
+                        : notificationController.toggleNotifications,
                     activeThumbColor: Theme.of(context).primaryColor,
                   );
                 }),
