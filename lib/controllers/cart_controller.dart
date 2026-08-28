@@ -902,25 +902,6 @@ class CartController extends GetxController {
       if (result.data != null && result.data['success'] == true) {
         final String? serverOrderId = result.data['orderId'];
 
-        // Increment coupon usage if applied
-        if (activeCouponModel.value != null && appliedCoupon.value.isNotEmpty) {
-          try {
-            final querySnapshot = await _firestore
-                .collection('coupons')
-                .where('code', isEqualTo: appliedCoupon.value)
-                .limit(1)
-                .get();
-            if (querySnapshot.docs.isNotEmpty) {
-              final docRef = querySnapshot.docs.first.reference;
-              await docRef.update({
-                'currentUsageCount': FieldValue.increment(1),
-              });
-            }
-          } catch (e) {
-            debugPrint("Failed to update coupon usage: $e");
-          }
-        }
-
         clearCart();
         return serverOrderId ?? ''; // Return the actual ID from server
       }
