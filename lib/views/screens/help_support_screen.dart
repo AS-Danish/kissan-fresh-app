@@ -37,13 +37,6 @@ class HelpSupportScreen extends StatelessWidget {
             const SizedBox(height: 40),
             _buildSupportOption(
               context,
-              Icons.chat_bubble_outline,
-              'Live Chat',
-              'Speak with our customer care representative',
-              () {},
-            ),
-            _buildSupportOption(
-              context,
               Icons.email_outlined,
               'Send an Email',
               'kissanfreshofficial@gmail.com',
