@@ -68,6 +68,23 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+        manifestPlaceholders["APP_LABEL"] = "Kissan Fresh"
+    }
+
+    flavorDimensions += "environment"
+    productFlavors {
+        create("prod") {
+            dimension = "environment"
+            manifestPlaceholders["APP_LABEL"] = "Kissan Fresh"
+        }
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            manifestPlaceholders["APP_LABEL"] = "Kissan Fresh Debug"
+            manifestPlaceholders["MAPS_API_KEY"] =
+                localProperties.getProperty("DEBUG_MAPS_API_KEY") ?: ""
+        }
     }
 
     buildTypes {

@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="00 - Kissan Fresh Dev" type="FlutterRunConfigurationType" factoryName="Flutter">
+    <option name="buildFlavor" value="dev" />
+    <option name="filePath" value="$PROJECT_DIR$/lib/main_dev.dart" />
+    <option name="additionalArgs" value="--dart-define-from-file=config/dev.json" />
+    <method v="2" />
+  </configuration>
+</component>

@@ -18,6 +18,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:async';
 
 import 'firebase_options.dart';
+import 'config/app_environment.dart';
 
 import 'package:kissanfresh/controllers/auth_controller.dart';
 import 'package:kissanfresh/controllers/address_controller.dart';
@@ -33,18 +34,33 @@ import 'package:kissanfresh/services/notification_service.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp();
   debugPrint("Handling a background message: ${message.messageId}");
 }
 
-void main() async {
+// Plain `flutter run` and Android Studio's generated main.dart configuration
+// intentionally start the isolated development environment. Production builds
+// must use lib/main_prod.dart with --flavor prod.
+Future<void> main() => bootstrap(AppFlavor.dev);
+
+Future<void> bootstrap(AppFlavor flavor) async {
+  AppEnvironment.flavor = flavor;
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
-  await Future.wait([
-    dotenv.load(fileName: ".env"),
-    Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
-  ]);
+  if (AppEnvironment.isDebug) {
+    // The dev flavor must receive android/app/src/dev/google-services.json
+    // from the separate debug Firebase project.
+    await Firebase.initializeApp();
+    if (Firebase.app().options.projectId == 'kissanfresh-a72c1') {
+      throw StateError('The dev flavor cannot connect to production Firebase.');
+    }
+  } else {
+    await Future.wait([
+      dotenv.load(fileName: ".env"),
+      Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
+    ]);
+  }
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   // Pass all uncaught "fatal" errors from the framework to Crashlytics
@@ -117,7 +133,7 @@ class MyApp extends StatelessWidget {
     return Obx(
       () => GetMaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Kissan Fresh',
+        title: AppEnvironment.appTitle,
         theme: themeController.lightTheme,
         darkTheme: themeController.darkTheme,
         themeMode: themeController.themeMode,
