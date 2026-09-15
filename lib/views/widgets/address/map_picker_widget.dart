@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:kissanfresh/utils/app_theme.dart';
 import '../../../controllers/address_controller.dart';
+import '../../../config/app_environment.dart';
 
 class MapPickerWidget extends StatefulWidget {
   final AddressController controller;
@@ -27,6 +28,42 @@ class _MapPickerWidgetState extends State<MapPickerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    if (AppEnvironment.useFixedDebugLocation) {
+      return ColoredBox(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.location_on_rounded,
+                  size: 64,
+                  color: Theme.of(context).primaryColor,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Fixed debug location',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  AppEnvironment.debugAddress,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${AppEnvironment.debugLatitude}, ${AppEnvironment.debugLongitude}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return GetBuilder<AddressController>(

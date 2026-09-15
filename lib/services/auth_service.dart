@@ -1,7 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
+import '../config/app_environment.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  static const MethodChannel _debugDeviceChannel = MethodChannel(
+    'com.kissanfresh.app/debug-device',
+  );
+  bool _verificationSettingsApplied = false;
 
   // Verify Phone Number
   Future<void> verifyPhoneNumber({
@@ -12,9 +18,7 @@ class AuthService {
     required Function(PhoneAuthCredential)
     onVerificationCompleted, // For auto-verification
   }) async {
-    // DISABLE THIS FOR PRODUCTION!
-    // This forcibly bypasses Play Integrity / reCAPTCHA on emulators for testing purposes.
-    //await _auth.setSettings(appVerificationDisabledForTesting: true);
+    await _configureDevelopmentPhoneVerification();
 
     await _auth.verifyPhoneNumber(
       phoneNumber: phoneNumber,
@@ -23,6 +27,28 @@ class AuthService {
       codeSent: onCodeSent,
       codeAutoRetrievalTimeout: onCodeAutoRetrievalTimeout,
     );
+  }
+
+  Future<void> _configureDevelopmentPhoneVerification() async {
+    if (_verificationSettingsApplied ||
+        !AppEnvironment.bypassPhoneVerificationOnEmulator) {
+      return;
+    }
+
+    bool isEmulator = false;
+    try {
+      isEmulator =
+          await _debugDeviceChannel.invokeMethod<bool>('isEmulator') ?? false;
+    } on MissingPluginException {
+      // Native channel additions are unavailable until a full Android rebuild.
+      // Keep authentication usable instead of surfacing an implementation
+      // exception when a developer has only hot-reloaded an older APK.
+      return;
+    }
+    if (!isEmulator) return;
+
+    await _auth.setSettings(appVerificationDisabledForTesting: true);
+    _verificationSettingsApplied = true;
   }
 
   // Sign in with credential (for OTP + SMS Code or Auto-verification)

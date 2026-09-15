@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:kissanfresh/services/maps_cache_service.dart';
+import 'package:kissanfresh/config/app_environment.dart';
 
 class LocationService extends GetxService {
   final MapsCacheService _mapsCacheService = MapsCacheService();
@@ -27,6 +28,11 @@ class LocationService extends GetxService {
   }
 
   Future<void> _checkPermissionAndFetchLocation() async {
+    if (AppEnvironment.useFixedDebugLocation) {
+      await _useFixedDebugLocation();
+      return;
+    }
+
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       debugPrint('Location services are disabled.');
@@ -58,6 +64,11 @@ class LocationService extends GetxService {
   }
 
   Future<void> fetchCurrentLocation() async {
+    if (AppEnvironment.useFixedDebugLocation) {
+      await _useFixedDebugLocation();
+      return;
+    }
+
     final box = Hive.box('user_settings');
     try {
       // 1. Immediately load the saved address from Hive to populate UI instantly
@@ -160,6 +171,25 @@ class LocationService extends GetxService {
         currentAddressType.value = 'Unknown';
       }
     }
+  }
+
+  Future<void> _useFixedDebugLocation() async {
+    const location = LatLng(
+      AppEnvironment.debugLatitude,
+      AppEnvironment.debugLongitude,
+    );
+    currentLocation.value = location;
+    currentAddress.value = AppEnvironment.debugAddress;
+    currentAddressType.value = 'Debug Location';
+    locationPermissionDenied.value = false;
+    isLocationEnabled.value = true;
+
+    final box = Hive.box('user_settings');
+    await box.put('last_known_lat', location.latitude);
+    await box.put('last_known_lng', location.longitude);
+    await box.put('current_address', AppEnvironment.debugAddress);
+    await box.put('current_address_type', 'Debug Location');
+    debugPrint('Using fixed debug location: ${AppEnvironment.debugAddress}');
   }
 
   /// Checks if a given coordinate is within the serviceable area (30km radius from city center)

@@ -5,6 +5,7 @@ import '../../controllers/address_controller.dart';
 import '../widgets/address/map_picker_widget.dart';
 import '../widgets/address/location_search_bar.dart';
 import '../widgets/address/location_confirm_sheet.dart';
+import '../../config/app_environment.dart';
 
 class AddressSelectionScreen extends StatelessWidget {
   const AddressSelectionScreen({super.key});
@@ -38,28 +39,30 @@ class AddressSelectionScreen extends StatelessWidget {
           MapPickerWidget(controller: controller),
 
           // Search Bar
-          Positioned(
-            top: 16,
-            left: 16,
-            right: 16,
-            child: LocationSearchBar(controller: controller),
-          ),
+          if (!AppEnvironment.useFixedDebugLocation)
+            Positioned(
+              top: 16,
+              left: 16,
+              right: 16,
+              child: LocationSearchBar(controller: controller),
+            ),
 
           // My Location FAB
-          Positioned(
-            right: 16,
-            bottom: 220,
-            child: FloatingActionButton(
-              heroTag: 'my_location_btn',
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              elevation: 4,
-              onPressed: controller.getCurrentLocation,
-              child: Icon(
-                Icons.my_location,
-                color: Theme.of(context).primaryColor,
+          if (!AppEnvironment.useFixedDebugLocation)
+            Positioned(
+              right: 16,
+              bottom: 220,
+              child: FloatingActionButton(
+                heroTag: 'my_location_btn',
+                backgroundColor: Theme.of(context).colorScheme.surface,
+                elevation: 4,
+                onPressed: controller.getCurrentLocation,
+                child: Icon(
+                  Icons.my_location,
+                  color: Theme.of(context).primaryColor,
+                ),
               ),
             ),
-          ),
 
           // Bottom Confirm Sheet
           Positioned(

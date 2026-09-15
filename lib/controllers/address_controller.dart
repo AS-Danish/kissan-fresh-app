@@ -13,6 +13,7 @@ import 'package:kissanfresh/services/user_service.dart';
 import 'package:kissanfresh/services/location_service.dart';
 import 'package:uuid/uuid.dart';
 import 'package:kissanfresh/services/maps_cache_service.dart';
+import 'package:kissanfresh/config/app_environment.dart';
 
 class AddressController extends GetxController {
   // Observables
@@ -47,7 +48,9 @@ class AddressController extends GetxController {
     super.onInit();
     _settingsBox = Hive.box('user_settings');
     _loadAddressFromHive();
-    _refreshSessionToken();
+    if (!AppEnvironment.useFixedDebugLocation) {
+      _refreshSessionToken();
+    }
     _checkPermission();
   }
 
@@ -109,6 +112,11 @@ class AddressController extends GetxController {
   }
 
   Future<void> _checkPermission() async {
+    if (AppEnvironment.useFixedDebugLocation) {
+      _applyFixedDebugLocation();
+      return;
+    }
+
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       Get.defaultDialog(
@@ -161,6 +169,11 @@ class AddressController extends GetxController {
   }
 
   Future<void> getCurrentLocation() async {
+    if (AppEnvironment.useFixedDebugLocation) {
+      _applyFixedDebugLocation();
+      return;
+    }
+
     if (!isLocationEnabled.value) {
       await _checkPermission();
       if (!isLocationEnabled.value) return;
@@ -189,6 +202,10 @@ class AddressController extends GetxController {
 
   // Called when user explicitly taps map
   void onMapTap(LatLng position) {
+    if (AppEnvironment.useFixedDebugLocation) {
+      _applyFixedDebugLocation();
+      return;
+    }
     selectedLocation.value = position;
     currentAddress.value = 'Fetching address...';
     _reverseGeocode(position);
@@ -196,6 +213,10 @@ class AddressController extends GetxController {
   }
 
   Future<void> _reverseGeocode(LatLng point) async {
+    if (AppEnvironment.useFixedDebugLocation) {
+      _applyFixedDebugLocation();
+      return;
+    }
     _geocodeDebounce?.cancel();
 
     _geocodeDebounce = Timer(const Duration(milliseconds: 800), () async {
@@ -219,6 +240,12 @@ class AddressController extends GetxController {
   Timer? _autocompleteDebounce;
 
   void onSearchChanged(String query) {
+    if (AppEnvironment.useFixedDebugLocation) {
+      searchInput.value = query;
+      predictions.clear();
+      isSearching.value = false;
+      return;
+    }
     searchInput.value = query; // Update observable for Obx
     if (query.trim().isEmpty) {
       predictions.clear();
@@ -241,6 +268,10 @@ class AddressController extends GetxController {
   }
 
   Future<void> searchAddress(String query, {String? placeId}) async {
+    if (AppEnvironment.useFixedDebugLocation) {
+      _applyFixedDebugLocation();
+      return;
+    }
     final trimmed = query.trim();
     if (trimmed.isEmpty) return;
 
@@ -284,6 +315,21 @@ class AddressController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void _applyFixedDebugLocation() {
+    const location = LatLng(
+      AppEnvironment.debugLatitude,
+      AppEnvironment.debugLongitude,
+    );
+    selectedLocation.value = location;
+    currentAddress.value = AppEnvironment.debugAddress;
+    searchController.text = AppEnvironment.debugAddress;
+    isLocationEnabled.value = true;
+    isLoading.value = false;
+    predictions.clear();
+    isSearching.value = false;
+    update(['map-ui']);
   }
 
   void saveFinalAddress() {
