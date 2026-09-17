@@ -6,6 +6,7 @@ import 'package:kissanfresh/controllers/profile_controller.dart';
 import 'package:kissanfresh/controllers/theme_controller.dart';
 import 'package:kissanfresh/controllers/notification_controller.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:kissanfresh/config/app_environment.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -47,6 +48,13 @@ class SettingsScreen extends StatelessWidget {
                 subtitle: 'View your order history',
                 onTap: () => Get.toNamed(AppRoutes.myOrdersRoute),
               ),
+              if (AppEnvironment.isDebug)
+                _SettingsItem(
+                  icon: Icons.account_balance_wallet_outlined,
+                  title: 'Kissan Fresh Wallet',
+                  subtitle: 'Debug balance and refund activity',
+                  onTap: () => Get.toNamed(AppRoutes.walletRoute),
+                ),
               _SettingsItem(
                 icon: Icons.favorite_outline,
                 title: 'Wishlist',

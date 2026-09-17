@@ -72,7 +72,10 @@ class OrderCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 10),
                           // Order Type Badge
-                          OrderTypeBadge(orderType: order.orderType),
+                          OrderTypeBadge(
+                            orderType: order.orderType,
+                            walletAppliedPaise: order.walletAppliedPaise,
+                          ),
                         ],
                       ),
                     ],
@@ -292,15 +295,42 @@ class OrderCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 2),
-                        Text(
-                          'Rs.${order.totalAmount.toStringAsFixed(0)}',
-                          style: GoogleFonts.montserrat(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
-                            color: Theme.of(context).colorScheme.onSurface,
-                            letterSpacing: 0.3,
-                          ),
+                        Row(
+                          children: [
+                            Text(
+                              'Rs.${order.totalAmount.toStringAsFixed(0)}',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                                color: Theme.of(context).colorScheme.onSurface,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                            if (order.hasWalletDeduction) ...[
+                              const SizedBox(width: 6),
+                              Text(
+                                '(-Rs.${order.walletAppliedAmount.toStringAsFixed(0)} wallet)',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF10B981),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
+                        if (order.refundedAmount > 0)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              '+Rs.${order.refundedAmount.toStringAsFixed(0)} returned to wallet',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF059669),
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                     if (order.isDelivered)

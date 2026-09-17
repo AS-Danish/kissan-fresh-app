@@ -21,6 +21,7 @@ import 'slot_selection_controller.dart';
 import 'user_activity_controller.dart';
 import '../model/coupon_model.dart';
 import 'bottom_bar_controller.dart';
+import '../config/app_environment.dart';
 
 class CartController extends GetxController {
   final AuthController _authController = Get.find<AuthController>();
@@ -39,6 +40,10 @@ class CartController extends GetxController {
 
   // Processing state to prevent double taps
   RxBool isProcessingOrder = false.obs;
+
+  // Wallet State
+  RxInt walletBalancePaise = 0.obs;
+  RxBool useWallet = true.obs;
 
   // Coupon State
   RxString appliedCoupon = ''.obs;
@@ -111,6 +116,47 @@ class CartController extends GetxController {
 
   double get total {
     return subtotal + deliveryFee - discount;
+  }
+
+  // Wallet getters
+  double get walletBalanceAmount => walletBalancePaise.value / 100.0;
+
+  int get appliedWalletPaise {
+    if (!useWallet.value || walletBalancePaise.value <= 0) return 0;
+    final totalPaise = (total * 100).round();
+    return walletBalancePaise.value.clamp(0, totalPaise);
+  }
+
+  double get appliedWalletAmount => appliedWalletPaise / 100.0;
+
+  int get payablePaise =>
+      ((total * 100).round() - appliedWalletPaise).clamp(0, (total * 100).round());
+
+  double get payableAmount => payablePaise / 100.0;
+
+  bool get isFullyPaidByWallet => appliedWalletPaise > 0 && payablePaise == 0;
+
+  Future<void> fetchWalletBalance() async {
+    if (!AppEnvironment.isDebug) {
+      walletBalancePaise.value = 0;
+      return;
+    }
+    try {
+      final user = _authController.firebaseUser.value;
+      if (user == null) {
+        walletBalancePaise.value = 0;
+        return;
+      }
+      final result = await FirebaseFunctions.instance
+          .httpsCallable('getDebugWallet')
+          .call();
+      if (result.data != null && result.data['balancePaise'] != null) {
+        walletBalancePaise.value =
+            (result.data['balancePaise'] as num).toInt();
+      }
+    } catch (e) {
+      debugPrint('Error fetching wallet balance: $e');
+    }
   }
 
   int get totalItemCount {
@@ -468,9 +514,11 @@ class CartController extends GetxController {
 
     ever(_authController.firebaseUser, (user) {
       _loadFromHive();
+      fetchWalletBalance();
     });
 
     _loadFromHive();
+    fetchWalletBalance();
     _startStockListener();
     _initializeRazorpay();
   }
@@ -653,9 +701,13 @@ class CartController extends GetxController {
     );
 
     try {
-      final orderId = await placeOrder(paymentId: response.paymentId);
+      final orderId = await placeOrder(
+        paymentId: response.paymentId,
+        walletAppliedPaise: appliedWalletPaise,
+      );
 
       if (orderId != null) {
+        fetchWalletBalance();
         // Refresh orders list
         if (Get.isRegistered<OrdersController>()) {
           Get.find<OrdersController>().loadOrders();
@@ -779,9 +831,41 @@ class CartController extends GetxController {
       return;
     }
 
-    final razorpayKey = dotenv.env['RAZORPAY_API_KEY'];
+    await fetchWalletBalance();
+
+    if (isFullyPaidByWallet) {
+      try {
+        final orderId = await placeOrder(
+          paymentStatus: 'paid',
+          orderType: 'Wallet',
+          walletAppliedPaise: appliedWalletPaise,
+        );
+        if (orderId != null) {
+          clearCart();
+          await fetchWalletBalance();
+          Get.find<BottomBarController>().changePage(3);
+          Get.offAllNamed(AppRoutes.mainLayout, arguments: {
+            'showSuccessPopup': true,
+            'orderId': orderId,
+            'orderType': 'Wallet',
+          });
+        }
+      } finally {
+        isProcessingOrder.value = false;
+      }
+      return;
+    }
+
+    final razorpayKey = AppEnvironment.isDebug
+        ? AppEnvironment.debugRazorpayKey
+        : dotenv.env['RAZORPAY_API_KEY'];
     if (razorpayKey == null || razorpayKey.isEmpty) {
-      CustomSnackBar.show('Config Error', 'Razorpay API Key not found in .env');
+      CustomSnackBar.show(
+        'Config Error',
+        AppEnvironment.isDebug
+            ? 'Pass a Razorpay test key using --dart-define.'
+            : 'Razorpay API Key not found in .env',
+      );
       isProcessingOrder.value = false;
       return;
     }
@@ -794,7 +878,7 @@ class CartController extends GetxController {
 
     var options = {
       'key': razorpayKey,
-      'amount': (total * 100).toInt(), // Amount in paise
+      'amount': payablePaise,
       'name': 'Kissan Fresh',
       'description': 'Order Payment',
       'retry': {'enabled': true, 'max_count': 1},
@@ -829,6 +913,7 @@ class CartController extends GetxController {
     String? paymentId,
     String paymentStatus = 'paid',
     String orderType = 'Online',
+    int walletAppliedPaise = 0,
   }) async {
     try {
       final user = _authController.firebaseUser.value;
@@ -887,6 +972,7 @@ class CartController extends GetxController {
         deliveryInstruction: deliveryInstruction.value.isEmpty
             ? null
             : deliveryInstruction.value,
+        walletAppliedPaise: walletAppliedPaise,
       );
       // 4. Call Cloud Function to process order creation and assignment transactionally
       final httpsCallable = FirebaseFunctions.instance.httpsCallable(
@@ -894,9 +980,11 @@ class CartController extends GetxController {
       );
 
       // We pass the order data. The CF expects {'order': orderMap}
-      final HttpsCallableResult result = await httpsCallable.call({
-        'order': order.toJson(),
-      });
+      final orderData = order.toJson();
+      if (AppEnvironment.isDebug && walletAppliedPaise > 0) {
+        orderData['walletAppliedPaise'] = walletAppliedPaise;
+      }
+      final HttpsCallableResult result = await httpsCallable.call({'order': orderData});
 
       // The CF returns { success: true, orderId: "KF-XXXXXX", ... }
       if (result.data != null && result.data['success'] == true) {
@@ -1136,11 +1224,13 @@ class CartController extends GetxController {
       final serverOrderId = await placeOrder(
         paymentStatus: 'pending',
         orderType: 'COD',
+        walletAppliedPaise: appliedWalletPaise,
       );
 
       if (Get.isDialogOpen ?? false) Get.back();
 
       if (serverOrderId != null) {
+        fetchWalletBalance();
         if (Get.isRegistered<OrdersController>()) {
           Get.find<OrdersController>().loadOrders();
         }

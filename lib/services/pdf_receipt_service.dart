@@ -61,18 +61,28 @@ class PdfReceiptService {
                       vertical: 6,
                     ),
                     decoration: pw.BoxDecoration(
-                      color: isCod ? PdfColors.green50 : PdfColors.teal50,
+                      color: order.isFullyPaidByWallet
+                          ? PdfColors.green50
+                          : (isCod ? PdfColors.green50 : PdfColors.teal50),
                       borderRadius: pw.BorderRadius.circular(6),
                       border: pw.Border.all(
-                        color: isCod ? PdfColors.green200 : PdfColors.teal200,
+                        color: order.isFullyPaidByWallet
+                            ? PdfColors.green200
+                            : (isCod ? PdfColors.green200 : PdfColors.teal200),
                       ),
                     ),
                     child: pw.Text(
-                      isCod ? 'CASH ON DELIVERY' : 'ONLINE PAYMENT',
+                      order.isFullyPaidByWallet
+                          ? '100% PAID VIA WALLET'
+                          : (order.hasWalletDeduction
+                              ? 'PAID VIA ${isCod ? 'COD' : 'ONLINE'} + WALLET'
+                              : (isCod ? 'CASH ON DELIVERY' : 'ONLINE PAYMENT')),
                       style: pw.TextStyle(
                         fontSize: 10,
                         fontWeight: pw.FontWeight.bold,
-                        color: isCod ? PdfColors.green800 : PdfColors.teal800,
+                        color: order.isFullyPaidByWallet
+                            ? PdfColors.green800
+                            : (isCod ? PdfColors.green800 : PdfColors.teal800),
                       ),
                     ),
                   ),
@@ -219,6 +229,15 @@ class PdfReceiptService {
                               ),
                             ],
                           ),
+                          if (order.hasWalletDeduction) ...[
+                            pw.SizedBox(height: 4),
+                            _pdfTotalRow('Paid via Kissan Wallet', '-Rs.${order.walletAppliedAmount.toStringAsFixed(2)}', isGreen: true),
+                            _pdfTotalRow(isCod ? 'Collected on Delivery (COD)' : 'Paid Online (Cards/UPI)', 'Rs.${order.netPaidAmount.toStringAsFixed(2)}'),
+                          ],
+                          if (order.refundedAmount > 0) ...[
+                            pw.SizedBox(height: 4),
+                            _pdfTotalRow('Returned to Wallet', '+Rs.${order.refundedAmount.toStringAsFixed(2)}', isGreen: true),
+                          ],
                           if (order.discount > 0 || order.couponDiscount > 0) ...[
                             pw.SizedBox(height: 6),
                             pw.Container(

@@ -4,42 +4,60 @@ import 'package:kissanfresh/model/order_model.dart';
 
 class OrderTypeBadge extends StatelessWidget {
   final String orderType;
+  final int walletAppliedPaise;
 
-  const OrderTypeBadge({super.key, required this.orderType});
+  const OrderTypeBadge({
+    super.key,
+    required this.orderType,
+    this.walletAppliedPaise = 0,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final bool isWalletOnly = orderType.toUpperCase() == 'WALLET';
     final bool isCod =
         orderType.toUpperCase() == 'COD' ||
         orderType.toUpperCase() == 'CASH ON DELIVERY';
+    final bool hasWallet = walletAppliedPaise > 0;
+
+    final Color badgeColor = isWalletOnly
+        ? const Color(0xFF10B981)
+        : (isCod ? Theme.of(context).primaryColor : const Color(0xFF6366F1));
+
+    String badgeLabel;
+    if (isWalletOnly) {
+      badgeLabel = 'Wallet';
+    } else if (hasWallet) {
+      badgeLabel = '${isCod ? 'COD' : 'Online'} + Wallet';
+    } else {
+      badgeLabel = isCod ? 'COD' : 'Online';
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: isCod
-            ? Theme.of(context).primaryColor.withValues(alpha: 0.12)
-            : const Color(0xFF6366F1).withValues(alpha: 0.12),
+        color: badgeColor.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            isCod ? Icons.money_rounded : Icons.account_balance_wallet_rounded,
+            isWalletOnly
+                ? Icons.account_balance_wallet_rounded
+                : (isCod
+                    ? Icons.money_rounded
+                    : Icons.payment_rounded),
             size: 12,
-            color: isCod
-                ? Theme.of(context).primaryColor
-                : const Color(0xFF6366F1),
+            color: badgeColor,
           ),
           const SizedBox(width: 4),
           Text(
-            isCod ? 'COD' : 'Online',
+            badgeLabel,
             style: GoogleFonts.montserrat(
               fontSize: 10,
               fontWeight: FontWeight.w700,
-              color: isCod
-                  ? Theme.of(context).primaryColor
-                  : const Color(0xFF6366F1),
+              color: badgeColor,
               letterSpacing: 0.3,
             ),
           ),

@@ -26,6 +26,8 @@ class OrderModel {
   final SlotModel? slot;
   final String? couponCode;
   final String? deliveryInstruction;
+  final int walletAppliedPaise;
+  final int debugAdjustedAmountPaise;
 
   OrderModel({
     required this.id,
@@ -52,7 +54,15 @@ class OrderModel {
     this.slot,
     this.couponCode,
     this.deliveryInstruction,
+    this.walletAppliedPaise = 0,
+    this.debugAdjustedAmountPaise = 0,
   });
+
+  double get walletAppliedAmount => walletAppliedPaise / 100.0;
+  double get refundedAmount => debugAdjustedAmountPaise / 100.0;
+  double get netPaidAmount => (totalAmount - walletAppliedAmount).clamp(0.0, double.infinity);
+  bool get hasWalletDeduction => walletAppliedPaise > 0;
+  bool get isFullyPaidByWallet => hasWalletDeduction && walletAppliedAmount >= totalAmount;
 
   bool get isDelivered => status == OrderStatus.delivered;
 
@@ -130,6 +140,8 @@ class OrderModel {
     RiderModel? rider,
     SlotModel? slot,
     String? deliveryInstruction,
+    int? walletAppliedPaise,
+    int? debugAdjustedAmountPaise,
   }) {
     return OrderModel(
       id: id ?? this.id,
@@ -155,6 +167,8 @@ class OrderModel {
       rider: rider ?? this.rider,
       slot: slot ?? this.slot,
       deliveryInstruction: deliveryInstruction ?? this.deliveryInstruction,
+      walletAppliedPaise: walletAppliedPaise ?? this.walletAppliedPaise,
+      debugAdjustedAmountPaise: debugAdjustedAmountPaise ?? this.debugAdjustedAmountPaise,
     );
   }
 
@@ -184,6 +198,8 @@ class OrderModel {
       'slot': slot?.toJson(),
       'couponCode': couponCode,
       'deliveryInstruction': deliveryInstruction,
+      'walletAppliedPaise': walletAppliedPaise,
+      'debugAdjustedAmountPaise': debugAdjustedAmountPaise,
     };
   }
 
@@ -220,6 +236,8 @@ class OrderModel {
       slotId: json['slotId'],
       couponCode: json['couponCode'],
       deliveryInstruction: json['deliveryInstruction'],
+      walletAppliedPaise: (json['walletAppliedPaise'] as num?)?.toInt() ?? 0,
+      debugAdjustedAmountPaise: (json['debugAdjustedAmountPaise'] as num?)?.toInt() ?? 0,
       rider: json['rider'] != null ? RiderModel.fromJson(json['rider']) : null,
       slot: json['slot'] != null ? SlotModel.fromJson(json['slot']) : null,
     );

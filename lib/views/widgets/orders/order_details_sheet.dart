@@ -258,38 +258,46 @@ class OrderDetailsSheet {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: isCod
-                                    ? const Color(
-                                        0xFF14B8A6,
-                                      ).withValues(alpha: 0.1)
-                                    : const Color(
-                                        0xFF6366F1,
-                                      ).withValues(alpha: 0.1),
+                                color: order.isFullyPaidByWallet
+                                    ? const Color(0xFF10B981).withValues(alpha: 0.1)
+                                    : (isCod
+                                        ? const Color(0xFF14B8A6).withValues(alpha: 0.1)
+                                        : const Color(0xFF6366F1).withValues(alpha: 0.1)),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
-                                    isCod
-                                        ? Icons.money_rounded
-                                        : Icons.account_balance_wallet_rounded,
+                                    order.isFullyPaidByWallet
+                                        ? Icons.account_balance_wallet_rounded
+                                        : (isCod
+                                            ? Icons.money_rounded
+                                            : Icons.payment_rounded),
                                     size: 14,
-                                    color: isCod
-                                        ? Theme.of(context).primaryColor
-                                        : const Color(0xFF6366F1),
+                                    color: order.isFullyPaidByWallet
+                                        ? const Color(0xFF10B981)
+                                        : (isCod
+                                            ? Theme.of(context).primaryColor
+                                            : const Color(0xFF6366F1)),
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
-                                    isCod
-                                        ? 'Cash on Delivery'
-                                        : 'Online Payment',
+                                    order.isFullyPaidByWallet
+                                        ? '100% Wallet Paid'
+                                        : (order.hasWalletDeduction
+                                            ? 'Wallet (₹${order.walletAppliedAmount.toStringAsFixed(0)}) + ${isCod ? 'COD' : 'Online'}'
+                                            : (isCod
+                                                ? 'Cash on Delivery'
+                                                : 'Online Payment')),
                                     style: GoogleFonts.montserrat(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
-                                      color: isCod
-                                          ? Theme.of(context).primaryColor
-                                          : const Color(0xFF6366F1),
+                                      color: order.isFullyPaidByWallet
+                                          ? const Color(0xFF065F46)
+                                          : (isCod
+                                              ? Theme.of(context).primaryColor
+                                              : const Color(0xFF6366F1)),
                                     ),
                                   ),
                                 ],
@@ -488,6 +496,61 @@ class OrderDetailsSheet {
                           ),
                         ],
                       ),
+                      if (order.hasWalletDeduction) ...[
+                        const SizedBox(height: 10),
+                        _buildSummaryRow(
+                          context,
+                          'Paid via Kissan Wallet',
+                          '-₹${order.walletAppliedAmount.toStringAsFixed(0)}',
+                          isGreen: true,
+                        ),
+                        _buildSummaryRow(
+                          context,
+                          isCod ? 'Collected on Delivery (Cash)' : 'Paid Online (Cards/UPI)',
+                          '₹${order.netPaidAmount.toStringAsFixed(0)}',
+                        ),
+                      ],
+                      if (order.refundedAmount > 0) ...[
+                        const SizedBox(height: 10),
+                        _buildSummaryRow(
+                          context,
+                          'Returned to Kissan Wallet',
+                          '+₹${order.refundedAmount.toStringAsFixed(0)}',
+                          isGreen: true,
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: const Color(0xFF10B981).withValues(alpha: 0.25),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.account_balance_wallet_rounded,
+                                color: Color(0xFF10B981),
+                                size: 18,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  '₹${order.refundedAmount.toStringAsFixed(2)} was credited to your Kissan Fresh Wallet.',
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: const Color(0xFF065F46),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                       
                       if (order.discount > 0 || order.couponDiscount > 0) ...[
                         const SizedBox(height: 12),

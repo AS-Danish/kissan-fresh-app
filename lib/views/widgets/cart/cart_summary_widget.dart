@@ -162,6 +162,57 @@ class CartSummaryWidget extends StatelessWidget {
       () => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (controller.walletBalancePaise.value > 0) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.25),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.account_balance_wallet_rounded,
+                      color: Color(0xFF10B981), size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Kissan Wallet Balance',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF065F46),
+                          ),
+                        ),
+                        Text(
+                          'Available: ₹${controller.walletBalanceAmount.toStringAsFixed(2)}',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Transform.scale(
+                    scale: 0.85,
+                    child: Switch(
+                      value: controller.useWallet.value,
+                      onChanged: (val) => controller.useWallet.value = val,
+                      activeThumbColor: const Color(0xFF10B981),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           Text(
             'Bill Details',
             style: GoogleFonts.montserrat(
@@ -201,6 +252,16 @@ class CartSummaryWidget extends StatelessWidget {
               '-₹${controller.discount.toStringAsFixed(0)}',
               isDiscount: true,
             ),
+          if (controller.appliedWalletAmount > 0) ...[
+            const SizedBox(height: 12),
+            _buildPriceRow(
+              context,
+              controller,
+              'Wallet Deduction',
+              '-₹${controller.appliedWalletAmount.toStringAsFixed(0)}',
+              isDiscount: true,
+            ),
+          ],
           const SizedBox(height: 12),
           Divider(color: Theme.of(context).dividerColor.withValues(alpha: 0.5)),
           const SizedBox(height: 12),
@@ -216,7 +277,7 @@ class CartSummaryWidget extends StatelessWidget {
                 ),
               ),
               Text(
-                '₹${controller.total.toStringAsFixed(0)}',
+                '₹${controller.payableAmount.toStringAsFixed(0)}',
                 style: GoogleFonts.montserrat(
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
@@ -374,17 +435,34 @@ class CartSummaryWidget extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 1),
-                        Text(
-                          isCheckoutDisabled
-                              ? 'CHECK ITEMS'
-                              : '₹${controller.total.toStringAsFixed(0)}',
-                          style: GoogleFonts.montserrat(
-                            fontSize: isCheckoutDisabled ? 18 : 26,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                            letterSpacing: 0.5,
-                            height: 1.2,
-                          ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              isCheckoutDisabled
+                                  ? 'CHECK ITEMS'
+                                  : '₹${controller.payableAmount.toStringAsFixed(0)}',
+                              style: GoogleFonts.montserrat(
+                                fontSize: isCheckoutDisabled ? 18 : 26,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: 0.5,
+                                height: 1.2,
+                              ),
+                            ),
+                            if (!isCheckoutDisabled &&
+                                controller.appliedWalletAmount > 0) ...[
+                              const SizedBox(width: 6),
+                              Text(
+                                '(-₹${controller.appliedWalletAmount.toStringAsFixed(0)} wallet)',
+                                style: GoogleFonts.montserrat(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ],
                     ),
@@ -612,6 +690,16 @@ class CartSummaryWidget extends StatelessWidget {
                       isDiscount: true,
                     ),
                   ],
+                  if (controller.appliedWalletAmount > 0) ...[
+                    const SizedBox(height: 12),
+                    _buildPriceRow(
+                      context,
+                      controller,
+                      'Wallet Deduction',
+                      '-₹${controller.appliedWalletAmount.toStringAsFixed(0)}',
+                      isDiscount: true,
+                    ),
+                  ],
                 ],
               ),
 
@@ -636,7 +724,7 @@ class CartSummaryWidget extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '₹${controller.total.toStringAsFixed(0)}',
+                      '₹${controller.payableAmount.toStringAsFixed(0)}',
                       style: GoogleFonts.montserrat(
                         fontSize: 24,
                         fontWeight: FontWeight.w900,
