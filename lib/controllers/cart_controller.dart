@@ -137,10 +137,6 @@ class CartController extends GetxController {
   bool get isFullyPaidByWallet => appliedWalletPaise > 0 && payablePaise == 0;
 
   Future<void> fetchWalletBalance() async {
-    if (!AppEnvironment.isDebug) {
-      walletBalancePaise.value = 0;
-      return;
-    }
     try {
       final user = _authController.firebaseUser.value;
       if (user == null) {
@@ -981,7 +977,7 @@ class CartController extends GetxController {
 
       // We pass the order data. The CF expects {'order': orderMap}
       final orderData = order.toJson();
-      if (AppEnvironment.isDebug && walletAppliedPaise > 0) {
+      if (walletAppliedPaise > 0) {
         orderData['walletAppliedPaise'] = walletAppliedPaise;
       }
       final HttpsCallableResult result = await httpsCallable.call({'order': orderData});
