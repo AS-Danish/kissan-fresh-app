@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/network_service.dart';
 
-class SlotSelectionController extends GetxController {
+class SlotSelectionController extends GetxController with WidgetsBindingObserver {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   RxList<SlotModel> availableSlots = <SlotModel>[].obs;
   RxBool isLoading = false.obs;
+  RxBool hasError = false.obs;
+  RxString errorMessage = ''.obs;
   RxString selectedSlotId = ''.obs;
 
   // Date tabs state
@@ -20,20 +22,42 @@ class SlotSelectionController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    WidgetsBinding.instance.addObserver(this);
     fetchSlots();
   }
 
-  Future<void> fetchSlots() async {
-    isLoading.value = true;
+  @override
+  void onClose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.onClose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Re-fetch when customer returns to the app to ensure slots are not stale
+      fetchSlots(silent: availableSlots.isNotEmpty);
+    }
+  }
+
+  Future<void> fetchSlots({bool isUserRefresh = false, bool silent = false}) async {
+    if (!silent) {
+      isLoading.value = true;
+    }
+    hasError.value = false;
+    errorMessage.value = '';
+
     try {
       if (!await NetworkService.isConnected()) {
+        hasError.value = true;
+        errorMessage.value = 'No internet connection. Please check your network and try again.';
         NetworkService.showNoInternetSnackbar();
         isLoading.value = false;
         return;
       }
 
       final now = DateTime.now();
-      // Fetch upcoming slots, order by endTime to show chronological order
+      // Fetch upcoming slots, order by startTime to show chronological order
       // Limit to 50 to ensure we get plenty of slots for today and tomorrow
       final snap = await _firestore
           .collection('slots')
@@ -53,27 +77,36 @@ class SlotSelectionController extends GetxController {
       }
       availableDates.value = dates.toList();
 
-      // Auto-select first date if available
+      // Maintain selection if still valid, otherwise default to first available date
       if (availableDates.isNotEmpty) {
-        selectedDateLabel.value = availableDates.first;
+        if (!availableDates.contains(selectedDateLabel.value)) {
+          selectedDateLabel.value = availableDates.first;
+        }
+      } else {
+        selectedDateLabel.value = '';
       }
 
-      // If a selected slot exists from before, ensure it's in the valid date range
-      // or clear it if the user comes back.
+      // If a selected slot exists from before, ensure it's still available and not expired
       if (selectedSlotId.value.isNotEmpty) {
-        final slotExists = availableSlots.any(
-          (s) => s.id == selectedSlotId.value,
+        final slotExistsAndAvailable = availableSlots.any(
+          (s) => s.id == selectedSlotId.value && s.isAvailable,
         );
-        if (!slotExists) selectedSlotId.value = '';
+        if (!slotExistsAndAvailable) {
+          selectedSlotId.value = '';
+        }
       }
     } catch (e) {
       debugPrint("Error fetching slots: $e");
-      CustomSnackBar.show(
-        'Error',
-        'Could not fetch delivery slots. Please try again.',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+      hasError.value = true;
+      errorMessage.value = 'Could not fetch delivery slots. Please try again.';
+      if (isUserRefresh || availableSlots.isEmpty) {
+        CustomSnackBar.show(
+          'Error',
+          'Could not fetch delivery slots. Please try again.',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
     } finally {
       isLoading.value = false;
     }

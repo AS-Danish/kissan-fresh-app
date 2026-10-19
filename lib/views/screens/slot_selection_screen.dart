@@ -6,10 +6,28 @@ import '../../model/slot_model.dart';
 import '../../routes/app_routes.dart';
 import 'package:intl/intl.dart';
 
-class SlotSelectionScreen extends StatelessWidget {
-  SlotSelectionScreen({super.key});
+class SlotSelectionScreen extends StatefulWidget {
+  const SlotSelectionScreen({super.key});
 
-  final SlotSelectionController controller = Get.put(SlotSelectionController());
+  @override
+  State<SlotSelectionScreen> createState() => _SlotSelectionScreenState();
+}
+
+class _SlotSelectionScreenState extends State<SlotSelectionScreen> {
+  late final SlotSelectionController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = Get.isRegistered<SlotSelectionController>()
+        ? Get.find<SlotSelectionController>()
+        : Get.put(SlotSelectionController());
+
+    // Always ensure fresh slots are fetched when the screen is entered
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.fetchSlots();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +58,7 @@ class SlotSelectionScreen extends StatelessWidget {
         centerTitle: true,
       ),
       body: Obx(() {
-        if (controller.isLoading.value) {
+        if (controller.isLoading.value && controller.availableSlots.isEmpty) {
           return Center(
             child: CircularProgressIndicator(
               color: Theme.of(context).primaryColor,
@@ -48,59 +66,69 @@ class SlotSelectionScreen extends StatelessWidget {
           );
         }
 
+        if (controller.hasError.value && controller.availableSlots.isEmpty) {
+          return _buildErrorState(theme);
+        }
+
         if (controller.availableSlots.isEmpty) {
           return _buildEmptyState(theme);
         }
 
-        return Column(
-          children: [
-            _buildDateSelector(theme),
-            Expanded(
-              child: CustomScrollView(
-                physics: const BouncingScrollPhysics(),
-                slivers: [
-                  SliverPadding(
-                    padding: const EdgeInsets.all(20),
-                    sliver: SliverToBoxAdapter(
-                      child: Obx(() {
-                        final dailySlots = controller.slotsForSelectedDate;
-                        if (dailySlots.isEmpty) {
-                          return Center(
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 40),
-                              child: Text(
-                                "No slots available for this date.",
-                                style: GoogleFonts.montserrat(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.grey.shade600,
+        return RefreshIndicator(
+          onRefresh: () => controller.fetchSlots(isUserRefresh: true),
+          color: theme.primaryColor,
+          child: Column(
+            children: [
+              _buildDateSelector(theme),
+              Expanded(
+                child: CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.all(20),
+                      sliver: SliverToBoxAdapter(
+                        child: Obx(() {
+                          final dailySlots = controller.slotsForSelectedDate;
+                          if (dailySlots.isEmpty) {
+                            return Center(
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 40),
+                                child: Text(
+                                  "No slots available for this date.",
+                                  style: GoogleFonts.montserrat(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.grey.shade600,
+                                  ),
                                 ),
                               ),
-                            ),
+                            );
+                          }
+                          return GridView.builder(
+                            physics: const NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  childAspectRatio: 2.5,
+                                  crossAxisSpacing: 12,
+                                  mainAxisSpacing: 12,
+                                ),
+                            itemCount: dailySlots.length,
+                            itemBuilder: (context, slotIndex) {
+                              return _buildSlotCard(theme, dailySlots[slotIndex]);
+                            },
                           );
-                        }
-                        return GridView.builder(
-                          physics: const NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                childAspectRatio: 2.5,
-                                crossAxisSpacing: 12,
-                                mainAxisSpacing: 12,
-                              ),
-                          itemCount: dailySlots.length,
-                          itemBuilder: (context, slotIndex) {
-                            return _buildSlotCard(theme, dailySlots[slotIndex]);
-                          },
-                        );
-                      }),
+                        }),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       }),
       bottomNavigationBar: _buildContinueButton(context),
@@ -112,7 +140,6 @@ class SlotSelectionScreen extends StatelessWidget {
       height: 50,
       margin: const EdgeInsets.only(top: 16),
       child: Obx(() {
-        // Read the observable here so Obx tracks the dependency
         final currentSelection = controller.selectedDateLabel.value;
         return ListView.builder(
           scrollDirection: Axis.horizontal,
@@ -268,34 +295,135 @@ class SlotSelectionScreen extends StatelessWidget {
   }
 
   Widget _buildEmptyState(ThemeData theme) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.event_busy_rounded, size: 80, color: theme.dividerColor),
-            const SizedBox(height: 24),
-            Text(
-              'No Slots Available',
-              style: GoogleFonts.montserrat(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'All delivery slots are currently booked. Please check back later.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.montserrat(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey.shade600,
-              ),
-            ),
-          ],
+    return RefreshIndicator(
+      onRefresh: () => controller.fetchSlots(isUserRefresh: true),
+      color: theme.primaryColor,
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
         ),
+        slivers: [
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.event_busy_rounded, size: 80, color: theme.dividerColor),
+                  const SizedBox(height: 24),
+                  Text(
+                    'No Slots Available',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'All delivery slots are currently booked. Please check back later.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  OutlinedButton.icon(
+                    onPressed: () => controller.fetchSlots(isUserRefresh: true),
+                    icon: const Icon(Icons.refresh_rounded, size: 18),
+                    label: Text(
+                      'REFRESH SLOTS',
+                      style: GoogleFonts.montserrat(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: theme.primaryColor,
+                      side: BorderSide(color: theme.primaryColor),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(ThemeData theme) {
+    return RefreshIndicator(
+      onRefresh: () => controller.fetchSlots(isUserRefresh: true),
+      color: theme.primaryColor,
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        slivers: [
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.wifi_off_rounded, size: 80, color: Colors.red.shade300),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Unable to Load Slots',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    controller.errorMessage.value.isNotEmpty
+                        ? controller.errorMessage.value
+                        : 'Could not connect to service. Please check your internet connection.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: () => controller.fetchSlots(isUserRefresh: true),
+                    icon: const Icon(Icons.refresh_rounded, size: 18),
+                    label: Text(
+                      'RETRY',
+                      style: GoogleFonts.montserrat(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
