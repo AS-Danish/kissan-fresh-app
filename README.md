@@ -152,7 +152,7 @@ flowchart TD
 
 ### Riverpod Reactive State Architecture
 
-The Consumer Storefront adopts **Riverpod 2.x** for strict compile-time safety, seamless testability, and zero service-locator coupling.
+The Consumer Storefront adopts **Riverpod 3.x** for strict compile-time safety, seamless testability, and zero service-locator coupling.
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
@@ -223,10 +223,11 @@ sequenceDiagram
     App->>FS: Verify Slot Capacity & Lock Status
     
     Customer->>App: Select Payment (Razorpay / Wallet / COD)
-    App->>RP: Initialize Checkout (Paise converted)
-    RP-->>App: Payment Success Callback (paymentId)
-
-    App->>CF: Execute `createOrder` (Transaction)
+    App->>CF: Request checkout priced by the server
+    CF->>RP: Create Razorpay order for online payment
+    App->>RP: Open checkout with the saved Razorpay order ID
+    RP-->>App: Payment callback
+    App->>CF: Verify and confirm payment
     CF->>FS: Atomically Decrement Inventory, Reserve Slot, Assign Rider
     CF-->>App: Order Confirmed (Order ID: KF-XXXXXX)
     App->>Hive: Clear Cart Box
@@ -540,40 +541,13 @@ exports.createOrder = onCall({ region: "us-central1" }, async (request) => {
 
 ---
 
-### 4. Razorpay Integration & Automated Failure Compensation
+### 4. Razorpay Checkout and Payment Recovery
 
-The application guarantees financial integrity through an automated failure compensation state machine:
+For online checkout, Cloud Functions read current prices, validate the coupon and wallet amount, and persist the checkout against a server-created Razorpay order. Authenticated, App Check-protected clients can verify the signed callback or request the status of their own checkout. Signed webhooks and a scheduled reconciliation job also check the saved Razorpay order for a captured payment.
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as 📱 Customer
-    participant App as 📱 Flutter App
-    participant RP as 💳 Razorpay Gateway
-    participant FS as 🔥 Cloud Firestore (`failed_orders`)
-    participant CF as ⚡ Cloud Function (`processimmediaterefund`)
+A Firestore transaction confirms the order once and applies the inventory, slot, rider, and wallet changes. If fulfillment cannot proceed, that same transaction records the failure and queues a refund. The refund worker checks for an existing Razorpay refund before retrying. The app saves the pending order reference locally and checks it after restart or resume. Once the backend has verified a capture, it records the payment before attempting fulfillment. Scheduled reconciliation keeps retrying that verified capture beyond the normal checkout search window until the order is confirmed or a refund is queued.
 
-    User->>App: Clicks "PAY NOW"
-    App->>RP: Opens Razorpay SDK (amount in paise)
-    User->>RP: Authorizes UPI / Card / NetBanking
-    RP-->>App: Payment Success (razorpay_payment_id)
-
-    App->>App: Calls `createOrder` Cloud Function
-    alt Network Dropout or Transaction Failure
-        App->>FS: Write to `failed_orders` collection<br/>{paymentId, amount, status: 'paid_but_stock_failed', refundStatus: 'pending'}
-        App->>User: "Order Failed. A 100% automated refund has been initiated."
-        
-        FS->>CF: Trigger onDocumentCreated(`failed_orders/{id}`)
-        CF->>CF: Load Razorpay Secrets from Firebase Secret Manager
-        CF->>RP: Query payment status via Razorpay REST API
-        alt Payment is Authorized
-            CF->>RP: Capture Payment
-        end
-        CF->>RP: Issue Full Refund (`payments/{id}/refund`)
-        RP-->>CF: Refund Confirmation (refund_id)
-        CF->>FS: Update `failed_orders/{id}` with `refundStatus: 'refunded'`
-    end
-```
+See [build flavors and checkout rollout](FLAVORS.md) for deployment configuration and integration checks.
 
 ---
 
@@ -680,15 +654,15 @@ Database and storage access is secured via comprehensive security rules:
  ─────────────────────   ─────────────────────   ─────────────────────   ───────────────
   • products              • users/{uid}           • Full access for       • orders
   • categories            • orders (read own)       ADMIN role             (Direct client
-  • sections              • failed_orders         • Permission-gated       creation is
-  • coupons                 (create-only,           access for             blocked; only
-  • todays_specials         strict schema)          MANAGEMENT             callable CF
+  • sections                                     • Permission-gated     • pending_orders
+  • coupons                                         access for            • payment_requests
+  • todays_specials                                 MANAGEMENT            • failed_orders
   • app_config            • profile_images/       • Append-only            can write)
                             {uid}.jpg               audit_logs
 ```
 
-* **Client Order Creation Block**: Clients cannot write directly to `/orders`. All orders must pass through the `createOrder` Cloud Function for server-side validation.
-* **Failed Order Protection**: The `failed_orders` collection requires authenticated ownership, positive numeric amounts, INR currency, and an initial `refundStatus: 'pending'`.
+* **Order writes** are owned by the backend. Online orders require a captured Razorpay payment. COD and wallet-only orders use `createOrder`.
+* **Payment and refund writes** must be restricted to the backend in the deployed Firestore rules. Staff can retain authorized dashboard reads.
 * **Media Storage Quotas**: Firebase Storage rules enforce MIME type restrictions (`image/*`) and file size limits (max 5 MB for catalog assets, max 3 MB for user profile photos).
 
 ---
@@ -702,21 +676,11 @@ kissan-fresh-ecosystem/
 │   ├── lib/
 │   │   ├── main.dart                       # App initialization & Hive setup
 │   │   ├── config/                         # Environment & build flavors
-│   │   ├── model/                          # Data models (Product, Cart, Order, Slot)
-│   │   ├── providers/                      # Riverpod State Notifiers & Providers
-│   │   │   ├── auth_provider.dart          # Phone auth & session state
-│   │   │   ├── cart_provider.dart          # Cart calculations & stock listener
-│   │   │   ├── catalog_provider.dart       # Catalog streams & pagination
-│   │   │   └── slot_provider.dart          # Delivery slot availability
-│   │   ├── services/                       # Infrastructure service layer
-│   │   │   ├── cache_service.dart          # Hive local caching service
-│   │   │   ├── location_service.dart       # GPS & location services
-│   │   │   ├── maps_cache_service.dart     # 3-tier Google Maps caching
-│   │   │   ├── notification_service.dart   # FCM handler & local alerts
-│   │   │   └── pdf_receipt_service.dart    # Vector PDF invoice generator
-│   │   └── views/                          # UI Screens & Widgets
-│   │       ├── screens/                    # Full-page screens (Home, Cart, Checkout)
-│   │       └── widgets/                    # Reusable UI components
+│   │   ├── features/                       # Catalog, cart, checkout, delivery, orders, account, auth, wishlist
+│   │   │   ├── checkout/data/             # Payment sessions, callable API, and local recovery references
+│   │   │   └── catalog/presentation/      # Catalog screens and feature widgets
+│   │   ├── core/                          # Navigation, app state, and cross-feature services
+│   │   └── shared/widgets/                # Reusable presentation widgets
 │   └── pubspec.yaml                        # Flutter dependencies
 │
 └── KissanFreshDashboard/                   # 🖥️ OPERATIONS DASHBOARD (Next.js 16 & React 19)
@@ -762,7 +726,6 @@ kissan-fresh-ecosystem/
    Create a `.env` file in the root of `kissan-fresh-app`:
    ```env
    MAPS_API_KEY=AIzaSyYourGoogleMapsApiKey
-   RAZORPAY_API_KEY=rzp_live_YourRazorpayKey
    ```
 3. **Launch Application**:
    ```bash

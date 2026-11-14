@@ -1,3 +1,10 @@
+import 'package:kissanfresh/features/catalog/application/user_activity_controller.dart';
+import 'package:kissanfresh/features/cart/application/cart_controller.dart';
+import 'package:kissanfresh/core/controllers/theme_controller.dart';
+import 'package:kissanfresh/features/delivery/data/location_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kissanfresh/core/navigation.dart';
+import 'package:kissanfresh/core/observable.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
@@ -5,32 +12,18 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:kissanfresh/bindings/bottom_bar_binding.dart';
-import 'package:kissanfresh/controllers/bottom_bar_controller.dart';
 import 'package:kissanfresh/routes/app_routes.dart';
 
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:kissanfresh/controllers/homepage_controller.dart';
-import 'package:kissanfresh/views/screens/splash_screen.dart';
+import 'package:kissanfresh/core/screens/splash_screen.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:async';
 
-import 'firebase_options.dart';
-import 'config/app_environment.dart';
+import 'package:kissanfresh/firebase_options.dart';
+import 'package:kissanfresh/config/app_environment.dart';
 
-import 'package:kissanfresh/controllers/auth_controller.dart';
-import 'package:kissanfresh/controllers/address_controller.dart';
-import 'package:kissanfresh/controllers/cart_controller.dart';
-import 'package:kissanfresh/services/location_service.dart';
-import 'package:kissanfresh/controllers/theme_controller.dart';
-import 'package:kissanfresh/controllers/update_controller.dart';
-import 'package:kissanfresh/controllers/user_activity_controller.dart';
-import 'package:kissanfresh/controllers/notification_controller.dart';
-import 'package:kissanfresh/controllers/orders_controller.dart';
-import 'package:kissanfresh/services/cache_service.dart';
-import 'package:kissanfresh/services/notification_service.dart';
+import 'package:kissanfresh/features/account/data/notification_service.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -75,10 +68,12 @@ Future<void> bootstrap(AppFlavor flavor) async {
 
   try {
     await FirebaseAppCheck.instance.activate(
-      // ignore: deprecated_member_use
-      androidProvider: kDebugMode
-          ? AndroidProvider.debug
-          : AndroidProvider.playIntegrity,
+      providerAndroid: kDebugMode
+          ? const AndroidDebugProvider()
+          : const AndroidPlayIntegrityProvider(),
+      providerApple: kDebugMode
+          ? const AppleDebugProvider()
+          : const AppleAppAttestWithDeviceCheckFallbackProvider(),
     );
   } catch (e) {
     debugPrint("Firebase App Check activation failed: $e");
@@ -94,27 +89,7 @@ Future<void> bootstrap(AppFlavor flavor) async {
     Hive.openBox('user_activity'),
   ]);
 
-  Get.put(ThemeController()); // Initialize theme early
-  Get.put(CacheService(), permanent: true); // Register CacheService
-  Get.put(UpdateController(), permanent: true); // Check for updates immediately
-  Get.put(LocationService(), permanent: true); // Add LocationService
-
-  Get.put(AuthController(), permanent: true);
-  Get.put(CartController(), permanent: true);
-  Get.put(AddressController(), permanent: true);
-  Get.put(OrdersController(), permanent: true);
-  Get.put(UserActivityController(), permanent: true);
-  Get.put(BottomBarController(), permanent: true);
-
-  Get.put(NotificationController(), permanent: true);
-
-  // Start initializing HomepageController as well
-  Get.put(HomepageController(), permanent: true);
-
-  // We call runApp immediately so the Get widget tree is mounted (required for navigation in UpdateController etc).
-  // The UI is shown immediately with our custom splash screen.
-  runApp(const MyApp());
-
+  runApp(const ProviderScope(child: MyApp()));
   // Once Flutter UI is ready to paint, remove the native splash screen
   FlutterNativeSplash.remove();
 
@@ -123,25 +98,27 @@ Future<void> bootstrap(AppFlavor flavor) async {
   unawaited(NotificationService().initialize(requestPermission: false));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final ThemeController themeController = Get.find<ThemeController>();
-
-    return Obx(
-      () => GetMaterialApp(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref.watch(themeControllerProvider);
+    ref.watch(cartControllerProvider);
+    ref.watch(locationServiceProvider);
+    ref.watch(userActivityControllerProvider);
+    return FieldBuilder(
+      () => MaterialApp(
+        navigatorKey: AppNavigator.key,
+        scaffoldMessengerKey: AppNavigator.messengerKey,
+        navigatorObservers: [AppNavigator.observer],
         debugShowCheckedModeBanner: false,
         title: AppEnvironment.appTitle,
-        theme: themeController.lightTheme,
-        darkTheme: themeController.darkTheme,
-        themeMode: themeController.themeMode,
-        getPages: AppRoutes.pages,
-        initialBinding: BottomBarBinding(),
+        theme: theme.lightTheme,
+        darkTheme: theme.darkTheme,
+        themeMode: theme.themeMode,
+        onGenerateRoute: AppRoutes.generate,
         home: const SplashScreen(),
-        defaultTransition: Transition.cupertino,
-        transitionDuration: const Duration(milliseconds: 300),
       ),
     );
   }

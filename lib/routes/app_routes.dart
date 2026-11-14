@@ -1,36 +1,31 @@
-import 'package:get/get.dart';
-import 'package:kissanfresh/bindings/cart_binding.dart';
-import 'package:kissanfresh/bindings/homepage_binding.dart';
-import 'package:kissanfresh/bindings/my_orders_binding.dart';
-import 'package:kissanfresh/bindings/product_details_binding.dart';
-import 'package:kissanfresh/bindings/search_binding.dart';
-import 'package:kissanfresh/views/layout/main_layout.dart';
-import 'package:kissanfresh/views/screens/cart_screen.dart';
-import 'package:kissanfresh/views/screens/improved_home_screen.dart';
-import 'package:kissanfresh/views/screens/login_screen.dart';
-import 'package:kissanfresh/views/screens/my_orders_screen.dart';
-import 'package:kissanfresh/views/screens/product_details_screen.dart';
-import 'package:kissanfresh/views/screens/search_screen.dart';
-import 'package:kissanfresh/views/screens/settings_screen.dart';
-import 'package:kissanfresh/views/screens/wishlist_screen.dart';
-import 'package:kissanfresh/views/screens/profile_screen.dart';
-import 'package:kissanfresh/views/screens/address_selection_screen.dart';
-import 'package:kissanfresh/views/screens/otp_verification_screen.dart';
-import 'package:kissanfresh/views/screens/onboarding_screen.dart';
-import 'package:kissanfresh/views/screens/payment_method_screen.dart';
-import 'package:kissanfresh/views/screens/about_us_screen.dart';
-import 'package:kissanfresh/views/screens/privacy_policy_screen.dart';
-import 'package:kissanfresh/views/screens/terms_conditions_screen.dart';
-import 'package:kissanfresh/views/screens/help_support_screen.dart';
-import 'package:kissanfresh/views/screens/faq_screen.dart';
-import 'package:kissanfresh/views/screens/slot_selection_screen.dart';
-import 'package:kissanfresh/bindings/slot_binding.dart';
-import 'package:kissanfresh/bindings/onboarding_binding.dart';
-import 'package:kissanfresh/views/screens/manage_addresses_screen.dart';
-import 'package:kissanfresh/middleware/auth_middleware.dart';
-import 'package:kissanfresh/views/screens/section_products_screen.dart';
-import 'package:kissanfresh/views/screens/account_deletion_screen.dart';
-import 'package:kissanfresh/views/screens/wallet_screen.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:kissanfresh/features/catalog/domain/product_card_model.dart';
+import 'package:kissanfresh/features/catalog/domain/section_model.dart';
+import 'package:kissanfresh/core/layout/main_layout.dart';
+import 'package:kissanfresh/features/cart/presentation/screens/cart_screen.dart';
+import 'package:kissanfresh/features/catalog/presentation/screens/improved_home_screen.dart';
+import 'package:kissanfresh/features/auth/presentation/screens/login_screen.dart';
+import 'package:kissanfresh/features/orders/presentation/screens/my_orders_screen.dart';
+import 'package:kissanfresh/features/catalog/presentation/screens/product_details_screen.dart';
+import 'package:kissanfresh/features/catalog/presentation/screens/search_screen.dart';
+import 'package:kissanfresh/features/account/presentation/screens/settings_screen.dart';
+import 'package:kissanfresh/features/wishlist/presentation/screens/wishlist_screen.dart';
+import 'package:kissanfresh/features/account/presentation/screens/profile_screen.dart';
+import 'package:kissanfresh/features/delivery/presentation/screens/address_selection_screen.dart';
+import 'package:kissanfresh/features/auth/presentation/screens/otp_verification_screen.dart';
+import 'package:kissanfresh/features/auth/presentation/screens/onboarding_screen.dart';
+import 'package:kissanfresh/features/checkout/presentation/screens/payment_method_screen.dart';
+import 'package:kissanfresh/core/screens/about_us_screen.dart';
+import 'package:kissanfresh/core/screens/privacy_policy_screen.dart';
+import 'package:kissanfresh/core/screens/terms_conditions_screen.dart';
+import 'package:kissanfresh/core/screens/help_support_screen.dart';
+import 'package:kissanfresh/core/screens/faq_screen.dart';
+import 'package:kissanfresh/features/delivery/presentation/screens/slot_selection_screen.dart';
+import 'package:kissanfresh/features/delivery/presentation/screens/manage_addresses_screen.dart';
+import 'package:kissanfresh/features/catalog/presentation/screens/section_products_screen.dart';
+import 'package:kissanfresh/features/account/presentation/screens/account_deletion_screen.dart';
+import 'package:kissanfresh/features/checkout/presentation/screens/wallet_screen.dart';
 
 abstract class AppRoutes {
   static const auth = '/';
@@ -58,93 +53,51 @@ abstract class AppRoutes {
   static const sectionProductsRoute = '/section-products';
   static const accountDeletionRoute = '/account-deletion';
   static const walletRoute = '/wallet';
-  static final pages = [
-    GetPage(name: mainLayout, page: () => MainLayout()),
-    GetPage(
-      name: homepageRoute,
-      page: () => ImprovedHomeScreen(),
-      binding: HomepageBinding(),
-    ),
-    GetPage(name: wishlistRoute, page: () => const WishlistScreen()),
-    GetPage(
-      name: searchRoute,
-      page: () => SearchScreen(),
-      binding: SearchBinding(),
-    ),
-    GetPage(name: cartRoute, page: () => CartScreen(), binding: CartBinding()),
-    GetPage(
-      name: myOrdersRoute,
-      page: () => MyOrdersScreen(),
-      binding: MyOrdersBinding(),
-    ),
-    GetPage(name: settingsRoute, page: () => SettingsScreen()),
-    GetPage(
-      name: productDetailsRoute,
-      page: () {
-        final product = Get.arguments;
-        return ProductDetailsScreen(product: product);
-      },
-      binding: ProductDetailsBinding(),
-    ),
-    GetPage(
-      name: loginScreen,
-      page: () => LoginScreen(),
-      middlewares: [AuthMiddleware()],
-    ),
-    GetPage(
-      name: profileRoute,
-      page: () => const ProfileScreen(),
-      middlewares: [RequireAuthMiddleware()],
-    ),
-    GetPage(
-      name: addressSelectionRoute,
-      page: () => const AddressSelectionScreen(),
-    ),
-    GetPage(
-      name: otpVerificationRoute,
-      page: () => OtpVerificationScreen(),
-      middlewares: [AuthMiddleware()],
-    ),
-    GetPage(
-      name: onboardingRoute,
-      page: () => const OnboardingScreen(),
-      binding: OnboardingBinding(),
-    ),
-    GetPage(
-      name: manageAddressesRoute,
-      page: () => const ManageAddressesScreen(),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(name: paymentMethodRoute, page: () => PaymentMethodScreen()),
-    GetPage(name: aboutUsRoute, page: () => const AboutUsScreen()),
-    GetPage(name: privacyPolicyRoute, page: () => const PrivacyPolicyScreen()),
-    GetPage(
-      name: termsConditionsRoute,
-      page: () => const TermsConditionsScreen(),
-    ),
-    GetPage(name: helpSupportRoute, page: () => const HelpSupportScreen()),
-    GetPage(name: faqRoute, page: () => const FAQScreen()),
-    GetPage(
-      name: slotSelectionRoute,
-      page: () => const SlotSelectionScreen(),
-      binding: SlotBinding(),
-    ),
-    GetPage(
-      name: sectionProductsRoute,
-      page: () {
-        final section = Get.arguments;
-        return SectionProductsScreen(section: section);
-      },
-    ),
-    GetPage(
-      name: accountDeletionRoute,
-      page: () => const AccountDeletionScreen(),
-      middlewares: [RequireAuthMiddleware()],
-    ),
-    GetPage(
-      name: walletRoute,
-      page: () => const WalletScreen(),
-      middlewares: [RequireAuthMiddleware()],
-    ),
-  ];
+  static Route<dynamic> generate(RouteSettings settings) =>
+      CupertinoPageRoute(settings: settings, builder: (_) => page(settings));
+
+  static Widget page(RouteSettings settings) {
+    final signedIn = FirebaseAuth.instance.currentUser != null;
+    var name = settings.name;
+    if (signedIn && (name == loginScreen || name == otpVerificationRoute)) {
+      name = mainLayout;
+    } else if (!signedIn &&
+        {profileRoute, accountDeletionRoute, walletRoute}.contains(name)) {
+      name = loginScreen;
+    }
+    final args = settings.arguments;
+    return switch (name) {
+      mainLayout => const MainLayout(),
+      homepageRoute => ImprovedHomeScreen(),
+      wishlistRoute => const WishlistScreen(),
+      searchRoute => const SearchScreen(),
+      cartRoute => CartScreen(),
+      myOrdersRoute => const MyOrdersScreen(),
+      settingsRoute => SettingsScreen(),
+      productDetailsRoute when args is ProductCardModel => ProductDetailsScreen(
+        product: args,
+      ),
+      loginScreen => LoginScreen(),
+      profileRoute => const ProfileScreen(),
+      addressSelectionRoute => const AddressSelectionScreen(),
+      otpVerificationRoute => OtpVerificationScreen(
+        phoneNumber: args is String ? args : '',
+      ),
+      onboardingRoute => const OnboardingScreen(),
+      manageAddressesRoute => const ManageAddressesScreen(),
+      paymentMethodRoute => PaymentMethodScreen(),
+      aboutUsRoute => const AboutUsScreen(),
+      privacyPolicyRoute => const PrivacyPolicyScreen(),
+      termsConditionsRoute => const TermsConditionsScreen(),
+      helpSupportRoute => const HelpSupportScreen(),
+      faqRoute => const FAQScreen(),
+      slotSelectionRoute => const SlotSelectionScreen(),
+      sectionProductsRoute when args is SectionModel => SectionProductsScreen(
+        section: args,
+      ),
+      accountDeletionRoute => const AccountDeletionScreen(),
+      walletRoute => const WalletScreen(),
+      _ => const MainLayout(),
+    };
+  }
 }

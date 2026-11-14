@@ -1,0 +1,272 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kissanfresh/features/catalog/application/homepage_controller.dart';
+import 'package:kissanfresh/core/controllers/update_controller.dart';
+import 'package:kissanfresh/core/services/cache_service.dart';
+import 'package:kissanfresh/features/delivery/data/location_service.dart';
+import 'package:flutter/material.dart';
+import 'package:kissanfresh/core/navigation.dart';
+import 'package:kissanfresh/core/services/network_service.dart';
+import 'package:kissanfresh/core/layout/main_layout.dart';
+import 'package:kissanfresh/core/screens/service_not_available_screen.dart';
+import 'dart:async';
+
+class SplashScreen extends ConsumerStatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends ConsumerState<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
+
+  int _textIndex = 0;
+  final List<String> _loadingPhrases = [
+    "Handpicking fresh produce...",
+    "Connecting to local farms...",
+    "Preparing your store...",
+    "Almost ready...",
+  ];
+
+  Timer? _textTimer;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Setup animations
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true); // Breathing effect
+
+    _fadeAnimation = Tween<double>(begin: 0.65, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.96, end: 1.04).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+
+    // Cycle text every 1.5 seconds to keep the user psychologically engaged
+    _textTimer = Timer.periodic(const Duration(milliseconds: 1500), (timer) {
+      if (mounted) {
+        setState(() {
+          _textIndex = (_textIndex + 1) % _loadingPhrases.length;
+        });
+      }
+    });
+
+    _initializeApp();
+  }
+
+  Future<void> _initializeApp() async {
+    final updateController = ref.read(updateControllerProvider);
+    final locationService = ref.read(locationServiceProvider);
+    final homepageController = ref.read(homepageControllerProvider);
+    final cacheService = ref.read(cacheServiceProvider);
+
+    try {
+      // --- Added Date of Service Offline/Online Check ---
+      final cachedDateStr = cacheService.getRaw('date_of_service');
+      if (cachedDateStr != null &&
+          cachedDateStr is String &&
+          cachedDateStr.isNotEmpty) {
+        final DateTime? serviceDate = DateTime.tryParse(cachedDateStr);
+        if (serviceDate != null && DateTime.now().isBefore(serviceDate)) {
+          if (mounted) {
+            AppNavigator.offAll(
+              () => ServiceNotAvailableScreen(dateString: cachedDateStr),
+            );
+          }
+          return; // Abort startup
+        }
+      }
+      // --------------------------------------------------
+
+      // First check internet. If no internet, we wait until it's restored.
+      bool hasInternet = await NetworkService.isConnected();
+      if (!hasInternet) {
+        if (mounted) {
+          setState(() {
+            _loadingPhrases.add("Waiting for internet connection...");
+            _textIndex = _loadingPhrases.length - 1;
+          });
+        }
+
+        while (!await NetworkService.isConnected()) {
+          await Future.delayed(const Duration(seconds: 2));
+        }
+
+        if (mounted) {
+          setState(() {
+            _loadingPhrases.add("Resuming startup checks...");
+            _textIndex = _loadingPhrases.length - 1;
+          });
+        }
+
+        // Retry the network-dependent checks now that internet is back
+        updateController.initializationFuture = updateController.checkUpdates(
+          showDialog: false,
+        );
+        homepageController.categoriesFuture = homepageController
+            .fetchCategories();
+      }
+
+      // Run non-critical background initializations concurrently and wait up to 3.5 seconds.
+      // The home screen can handle missing data gracefully with its own loaders.
+      final nonCriticalFutures = <Future>[];
+
+      if (locationService.initializationFuture != null) {
+        nonCriticalFutures.add(locationService.initializationFuture!);
+      }
+      if (homepageController.categoriesFuture != null) {
+        nonCriticalFutures.add(homepageController.categoriesFuture!);
+      }
+
+      // Minimum splash duration to show off the beautiful animation (1.5 seconds)
+      nonCriticalFutures.add(
+        Future.delayed(const Duration(milliseconds: 1500)),
+      );
+
+      final nonCriticalWait = Future.wait(nonCriticalFutures).timeout(
+        const Duration(milliseconds: 3500),
+        onTimeout: () => [], // Ignore timeout and proceed
+      );
+
+      final futuresToWait = <Future>[nonCriticalWait];
+
+      if (updateController.initializationFuture != null) {
+        // Critical: Update checks MUST finish before entering the app to avoid bypassing
+        // mandatory updates or service offline screens.
+        futuresToWait.add(updateController.initializationFuture!);
+      }
+
+      await Future.wait(futuresToWait);
+    } catch (e) {
+      debugPrint("Splash initialization handled error: $e");
+    }
+
+    if (mounted) {
+      // --- Check if update controller intercepted ---
+      if (updateController.isServiceUnavailable) {
+        AppNavigator.offAll(
+          () => ServiceNotAvailableScreen(
+            dateString: updateController.serviceAvailableDateStr,
+          ),
+        );
+        return;
+      }
+      if (updateController.isForceUpdateRequired) {
+        return; // ForceUpdateScreen already handled by UpdateController
+      }
+      // ---------------------------------------------
+
+      // Smooth fade transition into the app
+      AppNavigator.offAll(
+        () => MainLayout(),
+        transition: Transition.fadeIn,
+        duration: const Duration(milliseconds: 800),
+      )?.then((_) {
+        // Wait a brief moment to ensure transition completes and UI settles
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (updateController.isUpdateAvailable.value) {
+            updateController.showRestartDialog();
+          }
+        });
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _textTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFFFFFFF), // Beautiful white background
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Breathing Logo Animation
+            AnimatedBuilder(
+              animation: _animationController,
+              builder: (context, child) {
+                return Opacity(
+                  opacity: _fadeAnimation.value,
+                  child: Transform.scale(
+                    scale: _scaleAnimation.value,
+                    child: child,
+                  ),
+                );
+              },
+              child: Image.asset(
+                'assets/images/Kissan Fresh Logo.png',
+                width: 240,
+                errorBuilder: (context, error, stackTrace) => Icon(
+                  Icons.shopping_cart,
+                  size: 100,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 70),
+
+            // Custom modern sleek progress bar
+            SizedBox(
+              width: 180,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: LinearProgressIndicator(
+                  backgroundColor: const Color(0x3314B8A6), // Transparent teal
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).primaryColor,
+                  ),
+                  minHeight: 5,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Psychological Animated Text
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 500),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0.0, 0.3),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  ),
+                );
+              },
+              child: Text(
+                _loadingPhrases[_textIndex],
+                key: ValueKey<int>(_textIndex),
+                style: const TextStyle(
+                  fontSize: 15,
+                  color: Color(0xFF6B7280), // Gray 500
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.3,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

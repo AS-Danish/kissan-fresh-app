@@ -1,0 +1,303 @@
+import 'package:kissanfresh/features/cart/application/cart_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kissanfresh/core/utils/custom_snackbar.dart';
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:kissanfresh/core/navigation.dart';
+import 'package:kissanfresh/core/observable.dart';
+import 'package:kissanfresh/core/providers.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kissanfresh/features/catalog/domain/product_card_model.dart';
+import 'package:kissanfresh/routes/app_routes.dart';
+import 'package:kissanfresh/features/catalog/application/homepage_controller.dart';
+import 'package:kissanfresh/core/services/cache_service.dart';
+
+class ProductsController extends FeatureController {
+  final Ref ref;
+
+  ProductsController(this.ref);
+
+  late final HomepageController homepageController = ref.read(
+    homepageControllerProvider,
+  );
+  final ObservableList<ProductCardModel> products = ObservableList(
+    <ProductCardModel>[],
+  );
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  late final CacheService _cacheService = ref.read(cacheServiceProvider);
+
+  // Real-time stream subscription for caching
+  StreamSubscription<QuerySnapshot>? _productsSubscription;
+
+  // Pagination observables
+  Observable<bool> isLoadingProducts = Observable(false);
+  Observable<bool> isFetchingMore = Observable(false);
+  Observable<bool> hasMoreProducts = Observable(true);
+
+  // Variables to hold the last document for each tab/category for pagination
+  final Map<String, DocumentSnapshot?> _lastDocuments = {};
+
+  // Three complete rows per page on the home grid. This avoids tiny, frequent
+  // network fetches while keeping the first payload bounded on slower devices.
+  final int limit = 18;
+  int _requestGeneration = 0;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Listen to tab and category changes
+    observeField(homepageController.currentTab, (_) => fetchInitialProducts());
+    observeField(homepageController.selectedIndex, (_) {
+      if (homepageController.currentTab.value == 'Grocery') {
+        fetchInitialProducts();
+      }
+    });
+    observeField(homepageController.selectedHomeFoodIndex, (_) {
+      if (homepageController.currentTab.value == 'HomeFood') {
+        fetchInitialProducts();
+      }
+    });
+    fetchInitialProducts();
+  }
+
+  String get currentOrigin {
+    return homepageController.currentTab.value == 'Grocery'
+        ? 'kissan-fresh'
+        : 'home-food';
+  }
+
+  String get currentCategory {
+    if (homepageController.currentTab.value == 'Grocery') {
+      final idx = homepageController.selectedIndex.value;
+      if (idx >= 0 && idx < homepageController.categories.length) {
+        return homepageController.categories[idx].label;
+      }
+    } else {
+      final idx = homepageController.selectedHomeFoodIndex.value;
+      if (idx >= 0 && idx < homepageController.homeFoodCategories.length) {
+        return homepageController.homeFoodCategories[idx].label;
+      }
+    }
+    return 'All';
+  }
+
+  String get currentCacheKey {
+    return '${currentOrigin}_$currentCategory';
+  }
+
+  @override
+  void onClose() {
+    _productsSubscription?.cancel();
+    super.onClose();
+  }
+
+  Future<void> fetchInitialProducts() async {
+    final requestGeneration = ++_requestGeneration;
+    final origin = currentOrigin;
+    final category = currentCategory;
+    final cacheKey = currentCacheKey;
+    isFetchingMore.value = false;
+
+    // Load from cache instantly if available to prevent loading spinners
+    final cached = _cacheService.getProducts(cacheKey);
+    if (cached.isNotEmpty) {
+      final boundData = cached.map((p) {
+        return p.copyWith(
+          onTap: () {
+            AppNavigator.toNamed(AppRoutes.productDetailsRoute, arguments: p);
+          },
+          onAddToCart: () {
+            try {
+              final cartController = ref.read(cartControllerProvider);
+              bool added = cartController.addToCart(p, 1);
+              if (added) {
+                CustomSnackBar.show(
+                  'Added to Cart',
+                  '${p.title} added to cart',
+                  snackPosition: SnackPosition.bottom,
+                  backgroundColor: AppNavigator.theme.primaryColor,
+                  colorText: Colors.white,
+                  duration: const Duration(seconds: 2),
+                  margin: const EdgeInsets.all(16),
+                  borderRadius: 12,
+                );
+              }
+            } catch (e) {
+              debugPrint("CartController not found: $e");
+            }
+          },
+        );
+      }).toList();
+      products.assignAll(boundData);
+      // NOTE: We don't hide the loading indicator here because the UI is already populated.
+    } else {
+      isLoadingProducts.value = true;
+      products.clear();
+    }
+
+    try {
+      hasMoreProducts.value = true;
+
+      // Cancel previous subscription if switching tabs
+      await _productsSubscription?.cancel();
+
+      // Setup a stream listener. This fetches from local cache first, then updates from server if changed.
+      Query query = _firestore
+          .collection('products')
+          .where('productOrigin', isEqualTo: origin);
+
+      if (category != 'All') {
+        query = query.where('category', isEqualTo: category);
+      }
+
+      _productsSubscription = query
+          .limit(limit)
+          .snapshots()
+          .listen(
+            (QuerySnapshot snapshot) {
+              if (requestGeneration != _requestGeneration ||
+                  cacheKey != currentCacheKey) {
+                return;
+              }
+              if (snapshot.docs.isEmpty) {
+                hasMoreProducts.value = false;
+                products.value = [];
+                _cacheService.saveProducts(cacheKey, []);
+                isLoadingProducts.value = false;
+                return;
+              }
+
+              // Store the last document of the initial load for pagination
+              _lastDocuments[cacheKey] = snapshot.docs.last;
+
+              final mappedProducts = snapshot.docs
+                  .map((doc) => _mapToProductCardModel(doc))
+                  .toList();
+
+              // Preserve already paginated rows when the live first page emits.
+              final firstPageIds = mappedProducts
+                  .map((item) => item.id)
+                  .toSet();
+              final existingTail = products.length > limit
+                  ? products
+                        .skip(limit)
+                        .where((item) => !firstPageIds.contains(item.id))
+                  : const Iterable<ProductCardModel>.empty();
+              final mergedProducts = [...mappedProducts, ...existingTail];
+              products.assignAll(mergedProducts);
+              _cacheService.saveProducts(cacheKey, mergedProducts);
+
+              if (snapshot.docs.length < limit) {
+                hasMoreProducts.value = false;
+              } else {
+                hasMoreProducts.value = true;
+              }
+
+              isLoadingProducts.value = false;
+            },
+            onError: (error) {
+              debugPrint("Error in products stream: $error");
+              isLoadingProducts.value = false;
+            },
+          );
+    } catch (e) {
+      debugPrint("Error setting up initial products stream: $e");
+      isLoadingProducts.value = false;
+    }
+  }
+
+  Future<void> fetchNextPage() async {
+    final origin = currentOrigin;
+    final category = currentCategory;
+    final cacheKey = currentCacheKey;
+    final requestGeneration = _requestGeneration;
+    final lastDoc = _lastDocuments[cacheKey];
+
+    if (isFetchingMore.value || !hasMoreProducts.value || lastDoc == null) {
+      return;
+    }
+
+    try {
+      isFetchingMore.value = true;
+
+      Query query = _firestore
+          .collection('products')
+          .where('productOrigin', isEqualTo: origin);
+
+      if (category != 'All') {
+        query = query.where('category', isEqualTo: category);
+      }
+
+      // Use a one-time get() for pagination to avoid compounding streams
+      QuerySnapshot querySnapshot = await query
+          .startAfterDocument(lastDoc)
+          .limit(limit)
+          .get();
+
+      if (requestGeneration != _requestGeneration ||
+          cacheKey != currentCacheKey) {
+        return;
+      }
+
+      if (querySnapshot.docs.isEmpty) {
+        hasMoreProducts.value = false;
+        return;
+      }
+
+      _lastDocuments[cacheKey] = querySnapshot.docs.last;
+
+      final newProducts = querySnapshot.docs
+          .map((doc) => _mapToProductCardModel(doc))
+          .toList();
+
+      products.addAll(newProducts);
+      _cacheService.saveProducts(cacheKey, products);
+
+      if (querySnapshot.docs.length < limit) {
+        hasMoreProducts.value = false;
+      }
+    } catch (e) {
+      debugPrint("Error fetching next page: $e");
+    } finally {
+      isFetchingMore.value = false;
+    }
+  }
+
+  ProductCardModel _mapToProductCardModel(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    data['id'] = doc.id;
+
+    final model = ProductCardModel.fromJson(data);
+
+    return model.copyWith(
+      onTap: () {
+        AppNavigator.toNamed(AppRoutes.productDetailsRoute, arguments: model);
+      },
+      onAddToCart: () {
+        try {
+          final cartController = ref.read(cartControllerProvider);
+          bool added = cartController.addToCart(model, 1);
+          if (added) {
+            CustomSnackBar.show(
+              'Added to Cart',
+              '${model.title} added to cart',
+              snackPosition: SnackPosition.bottom,
+              backgroundColor: AppNavigator.theme.primaryColor,
+              colorText: Colors.white,
+              duration: const Duration(seconds: 2),
+              margin: const EdgeInsets.all(16),
+              borderRadius: 12,
+            );
+          }
+        } catch (e) {
+          debugPrint("CartController not found: $e");
+        }
+      },
+    );
+  }
+}
+
+final productsControllerProvider = Provider(
+  (ref) => startController(ref, ProductsController(ref)),
+);

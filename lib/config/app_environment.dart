@@ -31,11 +31,4 @@ class AppEnvironment {
         'BYPASS_PHONE_VERIFICATION_ON_EMULATOR',
         defaultValue: true,
       );
-
-  // Razorpay key IDs are public client identifiers. The secret remains only in
-  // Firebase Secret Manager and is never bundled into the application.
-  static String get debugRazorpayKey => const String.fromEnvironment(
-    'RAZORPAY_API_KEY',
-    defaultValue: 'rzp_test_TcMH3wkKz6OSmw',
-  );
 }

@@ -1,7 +1,7 @@
 # Kissan Fresh build flavors
 
-Production behavior remains available through the `prod` flavor (and the
-legacy `lib/main.dart` entry point). The isolated test application uses the
+Production behavior is available through the `prod` flavor and
+`lib/main_prod.dart`. The isolated test application uses the
 `dev` flavor and installs as `com.kissanfresh.app.debug`.
 
 ## Development Firebase configuration
@@ -18,11 +18,10 @@ Remaining local/service setup:
    `DEBUG_MAPS_API_KEY` only when explicitly testing real maps.
 2. Configure App Check debug tokens and the required Authentication providers
    in the development Firebase project.
-3. Pass a Razorpay test key to the dev build; never use a live key.
-
-The local `config/dev.json` now contains the public test key ID and is
-gitignored. Firebase test login details are stored in the dashboard repository's
-gitignored `.debug-test-credentials.json` file.
+3. Configure `RAZORPAY_KEY`, `RAZORPAY_SECRET`, and
+   `RAZORPAY_WEBHOOK_SECRET` in Firebase Secret Manager. Use Razorpay test
+   credentials in development. The backend returns the public key ID when it
+   creates an order.
 
 ## Run
 
@@ -35,8 +34,7 @@ development environment, so Android Studio's automatically generated
 Terminal equivalent:
 
 ```sh
-flutter run --flavor dev -t lib/main_dev.dart \
-  --dart-define-from-file=config/dev.json
+flutter run --flavor dev -t lib/main_dev.dart
 ```
 
 Emulator app verification is bypassed only in the dev flavor and only when the
@@ -50,6 +48,21 @@ Production release:
 flutter build appbundle --release --flavor prod -t lib/main_prod.dart
 ```
 
-Never pass a live Razorpay key to the dev flavor. Cloud Functions also reject
+Development Cloud Functions require a Razorpay test key. They also reject
 wallet operations unless `KISSAN_ENV=debug`, the Firebase project is not the
 production project, and source refunds use an `rzp_test_` credential.
+
+## Checkout rollout
+
+- Verify App Check for the target Android and iOS builds and configure the
+  Razorpay webhook for `order.paid` and `payment.captured`. The webhook signing
+  secret must match `RAZORPAY_WEBHOOK_SECRET` and the gateway must capture the
+  payment for fulfillment to proceed.
+- In the existing Firestore rules, restrict `pending_orders`,
+  `payment_requests`, `direct_order_requests`, and `failed_orders` to backend
+  writes. Preserve the dashboard's authorized reads. The production rules
+  are managed outside this mobile repository.
+- Validate callback loss, app restart, duplicate events, stock/slot changes,
+  and refund retry with Razorpay test credentials. Confirm the currently
+  published client can still authenticate and check out against these callable
+  endpoints before replacing the production functions.

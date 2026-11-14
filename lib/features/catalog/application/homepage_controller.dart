@@ -1,0 +1,851 @@
+import 'package:kissanfresh/features/cart/application/cart_controller.dart';
+import 'package:kissanfresh/features/catalog/application/user_activity_controller.dart';
+import 'package:kissanfresh/features/delivery/data/location_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kissanfresh/core/utils/custom_snackbar.dart';
+import 'package:kissanfresh/core/navigation.dart';
+import 'package:kissanfresh/core/observable.dart';
+import 'package:kissanfresh/core/providers.dart';
+import 'package:flutter/material.dart';
+import 'dart:async';
+
+import 'package:kissanfresh/features/catalog/presentation/screens/product_details_screen.dart';
+import 'package:kissanfresh/features/catalog/domain/product_card_model.dart';
+import 'package:kissanfresh/features/catalog/domain/category_item_model.dart';
+import 'package:kissanfresh/features/cart/domain/coupon_model.dart';
+import 'package:kissanfresh/features/catalog/domain/section_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kissanfresh/core/services/cache_service.dart';
+import 'package:kissanfresh/core/utils/icon_utils.dart';
+
+class HomepageController extends FeatureController {
+  final Ref ref;
+
+  Observable<int> selectedIndex = Observable(0);
+  Observable<String> currentTab = Observable(
+    'Grocery',
+  ); // 'Grocery' or 'HomeFood'
+
+  String get currentOrigin =>
+      currentTab.value == 'Grocery' ? 'kissan-fresh' : 'home-food';
+
+  // Expose LocationService address
+  Observable<String?> get currentAddress =>
+      ref.read(locationServiceProvider).currentAddress;
+
+  // Today's Specials observables
+  ObservableList<ProductCardModel> todaysSpecials = ObservableList(
+    <ProductCardModel>[],
+  );
+  final Observable<bool> isLoadingSpecials = Observable(false);
+
+  // Sections observables
+  ObservableList<SectionModel> sections = ObservableList(<SectionModel>[]);
+  ObservableMap<String, List<ProductCardModel>> sectionProducts = ObservableMap(
+    <String, List<ProductCardModel>>{},
+  );
+  final Observable<bool> isLoadingSections = Observable(false);
+
+  // Active Coupons observables
+  final ObservableList<CouponModel> activeCoupons = ObservableList(
+    <CouponModel>[],
+  );
+  final Observable<bool> isLoadingCoupons = Observable(false);
+
+  late final CacheService _cacheService = ref.read(cacheServiceProvider);
+  StreamSubscription? _specialsSubscription;
+  StreamSubscription? _sectionsSubscription;
+  StreamSubscription? _headerConfigSubscription;
+  int _sectionLoadGeneration = 0;
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  Future<void>? categoriesFuture;
+
+  // Header Background observable
+  Observable<String> headerImageUrl = Observable('');
+
+  @override
+  void onInit() {
+    super.onInit();
+    _loadCachedSpecials();
+    fetchTodaysSpecials();
+    categoriesFuture = fetchCategories();
+    _setupSectionsListener();
+    fetchActiveCoupons();
+    _setupHeaderConfigListener();
+  }
+
+  void _setupHeaderConfigListener() {
+    _headerConfigSubscription = _firestore
+        .collection('app_config')
+        .doc('versioning')
+        .snapshots()
+        .listen((doc) {
+          if (doc.exists && doc.data() != null) {
+            final data = doc.data()!;
+            final themes = data['themes'] as List<dynamic>?;
+
+            String activeImageUrl = '';
+            String updateTime = '';
+
+            if (themes != null) {
+              for (var item in themes) {
+                if (item is Map<String, dynamic>) {
+                  String themeName = '';
+                  bool isActive = false;
+                  String imageUrl = '';
+
+                  for (var key in item.keys) {
+                    if (key == 'imageURL') {
+                      imageUrl = item[key]?.toString() ?? '';
+                    } else if (key != 'colors') {
+                      themeName = key;
+                      isActive = item[key] == true;
+                    }
+                  }
+
+                  if (isActive) {
+                    if (themeName.toLowerCase() != 'normal') {
+                      activeImageUrl = imageUrl;
+                    }
+                    break; // Found the active theme
+                  }
+                }
+              }
+            }
+
+            if (data['header_status_update_time'] != null) {
+              updateTime = data['header_status_update_time'].toString();
+            }
+
+            if (updateTime.isNotEmpty && activeImageUrl.isNotEmpty) {
+              activeImageUrl =
+                  '$activeImageUrl${activeImageUrl.contains('?') ? '&' : '?'}v=$updateTime';
+            }
+
+            headerImageUrl.value = activeImageUrl;
+          }
+        });
+  }
+
+  void _loadCachedSpecials() {
+    try {
+      final cachedData = _cacheService.getRaw('todays_specials_cache');
+      if (cachedData != null && cachedData is List) {
+        todaysSpecials.assignAll(
+          cachedData
+              .map(
+                (e) => ProductCardModel.fromJson(Map<String, dynamic>.from(e)),
+              )
+              .toList(),
+        );
+      }
+    } catch (e) {
+      debugPrint("Error loading cached specials: $e");
+    }
+  }
+
+  void fetchTodaysSpecials() {
+    try {
+      isLoadingSpecials.value = true;
+
+      // Get current date string
+      final now = DateTime.now();
+      final dateStr =
+          "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+
+      // Use a listener for the specials document itself
+      _specialsSubscription = _firestore
+          .collection('todays_specials')
+          .doc(dateStr)
+          .snapshots()
+          .listen(
+            (docSnapshot) async {
+              if (docSnapshot.exists && docSnapshot.data() != null) {
+                final data = docSnapshot.data()!;
+                if (data['specials'] != null && data['specials'] is List) {
+                  final specialsList = data['specials'] as List;
+
+                  // For each special, we want real-time stock updates too.
+                  // However, nested listeners can be complex.
+                  // We'll fetch them all and refresh whenever the specials list changes.
+                  // Collect all product IDs
+                  final List<String> productIds = [];
+                  for (var specialItem in specialsList) {
+                    if (specialItem is Map &&
+                        specialItem['productId'] != null) {
+                      productIds.add(specialItem['productId'].toString());
+                    }
+                  }
+
+                  final List<ProductCardModel> fetchedSpecials = [];
+
+                  if (productIds.isNotEmpty) {
+                    try {
+                      // Limit to 30 for whereIn clause. In realistic scenarios, specials are < 30.
+                      final limitedIds = productIds.take(30).toList();
+                      final productsSnapshot = await _firestore
+                          .collection('products')
+                          .where(FieldPath.documentId, whereIn: limitedIds)
+                          .get();
+
+                      for (var doc in productsSnapshot.docs) {
+                        fetchedSpecials.add(_mapDocToModel(doc));
+                      }
+
+                      // Keep the original order sorted from specialsList
+                      fetchedSpecials.sort((a, b) {
+                        final indexA = productIds.indexOf(a.id!);
+                        final indexB = productIds.indexOf(b.id!);
+                        return indexA.compareTo(indexB);
+                      });
+                    } catch (e) {
+                      debugPrint(
+                        "Error fetching batched products for specials: $e",
+                      );
+                    }
+                  }
+
+                  todaysSpecials.assignAll(fetchedSpecials);
+
+                  // Save to cache
+                  final cacheData = fetchedSpecials
+                      .map((e) => e.toJson())
+                      .toList();
+                  _cacheService.saveRaw('todays_specials_cache', cacheData);
+                }
+              }
+              isLoadingSpecials.value = false;
+            },
+            onError: (e) {
+              debugPrint("Error in specials stream: $e");
+              isLoadingSpecials.value = false;
+            },
+          );
+    } catch (e) {
+      debugPrint("Error setting up today's specials stream: $e");
+      isLoadingSpecials.value = false;
+    }
+  }
+
+  ProductCardModel _mapDocToModel(DocumentSnapshot productDoc) {
+    final productData = productDoc.data() as Map<String, dynamic>;
+    productData['id'] = productDoc.id;
+
+    final model = ProductCardModel.fromJson(productData);
+
+    return _attachProductActions(model);
+  }
+
+  ProductCardModel _attachProductActions(ProductCardModel model) {
+    return model.copyWith(
+      onTap: () {
+        try {
+          ref.read(userActivityControllerProvider).trackView(model);
+        } catch (e) {
+          debugPrint("UserActivityController error: $e");
+        }
+        AppNavigator.to(() => ProductDetailsScreen(product: model));
+      },
+      onAddToCart: () {
+        try {
+          final cartController = ref.read(cartControllerProvider);
+          bool added = cartController.addToCart(model, 1);
+          if (added) {
+            CustomSnackBar.show(
+              'Added to Cart',
+              '${model.title} added to cart',
+              snackPosition: SnackPosition.bottom,
+              backgroundColor: AppNavigator.theme.primaryColor,
+              colorText: Colors.white,
+              duration: const Duration(seconds: 2),
+              margin: const EdgeInsets.all(16),
+              borderRadius: 12,
+            );
+          }
+        } catch (e) {
+          debugPrint("CartController not found: $e");
+        }
+      },
+    );
+  }
+
+  void switchTab(String tab) {
+    currentTab.value = tab;
+  }
+
+  void updateAddress(String newAddress) {
+    ref.read(locationServiceProvider).currentAddress.value = newAddress;
+  }
+
+  // Reactive categories
+  late ObservableList<CategoryItemModel> categories;
+  late ObservableList<CategoryItemModel> homeFoodCategories;
+
+  HomepageController(this.ref) {
+    // Initialize with "All" to prevent RangeError in UI before first fetch
+    categories = ObservableList(<CategoryItemModel>[
+      CategoryItemModel(label: "All", icon: Icons.grid_view, onTap: () {}),
+    ]);
+
+    homeFoodCategories = ObservableList(<CategoryItemModel>[
+      CategoryItemModel(label: "All", icon: Icons.restaurant, onTap: () {}),
+    ]);
+  }
+
+  Future<void> fetchCategories() async {
+    await Future.wait([
+      _fetchAndMapCategories('kissan-fresh', categories, 'Grocery'),
+      _fetchAndMapCategories('home-food', homeFoodCategories, 'HomeFood'),
+    ]);
+  }
+
+  Future<void> _fetchAndMapCategories(
+    String type,
+    ObservableList<CategoryItemModel> targetList,
+    String tabName,
+  ) async {
+    final cacheKey = 'categories_$type';
+    final timestampKey = '${cacheKey}_timestamp';
+
+    try {
+      // 1. Check Cache
+      final cachedJson = _cacheService.getRaw(cacheKey);
+      final cachedTimeStr = _cacheService.getRaw(timestampKey);
+
+      bool shouldUseCache = false;
+      if (cachedJson != null && cachedTimeStr != null) {
+        final cachedTime = DateTime.parse(cachedTimeStr.toString());
+        if (DateTime.now().difference(cachedTime).inHours < 6) {
+          shouldUseCache = true;
+        }
+      }
+
+      if (shouldUseCache) {
+        debugPrint(
+          "Loading categories for $type from local cache (within 6 hours)",
+        );
+        _mapJsonToCategories(cachedJson, targetList, tabName);
+        return;
+      }
+
+      // 2. Fetch from Firestore
+      debugPrint("Fetching categories for $type from Firestore...");
+      final snapshot = await _firestore
+          .collection('categories')
+          .where('type', isEqualTo: type)
+          .orderBy('name')
+          .limit(50)
+          .get();
+
+      final dataList = snapshot.docs
+          .map((doc) => _sanitizeFirestoreData(doc.data()))
+          .toList();
+
+      // 3. Save to Cache
+      await _cacheService.saveRaw(cacheKey, dataList);
+      await _cacheService.saveRaw(
+        timestampKey,
+        DateTime.now().toIso8601String(),
+      );
+
+      // 4. Update UI
+      _mapJsonToCategories(dataList, targetList, tabName);
+    } catch (e) {
+      debugPrint("Error fetching categories for $type: $e");
+      // Fallback to cache if Firestore fails even if expired
+      final cachedJson = _cacheService.getRaw(cacheKey);
+      if (cachedJson != null) {
+        _mapJsonToCategories(cachedJson, targetList, tabName);
+      }
+    }
+  }
+
+  void _mapJsonToCategories(
+    dynamic json,
+    ObservableList<CategoryItemModel> targetList,
+    String tabName,
+  ) {
+    if (json is! List) return;
+
+    final List<CategoryItemModel> items = [];
+
+    // Always prepend "All"
+    items.add(
+      CategoryItemModel(
+        label: "All",
+        icon: tabName == 'Grocery' ? Icons.grid_view : Icons.restaurant,
+        onTap: () {},
+      ),
+    );
+
+    for (var entry in json) {
+      if (entry is Map) {
+        final name = entry['name']?.toString() ?? 'Unknown';
+        final iconName = entry['icon']?.toString();
+
+        items.add(
+          CategoryItemModel(
+            label: name,
+            icon:
+                IconUtils.getLucideIcon(iconName) ??
+                IconUtils.getCategoryIcon(name),
+            onTap: () {},
+          ),
+        );
+      }
+    }
+
+    targetList.assignAll(items);
+  }
+
+  Map<String, dynamic> _sanitizeFirestoreData(Map<String, dynamic> data) {
+    final Map<String, dynamic> sanitized = {};
+    data.forEach((key, value) {
+      if (value is Timestamp) {
+        sanitized[key] = value.toDate().toIso8601String();
+      } else if (value is Map<String, dynamic>) {
+        sanitized[key] = _sanitizeFirestoreData(value);
+      } else if (value is List) {
+        sanitized[key] = value.map((e) {
+          if (e is Map<String, dynamic>) return _sanitizeFirestoreData(e);
+          if (e is Timestamp) return e.toDate().toIso8601String();
+          return e;
+        }).toList();
+      } else {
+        sanitized[key] = value;
+      }
+    });
+    return sanitized;
+  }
+
+  void _setupSectionsListener() {
+    _sectionsSubscription?.cancel();
+    isLoadingSections.value = true;
+
+    // We fetch all sections but we'll filter in the UI by type
+    // This allows smooth tab switching without re-fetching
+    _sectionsSubscription = _firestore
+        .collection('sections')
+        .orderBy('rank')
+        .snapshots()
+        .listen(
+          (snapshot) {
+            final loadGeneration = ++_sectionLoadGeneration;
+            final fetchedSections = snapshot.docs
+                .map((doc) => SectionModel.fromJson(doc.data(), doc.id))
+                .toList();
+
+            sections.assignAll(fetchedSections);
+
+            final restoredSectionProducts =
+                Map<String, List<ProductCardModel>>.from(sectionProducts);
+            for (final section in fetchedSections) {
+              final cached = _cacheService.getRaw(
+                'section_preview_${section.id}',
+              );
+              if (cached is List) {
+                try {
+                  restoredSectionProducts[section.id] = cached
+                      .map(
+                        (item) => _attachProductActions(
+                          ProductCardModel.fromJson(
+                            Map<String, dynamic>.from(item as Map),
+                          ),
+                        ),
+                      )
+                      .toList();
+                } catch (error) {
+                  debugPrint(
+                    'Unable to restore section ${section.id} cache: $error',
+                  );
+                }
+              }
+            }
+            sectionProducts.assignAll(restoredSectionProducts);
+
+            // Refresh previews with bounded concurrency: fast enough for the
+            // visible area without opening a connection for every section.
+            Future.microtask(() async {
+              final loadable = fetchedSections
+                  .where((section) => section.categories.isNotEmpty)
+                  .toList();
+              for (var index = 0; index < loadable.length; index += 3) {
+                if (loadGeneration != _sectionLoadGeneration) return;
+                final refreshedEntries = await Future.wait(
+                  loadable
+                      .skip(index)
+                      .take(3)
+                      .map(
+                        (section) =>
+                            _fetchProductsForSection(section, loadGeneration),
+                      ),
+                );
+                if (loadGeneration != _sectionLoadGeneration) return;
+                final refreshed = Map<String, List<ProductCardModel>>.from(
+                  sectionProducts,
+                );
+                for (final entry
+                    in refreshedEntries
+                        .whereType<
+                          MapEntry<String, List<ProductCardModel>>
+                        >()) {
+                  refreshed[entry.key] = entry.value;
+                }
+                sectionProducts.assignAll(refreshed);
+              }
+            });
+            isLoadingSections.value = false;
+          },
+          onError: (e) {
+            debugPrint("Error in sections listener: $e");
+            isLoadingSections.value = false;
+          },
+        );
+  }
+
+  // Deprecated - kept for compatibility if called elsewhere temporarily
+  Future<void> fetchSections() async {
+    _setupSectionsListener();
+  }
+
+  Future<void> fetchActiveCoupons() async {
+    try {
+      isLoadingCoupons.value = true;
+      final snapshot = await _firestore
+          .collection('coupons')
+          .where('isActive', isEqualTo: true)
+          .get();
+
+      final fetchedCoupons = snapshot.docs
+          .map((doc) => CouponModel.fromJson(doc.data()))
+          .toList();
+
+      activeCoupons.assignAll(fetchedCoupons);
+    } catch (e) {
+      debugPrint("Error fetching active coupons: $e");
+    } finally {
+      isLoadingCoupons.value = false;
+    }
+  }
+
+  Future<MapEntry<String, List<ProductCardModel>>?> _fetchProductsForSection(
+    SectionModel section,
+    int loadGeneration,
+  ) async {
+    try {
+      final snapshot = await _firestore
+          .collection('products')
+          .where(
+            'category',
+            whereIn: section.categories.take(10).toList(),
+          ) // whereIn limit is 10
+          .limit(
+            5,
+          ) // Fetch 5 to check if "More" exists without loading everything
+          .get();
+
+      final products = snapshot.docs.map(_mapDocToModel).toList();
+      if (loadGeneration != _sectionLoadGeneration) return null;
+      await _cacheService.saveRaw(
+        'section_preview_${section.id}',
+        products.map((product) => product.toJson()).toList(),
+      );
+      return MapEntry(section.id, products);
+    } catch (e) {
+      debugPrint("Error fetching products for section ${section.name}: $e");
+    }
+    return null;
+  }
+
+  Future<void> fetchFullProductsForSection(SectionModel section) async {
+    try {
+      // If we already have more than 5 products, we likely already fetched the full list
+      if ((sectionProducts[section.id]?.length ?? 0) > 5) return;
+
+      final snapshot = await _firestore
+          .collection('products')
+          .where('category', whereIn: section.categories.take(10).toList())
+          .limit(50) // Fetch a reasonably full list for the section page
+          .get();
+
+      final products = snapshot.docs.map(_mapDocToModel).toList();
+      sectionProducts[section.id] = products;
+    } catch (e) {
+      debugPrint(
+        "Error fetching full products for section ${section.name}: $e",
+      );
+    }
+  }
+
+  // REMOVED: Static final lists replaced by RxLists above.
+
+  Observable<int> selectedHomeFoodIndex = Observable(0);
+
+  void selectHomeFoodCategory(int index) {
+    selectedHomeFoodIndex.value = index;
+  }
+
+  void selectCategory(int index) {
+    selectedIndex.value = index;
+  }
+
+  // Home Food Products
+  late final homeFoodProducts = [
+    ProductCardModel(
+      id: 'hf_1',
+      title: "Spicy Paneer Thali",
+      description: "Includes 3 rotis, paneer gravy, rice, dal & salad",
+      price: 150,
+      unit: "plate",
+      image:
+          "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1160&q=80",
+      category: "Thali",
+      onTap: () {
+        AppNavigator.to(
+          () => ProductDetailsScreen(
+            product: ProductCardModel(
+              id: 'hf_1',
+              title: "Spicy Paneer Thali",
+              description: "Includes 3 rotis, paneer gravy, rice, dal & salad",
+              price: 150,
+              unit: "plate",
+              image:
+                  "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1160&q=80",
+              category: "Thali",
+              onTap: () {},
+              onAddToCart: () {},
+            ),
+          ),
+        );
+      },
+      onAddToCart: () {
+        bool added = ref
+            .read(cartControllerProvider)
+            .addToCart(
+              ProductCardModel(
+                id: 'hf_1',
+                title: "Spicy Paneer Thali",
+                description:
+                    "Includes 3 rotis, paneer gravy, rice, dal & salad",
+                price: 150,
+                unit: "plate",
+                image:
+                    "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1160&q=80",
+                category: "Thali",
+                onTap: () {},
+                onAddToCart: () {},
+              ),
+              1,
+            );
+        if (added) {
+          CustomSnackBar.show(
+            "Added to Cart",
+            "Spicy Paneer Thali added",
+            snackPosition: SnackPosition.bottom,
+            backgroundColor: AppNavigator.theme.primaryColor,
+            colorText: Colors.white,
+            margin: const EdgeInsets.all(16),
+            borderRadius: 16,
+            duration: const Duration(milliseconds: 1500),
+          );
+        }
+      },
+    ),
+    ProductCardModel(
+      id: 'hf_2',
+      title: "Chicken Biryani",
+      description:
+          "Aromatic basmati rice cooked with tender chicken and spices",
+      price: 220,
+      unit: "plate",
+      image:
+          "https://images.unsplash.com/photo-1589302168068-964664d93dc0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      category: "Thali",
+      onTap: () {
+        AppNavigator.to(
+          () => ProductDetailsScreen(
+            product: ProductCardModel(
+              id: 'hf_2',
+              title: "Chicken Biryani",
+              description:
+                  "Aromatic basmati rice cooked with tender chicken and spices",
+              price: 220,
+              unit: "plate",
+              image:
+                  "https://images.unsplash.com/photo-1589302168068-964664d93dc0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+              category: "Thali",
+              onTap: () {},
+              onAddToCart: () {},
+            ),
+          ),
+        );
+      },
+      onAddToCart: () {
+        bool added = ref
+            .read(cartControllerProvider)
+            .addToCart(
+              ProductCardModel(
+                id: 'hf_2',
+                title: "Chicken Biryani",
+                description:
+                    "Aromatic basmati rice cooked with tender chicken and spices",
+                price: 220,
+                unit: "plate",
+                image:
+                    "https://images.unsplash.com/photo-1589302168068-964664d93dc0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                category: "Thali",
+                onTap: () {},
+                onAddToCart: () {},
+              ),
+              1,
+            );
+        if (added) {
+          CustomSnackBar.show(
+            "Added to Cart",
+            "Chicken Biryani added",
+            snackPosition: SnackPosition.bottom,
+            backgroundColor: AppNavigator.theme.primaryColor,
+            colorText: Colors.white,
+            margin: const EdgeInsets.all(16),
+            borderRadius: 16,
+            duration: const Duration(milliseconds: 1500),
+          );
+        }
+      },
+    ),
+    ProductCardModel(
+      id: 'hf_3',
+      title: "Methi Thepla",
+      description: "Healthy and tasty flatbread made with fenugreek leaves",
+      price: 40,
+      unit: "pc",
+      image:
+          "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      category: "Snacks",
+      onTap: () {
+        AppNavigator.to(
+          () => ProductDetailsScreen(
+            product: ProductCardModel(
+              id: 'hf_3',
+              title: "Methi Thepla",
+              description:
+                  "Healthy and tasty flatbread made with fenugreek leaves",
+              price: 40,
+              unit: "pc",
+              image:
+                  "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+              category: "Snacks",
+              onTap: () {},
+              onAddToCart: () {},
+            ),
+          ),
+        );
+      },
+      onAddToCart: () {
+        bool added = ref
+            .read(cartControllerProvider)
+            .addToCart(
+              ProductCardModel(
+                id: 'hf_3',
+                title: "Methi Thepla",
+                description:
+                    "Healthy and tasty flatbread made with fenugreek leaves",
+                price: 40,
+                unit: "pc",
+                image:
+                    "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                category: "Snacks",
+                onTap: () {},
+                onAddToCart: () {},
+              ),
+              1,
+            );
+        if (added) {
+          CustomSnackBar.show(
+            "Added to Cart",
+            "Methi Thepla added",
+            snackPosition: SnackPosition.bottom,
+            backgroundColor: AppNavigator.theme.primaryColor,
+            colorText: Colors.white,
+            margin: const EdgeInsets.all(16),
+            borderRadius: 16,
+            duration: const Duration(milliseconds: 1500),
+          );
+        }
+      },
+    ),
+    ProductCardModel(
+      id: 'hf_4',
+      title: "Gajar Ka Halwa",
+      description: "Homemade carrot pudding made with ghee and milk",
+      price: 300,
+      unit: "500g",
+      image:
+          "https://images.unsplash.com/photo-1624551121868-245749c66925?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      category: "Sweets",
+      onTap: () {
+        AppNavigator.to(
+          () => ProductDetailsScreen(
+            product: ProductCardModel(
+              id: 'hf_4',
+              title: "Gajar Ka Halwa",
+              description: "Homemade carrot pudding made with ghee and milk",
+              price: 300,
+              unit: "500g",
+              image:
+                  "https://images.unsplash.com/photo-1624551121868-245749c66925?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+              category: "Sweets",
+              onTap: () {},
+              onAddToCart: () {},
+            ),
+          ),
+        );
+      },
+      onAddToCart: () {
+        bool added = ref
+            .read(cartControllerProvider)
+            .addToCart(
+              ProductCardModel(
+                id: 'hf_4',
+                title: "Gajar Ka Halwa",
+                description: "Homemade carrot pudding made with ghee and milk",
+                price: 300,
+                unit: "500g",
+                image:
+                    "https://images.unsplash.com/photo-1624551121868-245749c66925?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                category: "Sweets",
+                onTap: () {},
+                onAddToCart: () {},
+              ),
+              1,
+            );
+        if (added) {
+          CustomSnackBar.show(
+            "Added to Cart",
+            "Gajar Ka Halwa added",
+            snackPosition: SnackPosition.bottom,
+            backgroundColor: AppNavigator.theme.primaryColor,
+            colorText: Colors.white,
+            margin: const EdgeInsets.all(16),
+            borderRadius: 16,
+            duration: const Duration(milliseconds: 1500),
+          );
+        }
+      },
+    ),
+  ];
+  @override
+  void onClose() {
+    _sectionLoadGeneration++;
+    _specialsSubscription?.cancel();
+    _sectionsSubscription?.cancel();
+    _headerConfigSubscription?.cancel();
+    super.onClose();
+  }
+}
+
+final homepageControllerProvider = Provider(
+  (ref) => startController(ref, HomepageController(ref)),
+);

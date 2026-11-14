@@ -1,0 +1,380 @@
+import 'package:kissanfresh/features/cart/application/cart_controller.dart';
+import 'package:kissanfresh/features/orders/application/orders_controller.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kissanfresh/core/utils/custom_snackbar.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:kissanfresh/core/navigation.dart';
+import 'package:kissanfresh/core/observable.dart';
+import 'package:kissanfresh/core/providers.dart';
+import 'package:hive/hive.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:kissanfresh/features/catalog/domain/product_card_model.dart';
+import 'package:kissanfresh/routes/app_routes.dart';
+
+class UserActivityController extends FeatureController {
+  final Ref ref;
+
+  UserActivityController(this.ref);
+
+  late Box _activityBox;
+  final ObservableList<ProductCardModel> personalizedProducts = ObservableList(
+    <ProductCardModel>[],
+  );
+  // Real-time product data map: productId -> product data
+  ObservableMap<String, Map<String, dynamic>> realTimeProductData =
+      ObservableMap(<String, Map<String, dynamic>>{});
+
+  static const String _recentViewsKey = 'recent_views';
+  static const String _viewCountsKey = 'view_counts';
+  static const int _maxItems = 10;
+  static const int _viewThreshold = 3;
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  StreamSubscription? _productsSubscription;
+  FieldSubscription? _personalizedWorker;
+  String _subscribedProductIds = '';
+
+  @override
+  void onInit() {
+    super.onInit();
+    _activityBox = Hive.box('user_activity');
+    _loadPersonalizedData();
+
+    // Start listening to product changes whenever personalizedProducts changes
+    _personalizedWorker = observeField(personalizedProducts, (_) {
+      _updateProductsSubscription();
+    });
+
+    // Manually trigger initial subscription to ensure real-time data from start
+    _updateProductsSubscription();
+
+    // Refresh when orders change
+    final ordersController = ref.read(ordersControllerProvider);
+    observeField(ordersController.orders, (_) => _loadPersonalizedData());
+  }
+
+  @override
+  void onClose() {
+    _productsSubscription?.cancel();
+    _personalizedWorker?.dispose();
+    super.onClose();
+  }
+
+  void _updateProductsSubscription() {
+    final productIds = personalizedProducts
+        .map((item) => item.id)
+        .where((id) => id != null)
+        .cast<String>()
+        .take(10) // Firestore whereIn limit
+        .toList();
+    final productIdSignature = [...productIds]..sort();
+    final signature = productIdSignature.join('|');
+
+    if (_productsSubscription != null && signature == _subscribedProductIds) {
+      return;
+    }
+    _productsSubscription?.cancel();
+    _productsSubscription = null;
+    _subscribedProductIds = signature;
+
+    if (productIds.isEmpty) {
+      realTimeProductData.clear();
+      return;
+    }
+
+    _productsSubscription = _firestore
+        .collection('products')
+        .where(FieldPath.documentId, whereIn: productIds)
+        .snapshots()
+        .listen(
+          (snapshot) {
+            final Map<String, Map<String, dynamic>> newData = {};
+            for (var doc in snapshot.docs) {
+              newData[doc.id] = doc.data();
+            }
+            realTimeProductData.assignAll(newData);
+
+            final fetchedIds = snapshot.docs.map((doc) => doc.id).toList();
+            final deletedIds = productIds
+                .where((id) => !fetchedIds.contains(id))
+                .toList();
+
+            bool changed = false;
+            final refreshedProducts = personalizedProducts.toList();
+
+            // Update all models in memory, then publish once. This avoids a
+            // rebuild and subscription restart for every personalized card.
+            for (int i = 0; i < refreshedProducts.length; i++) {
+              final currentProduct = refreshedProducts[i];
+              final id = currentProduct.id;
+              if (id != null && newData.containsKey(id)) {
+                final freshData = Map<String, dynamic>.from(newData[id]!);
+                freshData['id'] = id; // ensure ID is present for parsing
+                final freshProduct = ProductCardModel.fromJson(freshData);
+
+                refreshedProducts[i] = freshProduct.copyWith(
+                  onTap: currentProduct.onTap,
+                  onAddToCart: currentProduct.onAddToCart,
+                );
+                changed = true;
+              }
+            }
+
+            if (deletedIds.isNotEmpty) {
+              refreshedProducts.removeWhere((item) {
+                if (deletedIds.contains(item.id)) {
+                  changed = true;
+                  return true;
+                }
+                return false;
+              });
+
+              _removeFromRecentViews(deletedIds);
+            }
+
+            if (changed) {
+              personalizedProducts.assignAll(refreshedProducts);
+              _warmFirstImages(refreshedProducts);
+            }
+          },
+          onError: (e) =>
+              debugPrint("Error in personalized products stream: $e"),
+        );
+  }
+
+  void _removeFromRecentViews(List<String> deletedIds) {
+    final String? cachedViews = _activityBox.get(_recentViewsKey);
+    if (cachedViews != null) {
+      try {
+        final List<dynamic> decoded = jsonDecode(cachedViews);
+        List<Map<String, dynamic>> viewsList = decoded
+            .map((e) => Map<String, dynamic>.from(e))
+            .toList();
+
+        viewsList.removeWhere((item) => deletedIds.contains(item['id']));
+
+        _activityBox.put(_recentViewsKey, jsonEncode(viewsList));
+      } catch (e) {
+        debugPrint('Error decoding views list for deletion: $e');
+      }
+    }
+  }
+
+  void _loadPersonalizedData() {
+    final List<ProductCardModel> combined = [];
+    final Set<String> uniqueIds = {};
+
+    // 1. Load from Recent Views (stored in Hive)
+    final String? cachedViews = _activityBox.get(_recentViewsKey);
+    if (cachedViews != null) {
+      try {
+        final List<dynamic> decoded = jsonDecode(cachedViews);
+        for (var item in decoded) {
+          final productData = Map<String, dynamic>.from(item);
+          final product = ProductCardModel.fromJson(
+            productData,
+            onTap: () => _navigateToProductDetails(
+              ProductCardModel.fromJson(productData),
+            ),
+            onAddToCart: () {
+              try {
+                final cartController = ref.read(cartControllerProvider);
+                final productModel = ProductCardModel.fromJson(productData);
+                bool added = cartController.addToCart(productModel, 1);
+                if (added) {
+                  CustomSnackBar.show(
+                    'Added to Cart',
+                    '${productModel.title} added to cart',
+                    snackPosition: SnackPosition.bottom,
+                    backgroundColor: AppNavigator.theme.primaryColor,
+                    colorText: Colors.white,
+                    duration: const Duration(seconds: 2),
+                    margin: const EdgeInsets.all(16),
+                    borderRadius: 12,
+                  );
+                }
+              } catch (e) {
+                debugPrint("CartController not found: $e");
+              }
+            },
+          );
+          if (product.id != null && !uniqueIds.contains(product.id)) {
+            combined.add(product);
+            uniqueIds.add(product.id!);
+          }
+        }
+      } catch (e) {
+        debugPrint('Error decoding recent views: $e');
+      }
+    }
+
+    // 2. Load from Orders (if logged in)
+    try {
+      final ordersController = ref.read(ordersControllerProvider);
+      for (var order in ordersController.orders) {
+        for (var item in order.items) {
+          // We only have basic info in order items, but we can construct a ProductCardModel
+          // Or we can just use what we have.
+          // Note: OrderItem might not have the full ProductCardModel structure.
+          if (!uniqueIds.contains(item.productId)) {
+            combined.add(
+              ProductCardModel(
+                id: item.productId,
+                title: item.title,
+                image: item.image,
+                price: item.price.toDouble(),
+                unit: item.unit,
+                stockCount: 99, // default to in stock for reordering
+                inStock: true,
+                description: "Previously ordered",
+                onTap: () => _navigateToProductDetails(
+                  ProductCardModel(
+                    id: item.productId,
+                    title: item.title,
+                    image: item.image,
+                    price: item.price.toDouble(),
+                    unit: item.unit,
+                    description: "Previously ordered",
+                    onTap: () {},
+                    onAddToCart: () {},
+                  ),
+                ),
+                onAddToCart: () {
+                  try {
+                    final cartController = ref.read(cartControllerProvider);
+                    final productModel = ProductCardModel(
+                      id: item.productId,
+                      title: item.title,
+                      image: item.image,
+                      price: item.price.toDouble(),
+                      unit: item.unit,
+                      stockCount: 99,
+                      inStock: true,
+                      description: "Previously ordered",
+                      onTap: () {},
+                      onAddToCart: () {},
+                    );
+                    bool added = cartController.addToCart(productModel, 1);
+                    if (added) {
+                      CustomSnackBar.show(
+                        'Added to Cart',
+                        '${productModel.title} added to cart',
+                        snackPosition: SnackPosition.bottom,
+                        backgroundColor: AppNavigator.theme.primaryColor,
+                        colorText: Colors.white,
+                        duration: const Duration(seconds: 2),
+                        margin: const EdgeInsets.all(16),
+                        borderRadius: 12,
+                      );
+                    }
+                  } catch (e) {
+                    debugPrint("CartController not found: $e");
+                  }
+                },
+              ),
+            );
+            uniqueIds.add(item.productId);
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error getting items from orders: $e');
+    }
+
+    // Limit and update
+    personalizedProducts.value = combined.take(_maxItems).toList();
+    _warmFirstImages(personalizedProducts);
+  }
+
+  void _warmFirstImages(Iterable<ProductCardModel> products) {
+    for (final product in products.take(2)) {
+      final url = product.image.trim();
+      if (!url.startsWith('https://') && !url.startsWith('http://')) continue;
+      final provider = CachedNetworkImageProvider(
+        url,
+        maxWidth: 300,
+        maxHeight: 300,
+      );
+      final stream = provider.resolve(ImageConfiguration.empty);
+      late final ImageStreamListener listener;
+      listener = ImageStreamListener(
+        (_, _) => stream.removeListener(listener),
+        onError: (_, _) => stream.removeListener(listener),
+      );
+      stream.addListener(listener);
+    }
+  }
+
+  void trackView(ProductCardModel product) {
+    if (product.id == null) return;
+
+    // 1. Update view count
+    final String? cachedCounts = _activityBox.get(_viewCountsKey);
+    Map<String, dynamic> viewCounts = {};
+    if (cachedCounts != null) {
+      try {
+        viewCounts = Map<String, dynamic>.from(jsonDecode(cachedCounts));
+      } catch (e) {
+        debugPrint('Error decoding view counts: $e');
+      }
+    }
+
+    final int currentCount = (viewCounts[product.id] ?? 0) + 1;
+    viewCounts[product.id!] = currentCount;
+    _activityBox.put(_viewCountsKey, jsonEncode(viewCounts));
+
+    // 2. If threshold reached, add/update in recent views
+    if (currentCount >= _viewThreshold) {
+      _addToRecentViews(product);
+    }
+  }
+
+  void trackAddToCart(ProductCardModel product) {
+    // Adding to cart directly qualifies the product
+    _addToRecentViews(product);
+  }
+
+  void _addToRecentViews(ProductCardModel product) {
+    if (product.id == null) return;
+
+    final String? cachedViews = _activityBox.get(_recentViewsKey);
+    List<Map<String, dynamic>> viewsList = [];
+
+    if (cachedViews != null) {
+      try {
+        final List<dynamic> decoded = jsonDecode(cachedViews);
+        viewsList = decoded.map((e) => Map<String, dynamic>.from(e)).toList();
+      } catch (e) {
+        debugPrint('Error decoding views list: $e');
+      }
+    }
+
+    // Remove if exists (to bring to front)
+    viewsList.removeWhere((item) => item['id'] == product.id);
+
+    // Add to front
+    viewsList.insert(0, product.toJson());
+
+    // Limit size
+    if (viewsList.length > _maxItems) {
+      viewsList = viewsList.sublist(0, _maxItems);
+    }
+
+    // Save
+    _activityBox.put(_recentViewsKey, jsonEncode(viewsList));
+
+    // Refresh UI
+    _loadPersonalizedData();
+  }
+
+  void _navigateToProductDetails(ProductCardModel product) {
+    AppNavigator.toNamed(AppRoutes.productDetailsRoute, arguments: product);
+  }
+}
+
+final userActivityControllerProvider = Provider(
+  (ref) => startController(ref, UserActivityController(ref)),
+);

@@ -1,0 +1,693 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kissanfresh/features/delivery/data/location_service.dart';
+import 'package:flutter/material.dart';
+import 'package:kissanfresh/core/navigation.dart';
+import 'package:kissanfresh/core/observable.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:kissanfresh/features/cart/application/cart_controller.dart';
+import 'package:kissanfresh/features/delivery/presentation/widgets/address_bottom_sheet.dart';
+import 'package:kissanfresh/features/delivery/presentation/widgets/delivery_instruction_widget.dart';
+
+class PaymentMethodScreen extends ConsumerStatefulWidget {
+  const PaymentMethodScreen({super.key});
+
+  @override
+  ConsumerState<PaymentMethodScreen> createState() =>
+      _PaymentMethodScreenState();
+}
+
+class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
+  late final CartController cartController = ref.read(cartControllerProvider);
+  final Observable<int> selectedMethod = Observable(
+    0,
+  ); // 0 = COD, 1 = UPI/Online
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: AppBar(
+        backgroundColor: theme.appBarTheme.backgroundColor,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: theme.appBarTheme.titleTextStyle?.color,
+            size: 20,
+          ),
+          onPressed: () => AppNavigator.back(),
+        ),
+        title: Text(
+          'Payment Method',
+          style: GoogleFonts.montserrat(
+            color: theme.appBarTheme.titleTextStyle?.color,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 0.3,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Delivery Address Card
+            _buildDeliveryAddressCard(context),
+            const SizedBox(height: 24),
+
+            // Order Summary Card
+            _buildOrderSummaryCard(context),
+            const SizedBox(height: 24),
+
+            // Delivery Instructions
+            const DeliveryInstructionWidget(),
+            const SizedBox(height: 28),
+
+            FieldBuilder(() {
+              if (!cartController.hasPendingCheckout) {
+                return const SizedBox.shrink();
+              }
+              final busy = cartController.isProcessingOrder.value;
+              return Wrap(
+                children: [
+                  TextButton(
+                    onPressed: busy
+                        ? null
+                        : () => cartController.checkPendingPayment(
+                            showStatus: true,
+                          ),
+                    child: const Text('Check payment status'),
+                  ),
+                  TextButton(
+                    onPressed: busy ? null : cartController.closeUnpaidCheckout,
+                    child: const Text('Close unpaid checkout'),
+                  ),
+                ],
+              );
+            }),
+            // Payment Options Title
+            FieldBuilder(
+              () => Text(
+                cartController.isFullyPaidByWallet
+                    ? 'Payment Confirmation'
+                    : 'Select Payment Method',
+                style: GoogleFonts.montserrat(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: theme.colorScheme.onSurface,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Payment Options
+            FieldBuilder(() {
+              if (cartController.isFullyPaidByWallet) {
+                return Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.3),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Icon(
+                          Icons.check_circle_rounded,
+                          color: Colors.white,
+                          size: 26,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '100% Paid with Wallet',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFF065F46),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Your full order total of ₹${cartController.total.toStringAsFixed(0)} is covered by your Kissan Wallet balance. No additional payment is required.',
+                              style: GoogleFonts.montserrat(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: const Color(0xFF047857),
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return Column(
+                children: [
+                  _buildPaymentOption(
+                    context: context,
+                    index: 0,
+                    icon: Icons.money_rounded,
+                    iconColor: Theme.of(context).primaryColor,
+                    title: cartController.appliedWalletAmount > 0
+                        ? 'Cash on Delivery (₹${cartController.payableAmount.toStringAsFixed(0)})'
+                        : 'Cash on Delivery',
+                    description: cartController.appliedWalletAmount > 0
+                        ? 'Delivery partner will collect only ₹${cartController.payableAmount.toStringAsFixed(0)} (₹${cartController.appliedWalletAmount.toStringAsFixed(0)} deducted from wallet)'
+                        : 'Pay with cash when your order is delivered to your doorstep',
+                    isSelected: selectedMethod.value == 0,
+                  ),
+                  const SizedBox(height: 14),
+                  _buildPaymentOption(
+                    context: context,
+                    index: 1,
+                    icon: Icons.account_balance_wallet_rounded,
+                    iconColor: const Color(0xFF6366F1),
+                    title: cartController.appliedWalletAmount > 0
+                        ? 'UPI / Online Payment (₹${cartController.payableAmount.toStringAsFixed(0)})'
+                        : 'UPI / Online Payment',
+                    description: cartController.appliedWalletAmount > 0
+                        ? 'Pay remaining ₹${cartController.payableAmount.toStringAsFixed(0)} securely via UPI, Net Banking, Cards'
+                        : 'Pay securely via UPI, Net Banking, Cards & Wallets',
+                    isSelected: selectedMethod.value == 1,
+                  ),
+                ],
+              );
+            }),
+          ],
+        ),
+      ),
+      bottomNavigationBar: _buildPlaceOrderButton(context),
+    );
+  }
+
+  Widget _buildDeliveryAddressCard(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: theme.primaryColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.location_on_rounded,
+              color: theme.primaryColor,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'Delivering to ',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+                    Flexible(
+                      child: FieldBuilder(
+                        () => Text(
+                          ProviderScope.containerOf(context, listen: false)
+                              .read(locationServiceProvider)
+                              .currentAddressType
+                              .value,
+                          style: GoogleFonts.montserrat(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: theme.primaryColor,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                FieldBuilder(
+                  () => Text(
+                    ProviderScope.containerOf(
+                          context,
+                          listen: false,
+                        ).read(locationServiceProvider).currentAddress.value ??
+                        'No address selected',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade600,
+                      height: 1.4,
+                    ),
+                    maxLines: 6,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          InkWell(
+            onTap: () {
+              AddressBottomSheet.show(context);
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Text(
+                'Change',
+                style: GoogleFonts.montserrat(
+                  color: theme.primaryColor,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrderSummaryCard(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: FieldBuilder(() {
+        final hasWallet = cartController.appliedWalletAmount > 0;
+        return Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.shopping_bag_rounded,
+                        color: Color(0xFFF59E0B),
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Order Total',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${cartController.totalItemCount} item${cartController.totalItemCount > 1 ? 's' : ''}',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                Text(
+                  '₹${cartController.total.toStringAsFixed(0)}',
+                  style: GoogleFonts.montserrat(
+                    fontSize: hasWallet ? 18 : 22,
+                    fontWeight: FontWeight.w900,
+                    color: hasWallet
+                        ? Colors.grey.shade600
+                        : theme.primaryColor,
+                    decoration: hasWallet ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+              ],
+            ),
+            if (hasWallet) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.account_balance_wallet_rounded,
+                          color: Color(0xFF10B981),
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Kissan Wallet Applied',
+                          style: GoogleFonts.montserrat(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF065F46),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      '-₹${cartController.appliedWalletAmount.toStringAsFixed(0)}',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF10B981),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Payable Amount',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  Text(
+                    '₹${cartController.payableAmount.toStringAsFixed(0)}',
+                    style: GoogleFonts.montserrat(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: theme.primaryColor,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            if (cartController.discount > 0) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.local_offer_rounded,
+                      color: Theme.of(context).primaryColor,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'You save ₹${cartController.discount.toStringAsFixed(0)} on this order!',
+                      style: GoogleFonts.montserrat(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        );
+      }),
+    );
+  }
+
+  Widget _buildPaymentOption({
+    required BuildContext context,
+    required int index,
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String description,
+    required bool isSelected,
+  }) {
+    final theme = Theme.of(context);
+    return GestureDetector(
+      onTap: () => selectedMethod.value = index,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? theme.primaryColor.withValues(alpha: 0.06)
+              : theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: isSelected
+                ? theme.primaryColor
+                : theme.dividerColor.withValues(alpha: 0.5),
+            width: isSelected ? 2 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: theme.primaryColor.withValues(alpha: 0.12),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: iconColor, size: 26),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: GoogleFonts.montserrat(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade600,
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? theme.primaryColor : Colors.grey.shade400,
+                  width: isSelected ? 2 : 1.5,
+                ),
+                color: isSelected ? theme.primaryColor : Colors.transparent,
+              ),
+              child: isSelected
+                  ? const Icon(Icons.check, color: Colors.white, size: 16)
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlaceOrderButton(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: FieldBuilder(() {
+            final isFullyWallet = cartController.isFullyPaidByWallet;
+            final isCod = selectedMethod.value == 0;
+            return SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: cartController.isProcessingOrder.value
+                    ? null
+                    : () {
+                        if (isFullyWallet) {
+                          cartController.processPayment();
+                        } else if (isCod) {
+                          cartController.placeCodOrder();
+                        } else {
+                          cartController.processPayment();
+                        }
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isFullyWallet
+                      ? const Color(0xFF059669)
+                      : (isCod
+                            ? Theme.of(context).primaryColor
+                            : const Color(0xFF6366F1)),
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  shadowColor: isFullyWallet
+                      ? const Color(0xFF059669).withValues(alpha: 0.3)
+                      : (isCod
+                            ? Theme.of(
+                                context,
+                              ).primaryColor.withValues(alpha: 0.3)
+                            : const Color(0xFF6366F1).withValues(alpha: 0.3)),
+                ),
+                child: cartController.isProcessingOrder.value
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.5,
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            isFullyWallet
+                                ? Icons.account_balance_wallet_rounded
+                                : (isCod
+                                      ? Icons.check_circle_rounded
+                                      : Icons.lock_rounded),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            isFullyWallet
+                                ? 'PAY VIA WALLET (₹${cartController.total.toStringAsFixed(0)})'
+                                : (isCod
+                                      ? (cartController.appliedWalletAmount > 0
+                                            ? 'PLACE ORDER (COD: ₹${cartController.payableAmount.toStringAsFixed(0)})'
+                                            : 'PLACE ORDER (COD)')
+                                      : (cartController.appliedWalletAmount > 0
+                                            ? 'PAY ₹${cartController.payableAmount.toStringAsFixed(0)} NOW'
+                                            : 'PAY NOW')),
+                            style: GoogleFonts.montserrat(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            );
+          }),
+        ),
+      ),
+    );
+  }
+}

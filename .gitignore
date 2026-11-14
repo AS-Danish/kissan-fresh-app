@@ -53,3 +53,4 @@ android/app/src/dev/google-services.json
 /config/dev.json
 *.jks
 *.pem
+functions/node_modules/

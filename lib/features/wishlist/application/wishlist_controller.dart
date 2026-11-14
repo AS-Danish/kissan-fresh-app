@@ -1,0 +1,245 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kissanfresh/core/utils/custom_snackbar.dart';
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:kissanfresh/core/navigation.dart';
+import 'package:kissanfresh/core/observable.dart';
+import 'package:kissanfresh/core/providers.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:kissanfresh/features/catalog/domain/product_card_model.dart';
+import 'package:kissanfresh/routes/app_routes.dart';
+import 'package:kissanfresh/features/auth/application/auth_controller.dart';
+
+class WishlistController extends FeatureController {
+  final Ref ref;
+
+  WishlistController(this.ref);
+
+  // Observable list of wishlist items
+  ObservableList<ProductCardModel> wishlistItems = ObservableList(
+    <ProductCardModel>[],
+  );
+  // Real-time product data map: productId -> product data
+  ObservableMap<String, Map<String, dynamic>> realTimeProductData =
+      ObservableMap(<String, Map<String, dynamic>>{});
+
+  late final AuthController _authController = ref.read(authControllerProvider);
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  StreamSubscription? _productsSubscription;
+  FieldSubscription? _wishlistWorker;
+
+  @override
+  void onInit() {
+    super.onInit();
+
+    // Start listening to product changes whenever wishlistItems changes
+    _wishlistWorker = observeField(wishlistItems, (_) {
+      _updateProductsSubscription();
+    });
+
+    observeField(_authController.firebaseUser, (user) {
+      if (user != null) {
+        _fetchWishlist();
+      } else {
+        wishlistItems.clear();
+        realTimeProductData.clear();
+      }
+    });
+
+    // Initial fetch from cache and network
+    _fetchWishlist();
+  }
+
+  @override
+  void onClose() {
+    _productsSubscription?.cancel();
+    _wishlistWorker?.dispose();
+    super.onClose();
+  }
+
+  void _updateProductsSubscription() {
+    _productsSubscription?.cancel();
+
+    final productIds = wishlistItems
+        .map((item) => item.id)
+        .where((id) => id != null)
+        .cast<String>()
+        .toList();
+
+    if (productIds.isEmpty) {
+      realTimeProductData.clear();
+      return;
+    }
+
+    // Split into chunks if needed, but for wishlist we limit to top 30 for real-time
+    final limitedIds = productIds.take(30).toList();
+
+    _productsSubscription = _firestore
+        .collection('products')
+        .where(FieldPath.documentId, whereIn: limitedIds)
+        .snapshots()
+        .listen((snapshot) {
+          final Map<String, Map<String, dynamic>> newData = {};
+          for (var doc in snapshot.docs) {
+            newData[doc.id] = doc.data();
+          }
+          realTimeProductData.assignAll(newData);
+
+          final fetchedIds = snapshot.docs.map((doc) => doc.id).toList();
+          final deletedIds = limitedIds
+              .where((id) => !fetchedIds.contains(id))
+              .toList();
+
+          if (deletedIds.isNotEmpty) {
+            bool changed = false;
+            wishlistItems.removeWhere((item) {
+              if (deletedIds.contains(item.id)) {
+                changed = true;
+                return true;
+              }
+              return false;
+            });
+
+            if (changed) {
+              final user = _authController.firebaseUser.value;
+              if (user != null) {
+                _updateFirestoreWishlist(user.uid);
+              }
+            }
+          }
+        }, onError: (e) => debugPrint("Error in wishlist products stream: $e"));
+  }
+
+  void _fetchWishlist() async {
+    final user = _authController.firebaseUser.value;
+    if (user == null) return;
+
+    final box = Hive.box('wishlist_box');
+
+    // First: Load from local cache instantly
+    if (box.containsKey(user.uid)) {
+      final cachedData = box.get(user.uid) as List<dynamic>?;
+      if (cachedData != null) {
+        List<ProductCardModel> loadedItems = [];
+        for (var data in cachedData) {
+          final mapData = Map<String, dynamic>.from(data as Map);
+          loadedItems.add(_mapToProductCardModel(mapData));
+        }
+        wishlistItems.value = loadedItems;
+      }
+    }
+
+    // Second: Silent fetch from Firestore to ensure synchronization
+    try {
+      final docSnapshot = await _firestore
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      List<ProductCardModel> loadedItems = [];
+      if (docSnapshot.exists &&
+          docSnapshot.data() != null &&
+          docSnapshot.data()!.containsKey('wishlist')) {
+        List<dynamic> wishlistData = docSnapshot.data()!['wishlist'];
+
+        // Save raw network response to Box for next startup
+        box.put(user.uid, wishlistData);
+
+        for (var data in wishlistData) {
+          loadedItems.add(_mapToProductCardModel(data as Map<String, dynamic>));
+        }
+      }
+      wishlistItems.value = loadedItems;
+
+      // Update real-time subscription immediately after fetch
+      _updateProductsSubscription();
+
+      // Optimization: Removed full collection fetch for sync.
+      // Syncing should be done per-item when needed or when a product is viewed.
+    } catch (e) {
+      debugPrint("Error fetching wishlist from network: $e");
+    }
+  }
+
+  ProductCardModel _mapToProductCardModel(Map<String, dynamic> data) {
+    return ProductCardModel.fromJson(data);
+  }
+
+  // Helper to sync local wishlist with Firestore array
+  Future<void> _updateFirestoreWishlist(String uid) async {
+    try {
+      List<Map<String, dynamic>> data = wishlistItems
+          .map((item) => item.toJson())
+          .toList();
+
+      // Update to Local Hive instantly
+      final box = Hive.box('wishlist_box');
+      box.put(uid, data);
+
+      await _firestore.collection('users').doc(uid).set({
+        'wishlist': data,
+      }, SetOptions(merge: true));
+    } catch (e) {
+      debugPrint("Error updating wishlist in Firestore: $e");
+    }
+  }
+
+  // Add item to wishlist
+  Future<void> addToWishlist(ProductCardModel product) async {
+    if (!isInWishlist(product)) {
+      final user = _authController.firebaseUser.value;
+      if (user == null) {
+        // Redundant check for safety, actual guard is in toggleWishlist now
+        return;
+      }
+
+      wishlistItems.add(product);
+      await _updateFirestoreWishlist(user.uid);
+    }
+  }
+
+  // Remove item from wishlist
+  Future<void> removeFromWishlist(ProductCardModel product) async {
+    final user = _authController.firebaseUser.value;
+    if (user == null) return;
+
+    final targetId = product.id ?? product.title;
+    wishlistItems.removeWhere((item) => (item.id ?? item.title) == targetId);
+
+    await _updateFirestoreWishlist(user.uid);
+  }
+
+  // Check if item is in wishlist
+  bool isInWishlist(ProductCardModel product) {
+    final targetId = product.id ?? product.title;
+    return wishlistItems.any((item) => (item.id ?? item.title) == targetId);
+  }
+
+  // Toggle wishlist status
+  void toggleWishlist(ProductCardModel product) {
+    final user = _authController.firebaseUser.value;
+    if (user == null) {
+      AppNavigator.toNamed(AppRoutes.loginScreen);
+      CustomSnackBar.show(
+        'Login Required',
+        'Please login to save favorite items across devices.',
+        snackPosition: SnackPosition.bottom,
+        backgroundColor: AppNavigator.theme.primaryColor,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    if (isInWishlist(product)) {
+      removeFromWishlist(product);
+    } else {
+      addToWishlist(product);
+    }
+  }
+}
+
+final wishlistControllerProvider = Provider(
+  (ref) => startController(ref, WishlistController(ref)),
+);
